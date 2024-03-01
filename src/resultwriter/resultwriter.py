@@ -5,7 +5,8 @@ from src.resultwriter.csvwriter import CsvWriter
 
 class ResultWriter:
     def __init__(self, filename: str, headers: list[str]):
-        self.csv_writer = CsvWriter(filename, headers)
+        prepend: list[str] = ["episode", "timestamp"]
+        self.csv_writer = CsvWriter(filename, prepend + headers)
 
         self.episode = 0
         self.timestamp = 0

@@ -1,22 +1,19 @@
 import numpy as np
 
-from src.agent.actor import ActorInterface, DDPGActor
+from src.agent.acstrategy import strategy
 from src.agent.agentinterface import AgentInterface
-from src.agent.critic import CriticInterface, DDPGCritic
 from src.pod import ReplayBuffer
 
 
 class Agent(AgentInterface):
-    def __init__(self, discount_factor: float):
+    def __init__(self):
         super().__init__()
         self._old_state: np.ndarray[float] = np.array(24, float)
         self._new_state: np.ndarray[float] = np.array(24, float)
         self._selected_action: np.ndarray[float] = np.zeros(4)
         self._reward: float = 0
 
-        polyak: float = 0.975
-        self._actor: ActorInterface = DDPGActor(self.models[type]["actor"], polyak)
-        self._critic: CriticInterface = DDPGCritic(discount_factor, self.models[type]["critic"], polyak)
+        self._actor, self._critic = strategy["ddpg"]
 
         self._replay_buffer: ReplayBuffer = ReplayBuffer()
         self._iteration: int = 0

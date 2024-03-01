@@ -8,7 +8,7 @@ from src.resultwriter import ModelWriter
 
 
 class DDPGCritic(CriticInterface):
-    def __init__(self, discount_factor: float, model: nn.Module, polyak: float = 0.995):
+    def __init__(self, model: nn.Module, discount_factor: float, polyak: float = 0.995, action_dim: int = 4):
         super().__init__()
         writer = ModelWriter("critic", "critic_loss")
         self._model: ModelWrapper = ModelWrapper(model, writer)
@@ -16,6 +16,7 @@ class DDPGCritic(CriticInterface):
 
         self._discount_factor: float = discount_factor
         self._polyak: float = polyak
+        self._action_dim: int = action_dim
 
     def update_model(self, reward: np.ndarray[float], state: np.ndarray[float], action: np.ndarray[float],
                      next_state: np.ndarray[float], next_action: np.ndarray[float]):
@@ -33,4 +34,4 @@ class DDPGCritic(CriticInterface):
         self._target_model.update_polyak(self._polyak, self._model)
 
     def provide_feedback(self, actions: np.ndarray[float]) -> np.ndarray[float]:
-        pass
+        return self._model.calculate_gradian_ascent(actions)[:self._action_dim]

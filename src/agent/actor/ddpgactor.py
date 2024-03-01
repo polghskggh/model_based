@@ -22,5 +22,7 @@ class DDPGActor(ActorInterface):
     def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
         return self._target_model.forward(new_states)
 
-    def update_model(self, feedback: float):
-        pass
+    def update_model(self, state: np.ndarray[float], selected_actions: np.ndarray[float],
+                     action_grads: np.ndarray[float]):
+        self._model.train_step(state, selected_actions + action_grads)
+        self._target_model.update_polyak(self._polyak, self._model)
