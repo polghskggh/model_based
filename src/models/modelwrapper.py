@@ -1,9 +1,9 @@
 import numpy as np
 from flax import linen as nn
-from jax import numpy as jnp, Array
+from jax import numpy as jnp
 from jax import random as random
 import optax
-from jax import value_and_grad, vmap, grad
+from jax import value_and_grad, grad
 
 from .lossfuns import loss_funs
 from ..resultwriter import ModelWriter
