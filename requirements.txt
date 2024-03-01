@@ -4,4 +4,6 @@ numpy~=1.26.3
 flax~=0.7.5
 optax~=0.1.8
 jax~=0.4.23
-gymnasium[box2d]
+ale-py~=0.8.1
+gymnasium[atari]
+gymnasium[accept-rom-license]
