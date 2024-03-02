@@ -3,10 +3,9 @@ from jax import Array
 
 
 # A simple feed forward neural network
-class CNNSImple(nn.Module):
-    x: int
-    y: int
-    channels: int
+class MLPAtari(nn.Module):
+    input_dimensions: int
+    output_dimensions: int
 
     @nn.compact
     def __call__(self, x) -> Array:

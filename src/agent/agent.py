@@ -6,14 +6,14 @@ from src.pod import ReplayBuffer
 
 
 class Agent(AgentInterface):
-    def __init__(self):
+    def __init__(self, agent_type: str):
         super().__init__()
         self._old_state: np.ndarray[float] = np.array(24, float)
         self._new_state: np.ndarray[float] = np.array(24, float)
         self._selected_action: np.ndarray[float] = np.zeros(4)
         self._reward: float = 0
 
-        self._actor, self._critic = strategy["ddpg"]
+        self._actor, self._critic = strategy[agent_type]
 
         self._replay_buffer: ReplayBuffer = ReplayBuffer()
         self._iteration: int = 0
