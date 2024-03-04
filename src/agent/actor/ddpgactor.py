@@ -1,6 +1,7 @@
 from .__init__ import ActorInterface
 from src.models import ModelWrapper
 from flax import linen as nn
+from jax import vmap
 
 import numpy as np
 
@@ -20,7 +21,7 @@ class DDPGActor(ActorInterface):
         return self._model.forward(state)
 
     def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
-        return self._target_model.forward(new_states)
+        return vmap(self._target_model.forward, 0, 0)(new_states)
 
     def update_model(self, state: np.ndarray[float], selected_actions: np.ndarray[float],
                      action_grads: np.ndarray[float]):

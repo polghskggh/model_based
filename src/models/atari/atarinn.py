@@ -2,7 +2,8 @@ import flax.linen as nn
 import jax.numpy as jnp
 from jax import Array
 
-from src.models.atari import CNNAtari, MLPAtari
+from src.models.atari.actoratari import CNNAtari
+from src.models.atari.mlpatari import MLPAtari
 
 
 class AtariNN(nn.Module):
@@ -11,12 +12,15 @@ class AtariNN(nn.Module):
     output_dimensions: int
 
     def setup(self):
-        self.cnn = CNNAtari(self.input_dimensions[0], self.input_dimensions[1], self.input_dimensions[2], 10)
+        self.cnn = CNNAtari(self.input_dimensions[0] - self.action_size,
+                            self.input_dimensions[1], self.input_dimensions[2], 10)
         self.mlp = MLPAtari(10 + self.action_size, self.output_dimensions)
 
     def __call__(self, x: Array):
-        x[0] = self.cnn(x[0])
-        x = self.mlp(x)
+        cnn = self.cnn(x[:, :self.cnn.xdim])
+        action = x[:, self.cnn.xdim:]
+        action = action.reshape((-1))[:self.action_size]
+        x = self.mlp(jnp.append(cnn, action))
         return x
 
 

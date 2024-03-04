@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.agent.acstrategy import strategy
+from src.agent.acstrategy import strategy, shapes
 from src.agent.agentinterface import AgentInterface
 from src.pod import ReplayBuffer
 
@@ -8,14 +8,14 @@ from src.pod import ReplayBuffer
 class Agent(AgentInterface):
     def __init__(self, agent_type: str):
         super().__init__()
-        self._old_state: np.ndarray[float] = np.array(24, float)
-        self._new_state: np.ndarray[float] = np.array(24, float)
-        self._selected_action: np.ndarray[float] = np.zeros(4)
+        self._old_state: np.ndarray[float] = np.array(shapes[agent_type][0], float)
+        self._new_state: np.ndarray[float] = np.array(shapes[agent_type][0], float)
+        self._selected_action: np.ndarray[float] = np.zeros(shapes[agent_type][1])
         self._reward: float = 0
 
         self._actor, self._critic = strategy[agent_type]
 
-        self._replay_buffer: ReplayBuffer = ReplayBuffer()
+        self._replay_buffer: ReplayBuffer = ReplayBuffer(shapes[agent_type][0], shapes[agent_type][1])
         self._iteration: int = 0
         self._batch_size: int = 100
         self._forget_rate: float = 0.001
@@ -35,12 +35,14 @@ class Agent(AgentInterface):
     def update_policy(self):
         self._replay_buffer.add_transition(self._old_state, self._selected_action, self._new_state, self._reward)
 
+        print("not updating")
         # get experience before updating
         if self._update_after != 0:
             self._update_after -= 1
             return
 
         # only update after some number of time steps
+        print("updating")
         if self._iteration != self._update_every:
             self._iteration += 1
             return

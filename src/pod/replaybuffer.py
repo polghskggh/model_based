@@ -2,10 +2,10 @@ import numpy as np
 
 
 class ReplayBuffer:
-    def __init__(self):
-        self._old_states = np.empty((0, 24))
-        self._actions = np.empty((0, 4))
-        self._new_states = np.empty((0, 24))
+    def __init__(self, state_shape: tuple[int], action_shape: int):
+        self._old_states = np.empty((0, *state_shape))
+        self._actions = np.empty((0, action_shape))
+        self._new_states = np.empty((0, *state_shape))
         self._rewards = np.empty(0)
 
     # put data into buffer
