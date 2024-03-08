@@ -1,5 +1,6 @@
 import flax.linen as nn
 from jax import Array
+import jax.numpy as jnp
 
 from src.models.atari.cnnatari import CNNAtari
 
@@ -19,5 +20,7 @@ class ActorAtari(nn.Module):
         x = nn.softmax(x)
         return x
 
+    def mock_input(self) -> tuple:
+        return (jnp.ones(self.input_dimensions, dtype=jnp.float32),)
 
 

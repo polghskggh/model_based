@@ -20,20 +20,15 @@ class DDPGCritic(CriticInterface):
 
     def update_model(self, reward: np.ndarray[float], state: np.ndarray[float], action: np.ndarray[float],
                      next_state: np.ndarray[float], next_action: np.ndarray[float]):
-        print(action.shape)
-        state_action: np.ndarray[float] = np.append(state, action, axis=1)
-        print(state_action.shape)
-        new_state_action: np.ndarray[float] = np.append(next_state, next_action, axis=1)
 
         observed_values: np.ndarray[float] = (
-                reward + self._discount_factor * self._target_model.forward(new_state_action).reshape(-1))
+                reward + self._discount_factor * self._target_model.forward(next_state, next_action))
 
-        self._model.train_step(state_action, observed_values)
+        self._model.train_step(observed_values, state, action)
         self.update_target()
 
     def update_target(self):
         self._target_model.update_polyak(self._polyak, self._model)
 
-    def provide_feedback(self, actions: np.ndarray[float]) -> np.ndarray[float]:
-        print(actions.shape)
-        return self._model.calculate_gradian_ascent(actions)[:self._action_dim]
+    def provide_feedback(self, state: np.ndarray[float], action: np.ndarray[float]) -> np.ndarray[float]:
+        return self._model.calculate_gradian_ascent(1, state, action)

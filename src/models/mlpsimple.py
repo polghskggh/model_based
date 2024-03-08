@@ -4,7 +4,7 @@ from jax import Array
 
 # A simple feed forward neural network
 class MLPSimple(nn.Module):
-    input_dimensions: int
+    raw_input_size: int
     output_dimensions: int
 
     @nn.compact

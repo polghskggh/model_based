@@ -20,7 +20,6 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: Enviroment):
 
 def run_experiment(agent: AgentInterface, env: Enviroment, results: ResultWriter):
     observation, _ = env.reset()
-
     agent.receive_state(observation)
 
     while True:
@@ -33,7 +32,6 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ResultWriter
         results.add_data(observation, action, reward)   # for the purpose of analysis.
         if terminated or truncated:
             return
-
 
 if __name__ == '__main__':
     main()

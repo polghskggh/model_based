@@ -13,5 +13,5 @@ class CriticInterface:
         pass
 
     @abstractmethod
-    def provide_feedback(self, actions: np.ndarray[float]):
+    def provide_feedback(self, state: np.ndarray[float], action: np.ndarray[float]):
         pass
