@@ -1,4 +1,4 @@
-from typing import Tuple, Any, Dict, SupportsFloat
+from typing import Any
 
 import gymnasium as gym
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 
 class Enviroment:
     def __init__(self):
-        self.enviroment: gym.Env = gym.make("ALE/Breakout-v5", render_mode="human")
+        self.enviroment: gym.Env = gym.make("ALE/Breakout-v5", render_mode="human", obs_type="grayscale")
 
     def reset(self) -> tuple[Any, dict[str, Any]]:
         return self.enviroment.reset()

@@ -12,8 +12,8 @@ class DDPGActor(ActorInterface):
     def __init__(self, model: nn.Module, polyak: float = 0.995):
         super().__init__()
         writer = ModelWriter("actor", "actor_q_value")
-        self._model: ModelWrapper = ModelWrapper(model, writer)
-        self._target_model: ModelWrapper = ModelWrapper(model, writer)
+        self._model: ModelWrapper = ModelWrapper(model, "actor")
+        self._target_model: ModelWrapper = ModelWrapper(model, "actor")
         self._polyak: float = polyak
 
     def approximate_best_action(self, state: np.ndarray[float]) -> np.ndarray[float]:
@@ -26,3 +26,7 @@ class DDPGActor(ActorInterface):
                      action_grads: np.ndarray[float]):
         self._model.train_step(selected_actions + action_grads, state)
         self._target_model.update_polyak(self._polyak, self._model)
+
+    @property
+    def model(self):
+        return self._model

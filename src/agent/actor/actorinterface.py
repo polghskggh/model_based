@@ -19,3 +19,6 @@ class ActorInterface:
     @abstractmethod
     def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
         pass
+
+    def model(self):
+        pass

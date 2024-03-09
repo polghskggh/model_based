@@ -33,5 +33,6 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ResultWriter
         if terminated or truncated:
             return
 
+
 if __name__ == '__main__':
     main()

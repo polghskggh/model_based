@@ -20,6 +20,8 @@ class Agent(AgentInterface):
         self._forget_rate: float = 0.001
 
         self._batches_per_update: int = 5
+        self._start_steps: int = 200
+
         self._update_after: int = 100
         self._update_every: int = 50
         self._iteration: int = self._update_every
@@ -30,15 +32,16 @@ class Agent(AgentInterface):
         self._critic.update_model(
             training_sample[3], training_sample[0], training_sample[1],
             training_sample[2], actor_actions)
+        self._critic.update_common_head(self._actor)
         action_grads = self._critic.provide_feedback(training_sample[2], actor_actions)
         self._actor.update_model(training_sample[2], actor_actions, action_grads)
 
     def update_policy(self):
         self._replay_buffer.add_transition(self._old_state, self._selected_action, self._new_state, self._reward)
 
-        # get experience before updating
-        if self._update_after != 0:
-            self._update_after -= 1
+        # explore at start
+        if self._start_steps != 0:
+            self._start_steps -= 1
             return
 
         # only update after some number of time steps
@@ -52,6 +55,9 @@ class Agent(AgentInterface):
             self._iteration = 0
 
     def select_action(self) -> np.ndarray[float]:
+        if self._start_steps != 0:
+            self._start_steps -= 1
+            return Agent._random_action()
         self._selected_action = self._actor.approximate_best_action(self._new_state)
         return self._selected_action
 
@@ -61,3 +67,7 @@ class Agent(AgentInterface):
     def receive_state(self, state: np.ndarray[float]):
         self._old_state = self._new_state
         self._new_state = state
+
+    @staticmethod
+    def _random_action():
+        return np.random.rand(4)

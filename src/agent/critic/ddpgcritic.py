@@ -10,9 +10,8 @@ from src.resultwriter import ModelWriter
 class DDPGCritic(CriticInterface):
     def __init__(self, model: nn.Module, discount_factor: float, polyak: float = 0.995, action_dim: int = 4):
         super().__init__()
-        writer = ModelWriter("critic", "critic_loss")
-        self._model: ModelWrapper = ModelWrapper(model, writer)
-        self._target_model: ModelWrapper = ModelWrapper(model, writer)
+        self._model: ModelWrapper = ModelWrapper(model, "critic")
+        self._target_model: ModelWrapper = ModelWrapper(model, "critic")
 
         self._discount_factor: float = discount_factor
         self._polyak: float = polyak
@@ -32,3 +31,6 @@ class DDPGCritic(CriticInterface):
 
     def provide_feedback(self, state: np.ndarray[float], action: np.ndarray[float]) -> np.ndarray[float]:
         return self._model.calculate_gradian_ascent(1, state, action)
+
+    def update_common_head(self, actor: ActorInterface):
+        actor.model().params()["cnn"] = self._model.params()["cnn"]
