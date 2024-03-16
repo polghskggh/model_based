@@ -1,4 +1,5 @@
 import flax.linen as nn
+from jax.lax import stop_gradient
 from jax import Array
 import jax.numpy as jnp
 
@@ -16,6 +17,7 @@ class ActorAtari(nn.Module):
     def __call__(self, x: Array):
         x = self.cnn(x)
         x = nn.relu(x)
+        x = stop_gradient(x)
         x = nn.Dense(self.output_dimensions)(x)
         x = nn.softmax(x)
         return x

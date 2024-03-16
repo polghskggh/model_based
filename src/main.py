@@ -30,6 +30,7 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter)
         agent.receive_state(observation)
         agent.update_policy()
         results.add_data(reward)   # for the purpose of analysis.
+        results.save_episode()
         if terminated or truncated:
             return
 

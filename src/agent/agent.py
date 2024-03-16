@@ -31,9 +31,9 @@ class Agent(AgentInterface):
         self._critic.update_model(
             training_sample[3], training_sample[0], training_sample[1],
             training_sample[2], actor_actions)
-        self._critic.update_common_head(self._actor)
         action_grads = self._critic.provide_feedback(training_sample[2], actor_actions)
         self._actor.update_model(training_sample[2], actor_actions, action_grads)
+        self._critic.update_common_head(self._actor)
 
     def update_policy(self):
         self._replay_buffer.add_transition(self._old_state, self._selected_action, self._new_state, self._reward)

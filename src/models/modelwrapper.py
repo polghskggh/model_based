@@ -26,6 +26,8 @@ class ModelWrapper:
         self.model_writer.save_episode()
         self.model_writer.flush_all()
         self.apply_grads(grads)
+        if self.debug == "actor":
+            print(grads)
 
     def forward(self, *x: np.ndarray[float]) -> np.ndarray[float] | float:
         return self._model.apply(self._params, *x)

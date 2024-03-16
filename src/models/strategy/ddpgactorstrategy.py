@@ -18,6 +18,7 @@ class DDPGActorStrategy(ModelStrategy):
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32), )
 
     def init_optim(self, learning_rate: float):
+        return optax.adam(learning_rate)
         label_function = DDPGActorStrategy.map_function_to_dictionary(lambda key, _: "none" if key == "cnn" else "adam")
         return optax.multi_transform(
             {'adam': optax.sgd(learning_rate), 'none': optax.set_to_zero()}, label_function)
