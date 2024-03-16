@@ -21,14 +21,13 @@ class ModelWriter:
             self.flush_buffer()
 
     def flush_buffer(self):
-        print("flushing")
         data = self._prepare_data()
         self.csv_writer.store_data(data)
         self.losses_var = []
         self.losses_mean = []
 
     def _prepare_data(self):
-        data = [[episode, mean, var] for episode, mean, var in enumerate(zip(self.losses_mean, self.losses_var))]
+        data = [[episode, mean, var] for episode, (mean, var) in enumerate(zip(self.losses_mean, self.losses_var))]
         return data
 
     # add new data
@@ -37,7 +36,6 @@ class ModelWriter:
 
     @staticmethod
     def flush_all():
-        print("flushing requested")
         for instance in writer_instances.values():
             instance.flush_buffer()
 

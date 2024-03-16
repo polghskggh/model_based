@@ -17,7 +17,6 @@ class Agent(AgentInterface):
 
         self._replay_buffer: ReplayBuffer = ReplayBuffer(shapes[agent_type][0], shapes[agent_type][1])
         self._batch_size: int = 100
-        self._forget_rate: float = 0.1
 
         self._batches_per_update: int = 5
         self._start_steps: int = 200
@@ -51,7 +50,6 @@ class Agent(AgentInterface):
 
         for _ in range(self._batches_per_update):
             self._batch_update()
-            self._replay_buffer.forget(self._forget_rate)  # remove experiences from replay buffer
             self._iteration = 0
 
     def select_action(self) -> np.ndarray[float]:

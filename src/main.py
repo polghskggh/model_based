@@ -23,13 +23,12 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter)
     observation, _ = env.reset()
     agent.receive_state(observation)
 
-    while True:
+    for _ in range(1000):
         action = agent.select_action()
         observation, reward, terminated, truncated, _ = env.step(action)
         agent.receive_reward(reward)
         agent.receive_state(observation)
         agent.update_policy()
-
         results.add_data(reward)   # for the purpose of analysis.
         if terminated or truncated:
             return

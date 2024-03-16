@@ -18,8 +18,8 @@ class AtariNN(nn.Module):
     @nn.compact
     def __call__(self, image: Array, action: Array):
         cnn = self.cnn(image)
-        x = self.mlp(action)
-        x = jnp.append(cnn, x, axis=-1)
+        x = jnp.append(cnn, action, axis=-1)
+        x = self.mlp(x)
         x = nn.relu(x)
         x = nn.Dense(self.output_dimensions)(x)
-        return x
+        return jnp.reshape(x, (x.shape[0], ))

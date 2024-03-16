@@ -9,7 +9,7 @@ from src.models.strategy.modelstrategyfactory import model_strategy_factory
 
 
 class ModelWrapper:
-    def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0005, loss="mse"):
+    def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001, loss="mse"):
         self._strategy = model_strategy_factory(strategy)
         self._model = model
         self._params = model.init(random.PRNGKey(1), *self._strategy.init_params(model))
@@ -17,12 +17,14 @@ class ModelWrapper:
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
         self.model_writer = self._strategy.init_writer()
+        self.debug = strategy
 
     # forward pass + backwards pass
     def train_step(self, y: np.ndarray[float], *x: np.ndarray[float]):
         loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
         self.model_writer.add_data(loss)
         self.model_writer.save_episode()
+        self.model_writer.flush_all()
         self.apply_grads(grads)
 
     def forward(self, *x: np.ndarray[float]) -> np.ndarray[float] | float:
@@ -37,7 +39,7 @@ class ModelWrapper:
         return grad(loss_funs["grad_asc"], 2 + input_idx)(self._model, self._params, *x)
 
     def update_polyak(self, rho: float, other_model: "ModelWrapper"):
-        self._params = optax.incremental_update(self._params, other_model._params, rho)
+        self._params = optax.incremental_update(self._params, other_model._params, 1 - rho)
 
     @property
     def params(self):
