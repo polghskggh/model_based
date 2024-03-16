@@ -17,7 +17,7 @@ class Agent(AgentInterface):
 
         self._replay_buffer: ReplayBuffer = ReplayBuffer(shapes[agent_type][0], shapes[agent_type][1])
         self._batch_size: int = 100
-        self._forget_rate: float = 0.001
+        self._forget_rate: float = 0.1
 
         self._batches_per_update: int = 5
         self._start_steps: int = 200

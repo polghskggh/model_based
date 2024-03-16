@@ -33,4 +33,4 @@ class DDPGCritic(CriticInterface):
         return self._model.calculate_gradian_ascent(1, state, action)
 
     def update_common_head(self, actor: ActorInterface):
-        actor.model().params()["cnn"] = self._model.params()["cnn"]
+        actor.model.params["params"]["cnn"] = self._model.params["params"]["cnn"]

@@ -11,7 +11,6 @@ from ...resultwriter import ModelWriter
 class DDPGActor(ActorInterface):
     def __init__(self, model: nn.Module, polyak: float = 0.995):
         super().__init__()
-        writer = ModelWriter("actor", "actor_q_value")
         self._model: ModelWrapper = ModelWrapper(model, "actor")
         self._target_model: ModelWrapper = ModelWrapper(model, "actor")
         self._polyak: float = polyak

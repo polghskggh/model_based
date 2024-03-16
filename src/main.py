@@ -1,7 +1,7 @@
 from src.enviroment import Enviroment
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
-from src.resultwriter import ResultWriter
+from src.resultwriter.modelwriter import writer_instances, ModelWriter
 
 
 def main():
@@ -12,13 +12,14 @@ def main():
 
 
 def run_n_episodes(episodes: int, agent: AgentInterface, env: Enviroment):
-    results = ResultWriter("data", ["single"])                  # initialize data saving
+    results = writer_instances["reward"]
     for episode in range(episodes):
         run_experiment(agent, env, results)
-        #results.save_episode()                      # dynamically save gathered data
+        results.save_episode()                      # dynamically save gathered data
+        results.flush_all()
 
 
-def run_experiment(agent: AgentInterface, env: Enviroment, results: ResultWriter):
+def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter):
     observation, _ = env.reset()
     agent.receive_state(observation)
 
@@ -29,7 +30,7 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ResultWriter
         agent.receive_state(observation)
         agent.update_policy()
 
-        results.add_data(observation, action, reward)   # for the purpose of analysis.
+        results.add_data(reward)   # for the purpose of analysis.
         if terminated or truncated:
             return
 

@@ -22,7 +22,7 @@ class ModelWrapper:
     def train_step(self, y: np.ndarray[float], *x: np.ndarray[float]):
         loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
         self.model_writer.add_data(loss)
-        print(grads)
+        self.model_writer.save_episode()
         self.apply_grads(grads)
 
     def forward(self, *x: np.ndarray[float]) -> np.ndarray[float] | float:

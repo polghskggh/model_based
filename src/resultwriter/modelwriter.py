@@ -1,25 +1,47 @@
 import csv
 
 from src.resultwriter.csvwriter import CsvWriter
+from src.resultwriter.onlinedatatracker import OnlineDataTracker
 
 
 class ModelWriter:
     def __init__(self, filename, loss_name: str):
-        headers = ["episode", loss_name]
+        headers = ["episode", loss_name, "variance"]
         self.csv_writer = CsvWriter(filename, headers)
-        self.episode = 0
-        self.losses = []
+        self.tracker = OnlineDataTracker()
+        self.losses_mean = []
+        self.losses_var = []
         # flush data into file
 
     def save_episode(self):
+        mean, var = self.tracker.get_curr_mean_variance()
+        self.losses_mean.append(mean)
+        self.losses_var.append(var)
+        if len(self.losses_mean) == 1000:
+            self.flush_buffer()
+
+    def flush_buffer(self):
+        print("flushing")
         data = self._prepare_data()
         self.csv_writer.store_data(data)
-        self.losses = []
+        self.losses_var = []
+        self.losses_mean = []
 
     def _prepare_data(self):
-        data = [[self.episode] + [loss] for loss in self.losses]
+        data = [[episode, mean, var] for episode, mean, var in enumerate(zip(self.losses_mean, self.losses_var))]
         return data
 
     # add new data
     def add_data(self, loss: float):
-        self.losses.append(loss)
+        self.tracker.update_aggr(loss)
+
+    @staticmethod
+    def flush_all():
+        print("flushing requested")
+        for instance in writer_instances.values():
+            instance.flush_buffer()
+
+
+writer_instances = {"actor": ModelWriter("actor", "actor_loss"),
+                    "critic": ModelWriter("critic", "critic_loss"),
+                    "reward": ModelWriter("reward", "reward")}

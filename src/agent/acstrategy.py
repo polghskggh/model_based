@@ -11,7 +11,6 @@ shapes = {
 
 strategy = {
     "atari-ddpg": (DDPGActor(ActorAtari(shapes["atari-ddpg"][0], shapes["atari-ddpg"][1]), polyak=0.95),
-
                    DDPGCritic(AtariNN(shapes["atari-ddpg"][0], shapes["atari-ddpg"][1], 1),
                               discount_factor=0.95, polyak=4, action_dim=4))
 }

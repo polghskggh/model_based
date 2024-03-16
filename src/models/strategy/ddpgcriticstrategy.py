@@ -4,6 +4,7 @@ import jax.numpy as jnp
 
 from src.models.strategy.modelstrategy import ModelStrategy
 from src.resultwriter import ModelWriter
+from src.resultwriter.modelwriter import writer_instances
 
 
 class DDPGCriticStrategy(ModelStrategy):
@@ -11,7 +12,7 @@ class DDPGCriticStrategy(ModelStrategy):
         super().__init__()
 
     def init_writer(self):
-        return ModelWriter("critic", "critic_loss")
+        return writer_instances["critic"]
 
     def init_params(self, model: nn.Module) -> tuple:
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32),
