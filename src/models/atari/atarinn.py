@@ -12,14 +12,13 @@ class AtariNN(nn.Module):
     output_dimensions: int
 
     def setup(self):
-        self.cnn = CNNAtari(self.input_dimensions[0], self.input_dimensions[1], self.input_dimensions[2], 10)
-        self.mlp = MLPAtari(10 + self.second_input, self.output_dimensions)
+        self.bottleneck = 10
+        self.cnn = CNNAtari(self.input_dimensions, self.bottleneck)
+        self.mlp = MLPAtari(self.bottleneck + self.second_input, self.output_dimensions)
 
     @nn.compact
     def __call__(self, image: Array, action: Array):
         cnn = self.cnn(image)
         x = jnp.append(cnn, action, axis=-1)
         x = self.mlp(x)
-        x = nn.relu(x)
-        x = nn.Dense(self.output_dimensions)(x)
         return x

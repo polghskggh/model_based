@@ -4,17 +4,15 @@ from jax import Array
 
 # A simple feed forward neural network
 class CNNAtari(nn.Module):
-    xdim: int
-    ydim: int
-    channels: int
+    input_dimensions: tuple
     output_dimensions: int
 
     @nn.compact
     def __call__(self, x) -> Array:
         x = nn.avg_pool(x, window_shape=(4, 4))
-        x = nn.Conv(features=self.channels * 3, kernel_size=(3, 3))(x)
+        x = nn.Conv(features=9, kernel_size=(3, 3))(x)
         x = nn.avg_pool(x, window_shape=(2, 2))
-        x = nn.Conv(features=self.channels * 3, kernel_size=(3, 3))(x)
+        x = nn.Conv(features=9, kernel_size=(3, 3))(x)
         x = nn.avg_pool(x, window_shape=(2, 2))
         x = self.flatten(x)
         x = nn.relu(x)
