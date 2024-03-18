@@ -2,6 +2,7 @@ from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
 from jax import vmap
+import jax.random as random
 
 import numpy as np
 
@@ -28,7 +29,12 @@ class DDPGActor(ActorInterface):
 
     @staticmethod
     def softmax_to_onehot(logits: np.ndarray[float]) -> np.ndarray[float]:
-        return np.eye(logits.shape[-1])[logits.argmax(axis=-1)] # TODO: change to sampling from distribution
+        key = random.PRNGKey(0)
+        if logits.ndim == 1:
+            idx = random.choice(key, logits.shape[-1], p=logits)
+        else:
+            idx = vmap(random.choice, (None, None, None, None, 0))(key, logits.shape[-1], (), True, logits)
+        return np.eye(logits.shape[-1])[idx]
 
     @property
     def model(self):
