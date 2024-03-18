@@ -21,7 +21,7 @@ class DDPGActor(ActorInterface):
         return DDPGActor.softmax_to_onehot(actions)
 
     def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
-        actions = self._target_model.forward(new_states)
+        actions = self._model.forward(new_states)
         return DDPGActor.softmax_to_onehot(actions)
 
     def update_model(self, state: np.ndarray[float], selected_actions: np.ndarray[float],

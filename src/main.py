@@ -30,10 +30,11 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter)
     for _ in range(1000):
         action = agent.select_action()
         observation, reward, terminated, truncated, _ = env.step(action)
-        agent.receive_reward(1)
+        agent.receive_reward(reward)
         agent.receive_state(observation)
         agent.update_policy()
-        results.add_data(1)   # for the purpose of analysis.
+        print(action)
+        results.add_data(reward)   # for the purpose of analysis.
         results.save_episode()
         if terminated or truncated:
             return

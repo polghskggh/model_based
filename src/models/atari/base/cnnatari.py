@@ -9,10 +9,10 @@ class CNNAtari(nn.Module):
 
     @nn.compact
     def __call__(self, x) -> Array:
-        x = nn.avg_pool(x, window_shape=(4, 4))
-        x = nn.Conv(features=9, kernel_size=(3, 3))(x)
+        x = nn.avg_pool(x, window_shape=(4, 4), strides=(4, 4))
+        x = nn.Conv(features=9, kernel_size=(3, 3), strides=(4, 4))(x)
         x = nn.avg_pool(x, window_shape=(2, 2))
-        x = nn.Conv(features=9, kernel_size=(3, 3))(x)
+        x = nn.Conv(features=18, kernel_size=(3, 3))(x)
         x = nn.avg_pool(x, window_shape=(2, 2))
         x = self.flatten(x)
         x = nn.relu(x)

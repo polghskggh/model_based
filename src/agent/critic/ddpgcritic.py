@@ -20,7 +20,7 @@ class DDPGCritic(CriticInterface):
                      next_state: np.ndarray[float], next_action: np.ndarray[float]):
 
         observed_values: np.ndarray[float] = (
-                reward + self._discount_factor * self._target_model.forward(next_state, next_action).reshape(-1))
+                reward + self._discount_factor * self._model.forward(next_state, next_action).reshape(-1))
         self._model.train_step(observed_values, state, action)
         self.update_target()
 
