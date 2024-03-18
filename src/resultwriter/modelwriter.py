@@ -42,4 +42,5 @@ class ModelWriter:
 
 writer_instances = {"actor": ModelWriter("actor", "actor_loss"),
                     "critic": ModelWriter("critic", "critic_loss"),
-                    "reward": ModelWriter("reward", "reward")}
+                    "reward": ModelWriter("reward", "reward"),
+                    "autoencoder": ModelWriter("autoencoder", "image_loss")}

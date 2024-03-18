@@ -11,10 +11,6 @@ class Decoder(nn.Module):
 
     @nn.compact
     def __call__(self, image, actions) -> Array:
-        x = nn.ConvTranspose(features=9, kernel_size=(4, 4))(image) * jnp.argmax(actions)
-        x = nn.ConvTranspose(features=9, kernel_size=(4, 4))(image) * jnp.argmax(actions)
-        x = nn.ConvTranspose(features=9, kernel_size=(4, 4))(image) * jnp.argmax(actions)
+        x = nn.ConvTranspose(features=9, kernel_size=(4, 4), strides=(4, 4))(image)
+        x = nn.ConvTranspose(features=9, kernel_size=(4, 4), strides=(4, 4))(x) * jnp.argmax(actions)
         return x
-
-    def unflatten(self, x: Array) -> Array:
-        return x.reshape(self.output_dimensions) if x.ndim == 1 else x.reshape((x.shape[0], self.output_dimensions))

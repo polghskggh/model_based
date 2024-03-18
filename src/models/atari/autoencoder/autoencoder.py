@@ -3,8 +3,9 @@ import jax.numpy as jnp
 from jax import Array
 
 from src.models.atari.actoratari import CNNAtari
+from src.models.atari.autoencoder.decoder import Decoder
+from src.models.atari.autoencoder.encoder import Encoder
 from src.models.atari.base.mlpatari import MLPAtari
-from src.models.atari.base.revcnn import RevCNN
 
 
 class AutoEncoder(nn.Module):
@@ -12,13 +13,11 @@ class AutoEncoder(nn.Module):
     second_input: int
 
     def setup(self):
-        self.bottleneck = (10, 10, 10)
-        self.encoder = Decoder(self.input_dimensions, self.bottleneck)
-        self.decoder = Encoder(10 + self.second_input, self.input_dimensions)
+        self.bottleneck = (13, 10, 9)
+        self.encoder = Encoder(self.input_dimensions, self.bottleneck)
+        self.decoder = Decoder(self.bottleneck, self.second_input, self.input_dimensions)
 
     @nn.compact
-    def __call__(self, image: Array, action: Array):
-        cnn = self.cnn(image)
-        x = jnp.append(cnn, action, axis=-1)
-        x = self.decoder(x)
-        return x
+    def __call__(self, image: Array, action: int):
+        encoded = self.encoder(image)
+        return self.decoder(encoded, action)

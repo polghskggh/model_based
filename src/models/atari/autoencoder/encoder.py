@@ -5,6 +5,7 @@ from jax import Array
 # encoder
 class Encoder(nn.Module):
     input_dimensions: tuple
+    output_dimensions: tuple
 
     @nn.compact
     def __call__(self, x) -> Array:
@@ -13,5 +14,4 @@ class Encoder(nn.Module):
         x = nn.avg_pool(x, window_shape=(2, 2))
         x = nn.Conv(features=9, kernel_size=(4, 4), strides=4)(x)
         x = nn.avg_pool(x, window_shape=(2, 2))
-        x = nn.Conv(features=9, kernel_size=(4, 4), strides=4)(x)
         return x

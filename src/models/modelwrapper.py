@@ -21,9 +21,6 @@ class ModelWrapper:
 
     # forward pass + backwards pass
     def train_step(self, y: np.ndarray[float], *x: np.ndarray[float]):
-        if self.debug == "critic":
-            xd = self._model.apply(self._params, *x)
-            print(xd[:10] - y[:10])
         loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
         self.model_writer.add_data(loss)
         self.model_writer.save_episode()

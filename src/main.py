@@ -1,8 +1,11 @@
 import jax
 
+from src.agent.acstrategy import shapes
 from src.enviroment import Enviroment
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
+from src.models.atari.autoencoder.autoencoder import AutoEncoder
+from src.models.modelwrapper import ModelWrapper
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 from jax import devices
 
@@ -24,17 +27,18 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: Enviroment):
 
 
 def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter):
-    observation, _ = env.reset()
-    agent.receive_state(observation)
-
+    observation_old, _ = env.reset()
+    autoencoder = ModelWrapper(AutoEncoder(shapes["atari-ddpg"][0], 1), "autoencoder")
+    print(autoencoder)
     for _ in range(1000):
-        action = agent.select_action()
-        observation, reward, terminated, truncated, _ = env.step(action)
-        agent.receive_reward(1)
-        agent.receive_state(observation)
-        agent.update_policy()
-        results.add_data(1)   # for the purpose of analysis.
-        results.save_episode()
+        action = env.sample_action()
+        observation_new, reward, terminated, truncated, _ = env.step(action)
+
+
+
+        observation_old = observation_new
+
+
         if terminated or truncated:
             return
 

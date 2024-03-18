@@ -15,5 +15,9 @@ class Enviroment:
         action = np.argmax(action)
         return self.enviroment.step(action)
 
+    def sample_action(self) -> int:
+        return self.enviroment.action_space.sample()
+
+
     def close(self):
         self.enviroment.close()
