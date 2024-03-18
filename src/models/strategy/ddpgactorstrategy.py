@@ -19,15 +19,3 @@ class DDPGActorStrategy(ModelStrategy):
 
     def init_optim(self, learning_rate: float):
         return optax.adam(learning_rate)
-        label_function = DDPGActorStrategy.map_function_to_dictionary(lambda key, _: "none" if key == "cnn" else "adam")
-        return optax.multi_transform(
-            {'adam': optax.sgd(learning_rate), 'none': optax.set_to_zero()}, label_function)
-
-    @staticmethod
-    def map_function_to_dictionary(fun):
-        def map_function(nested_dict):
-            return {label: (map_function(node) if isinstance(node, dict) else fun(label, node))
-                    for label, node in nested_dict.items()}
-
-        return map_function
-

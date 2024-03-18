@@ -1,10 +1,13 @@
+import jax
+
 from src.enviroment import Enviroment
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
-
+from jax import devices
 
 def main():
+    check_gpu()
     env = Enviroment()
     agent = Agent("atari-ddpg")
     run_n_episodes(100, agent, env)
@@ -33,6 +36,17 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter)
         results.save_episode()
         if terminated or truncated:
             return
+
+
+def check_gpu():
+    try:
+        gpu_devices = devices('gpu')
+        print("GPU is available.")
+        for gpu in gpu_devices:
+            print(gpu)
+    except RuntimeError:
+        print("No GPU available.")
+
 
 
 if __name__ == '__main__':

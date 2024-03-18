@@ -1,4 +1,3 @@
 from .atarinn import AtariNN
-from .cnnatari import CNNAtari
-from .mlpatari import MLPAtari
+from src.models.atari.base.mlpatari import MLPAtari
 from .actoratari import ActorAtari

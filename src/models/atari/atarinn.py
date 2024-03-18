@@ -3,7 +3,7 @@ import jax.numpy as jnp
 from jax import Array
 
 from src.models.atari.actoratari import CNNAtari
-from src.models.atari.mlpatari import MLPAtari
+from src.models.atari.base.mlpatari import MLPAtari
 
 
 class AtariNN(nn.Module):
@@ -22,4 +22,4 @@ class AtariNN(nn.Module):
         x = self.mlp(x)
         x = nn.relu(x)
         x = nn.Dense(self.output_dimensions)(x)
-        return jnp.reshape(x, (x.shape[0], ))
+        return x

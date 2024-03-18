@@ -1,10 +1,8 @@
 from src.agent.actor import ActorInterface
 from src.agent.critic import CriticInterface
-from src.models import ModelWrapper
+from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
 import numpy as np
-
-from src.resultwriter import ModelWriter
 
 
 class DDPGCritic(CriticInterface):
