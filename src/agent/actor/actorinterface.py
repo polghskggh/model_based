@@ -12,12 +12,11 @@ class ActorInterface:
         pass
 
     @abstractmethod
-    def update_model(self, state: np.ndarray[float], selected_actions: np.ndarray[float],
-                     action_grads: np.ndarray[float]):
+    def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
         pass
 
     @abstractmethod
-    def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
+    def update(self, grads: np.ndarray[float]):
         pass
 
     @abstractmethod

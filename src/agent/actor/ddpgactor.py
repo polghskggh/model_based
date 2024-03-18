@@ -21,12 +21,11 @@ class DDPGActor(ActorInterface):
         return DDPGActor.softmax_to_onehot(actions)
 
     def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
-        actions = self._model.forward(new_states)
+        actions = self._target_model.forward(new_states)
         return DDPGActor.softmax_to_onehot(actions)
 
-    def update_model(self, state: np.ndarray[float], selected_actions: np.ndarray[float],
-                     action_grads: np.ndarray[float]):
-        self._model.train_step(selected_actions + action_grads, state)
+    def update(self, grads: np.ndarray[float]):
+        self._model.apply_grads(grads)
         self._target_model.update_polyak(self._polyak, self._model)
 
     @staticmethod

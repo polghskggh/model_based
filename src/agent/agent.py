@@ -25,15 +25,15 @@ class Agent(AgentInterface):
         self._update_every: int = 50
         self._iteration: int = self._update_every
 
-    def _batch_update(self):
+    def _batch_update(self) -> tuple[np.ndarray[float], np.ndarray[float]]:
         training_sample: list[np.ndarray[float]] = self._replay_buffer.sample(self._batch_size)
         actor_actions = self._actor.calculate_actions(training_sample[2])
-        self._critic.update_model(
+        critic_grads = self._critic.update_model(
             training_sample[3], training_sample[0], training_sample[1],
             training_sample[2], actor_actions)
-        action_grads = self._critic.provide_feedback(training_sample[2], actor_actions)
-        self._actor.update_model(training_sample[2], actor_actions, action_grads)
-        self._critic.update_common_head(self._actor)
+
+        action_grads = self._critic.update_actor(self._actor, training_sample[0])
+        return critic_grads, action_grads
 
     def update_policy(self):
         self._replay_buffer.add_transition(self._old_state, self._selected_action, self._new_state, self._reward)
@@ -48,9 +48,15 @@ class Agent(AgentInterface):
             self._iteration += 1
             return
 
-        for _ in range(self._batches_per_update):
-            self._batch_update()
-            self._iteration = 0
+        critic_grads_sum, actor_grads_sum = self._batch_update()
+        for _ in range(self._batches_per_update - 1):
+            critic_grads, actor_grads = self._batch_update()
+            critic_grads_sum += critic_grads
+            actor_grads_sum += actor_grads
+
+        self._critic.update(critic_grads_sum / self._batches_per_update)
+        self._actor.update(actor_grads_sum / self._batches_per_update)
+        self._iteration = 0
 
     def select_action(self) -> np.ndarray[float]:
         if self._start_steps != 0:
