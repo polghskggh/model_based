@@ -6,6 +6,7 @@ from src.agent.agentinterface import AgentInterface
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 from jax import devices
 
+
 def main():
     check_gpu()
     env = Enviroment()
@@ -29,10 +30,10 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter)
     for _ in range(1000):
         action = agent.select_action()
         observation, reward, terminated, truncated, _ = env.step(action)
-        agent.receive_reward(reward)
+        agent.receive_reward(1)
         agent.receive_state(observation)
         agent.update_policy()
-        results.add_data(reward)   # for the purpose of analysis.
+        results.add_data(1)   # for the purpose of analysis.
         results.save_episode()
         if terminated or truncated:
             return
@@ -46,7 +47,6 @@ def check_gpu():
             print(gpu)
     except RuntimeError:
         print("No GPU available.")
-
 
 
 if __name__ == '__main__':

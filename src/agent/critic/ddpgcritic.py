@@ -14,14 +14,13 @@ class DDPGCritic(CriticInterface):
         self._discount_factor: float = discount_factor
         self._polyak: float = polyak
         self._action_dim: int = action_dim
+        print(self._model)
 
     def update_model(self, reward: np.ndarray[float], state: np.ndarray[float], action: np.ndarray[float],
                      next_state: np.ndarray[float], next_action: np.ndarray[float]):
 
         observed_values: np.ndarray[float] = (
-                reward + self._discount_factor * self._target_model.forward(next_state, next_action))
-        print(observed_values[0], "reward:", reward[0])
-        print(observed_values.shape, " vs ", self._target_model.forward(state, action).shape)
+                reward + self._discount_factor * self._target_model.forward(next_state, next_action).reshape(-1))
         self._model.train_step(observed_values, state, action)
         self.update_target()
 

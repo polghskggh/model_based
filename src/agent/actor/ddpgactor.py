@@ -14,17 +14,15 @@ class DDPGActor(ActorInterface):
         self._model: ModelWrapper = ModelWrapper(model, "actor")
         self._target_model: ModelWrapper = ModelWrapper(model, "actor")
         self._polyak: float = polyak
+        print(self._model)
 
     def approximate_best_action(self, state: np.ndarray[float]) -> np.ndarray[float]:
         actions = self._model.forward(state)
-        print(DDPGActor.softmax_to_onehot(actions))
-        return actions
+        return DDPGActor.softmax_to_onehot(actions)
 
     def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
         actions = self._target_model.forward(new_states)
-        print(DDPGActor.softmax_to_onehot(actions))
-        return actions
-
+        return DDPGActor.softmax_to_onehot(actions)
 
     def update_model(self, state: np.ndarray[float], selected_actions: np.ndarray[float],
                      action_grads: np.ndarray[float]):
