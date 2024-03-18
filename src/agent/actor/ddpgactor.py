@@ -1,11 +1,9 @@
-from .__init__ import ActorInterface
+from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
 from jax import vmap
 
 import numpy as np
-
-from ...resultwriter import ModelWriter
 
 
 class DDPGActor(ActorInterface):
@@ -30,7 +28,7 @@ class DDPGActor(ActorInterface):
 
     @staticmethod
     def softmax_to_onehot(logits: np.ndarray[float]) -> np.ndarray[float]:
-        return np.eye(logits.shape[-1])[logits.argmax(axis=-1)]
+        return np.eye(logits.shape[-1])[logits.argmax(axis=-1)] # TODO: change to sampling from distribution
 
     @property
     def model(self):

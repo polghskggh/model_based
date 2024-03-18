@@ -7,6 +7,7 @@ from jax import numpy as jnp
 
 from src.models.lossfuns import loss_funs
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
+from src.resultwriter import ModelWriter
 
 
 class ModelWrapper:
@@ -25,7 +26,7 @@ class ModelWrapper:
         loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
         self.model_writer.add_data(loss)
         self.model_writer.save_episode()
-        self.model_writer.flush_all()
+        ModelWriter.flush_all()
         return grads
 
     def forward(self, *x: np.ndarray[float]) -> np.ndarray[float] | float:
@@ -38,9 +39,10 @@ class ModelWrapper:
 
     # differentiate model with respect to the parameters of another model.
     def actor_grads(self, other_model, states: np.ndarray[float]) -> dict:
-        grad_fun = value_and_grad(self._loss_fun["compound_grad_asc"], 3)
-        loss, grads = grad_fun(self._model, self._params, other_model._model, other_model._params, states)
-        other_model.model_writer.add_data(loss)
+        grad_fun = value_and_grad(loss_funs["compound_grad_asc"], 3)
+        q_val, grads = grad_fun(self._model, self._params, other_model._model, other_model._params, states)
+        other_model.model_writer.add_data(q_val)
+        other_model.model_writer.save_episode()
         return grads
 
     def update_polyak(self, rho: float, other_model: "ModelWrapper"):

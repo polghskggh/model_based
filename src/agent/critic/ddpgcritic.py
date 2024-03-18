@@ -1,4 +1,4 @@
-from src.agent.actor import ActorInterface
+from src.agent.actor.actorinterface import ActorInterface
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
@@ -27,7 +27,7 @@ class DDPGCritic(CriticInterface):
         self._target_model.update_polyak(self._polyak, self._model)
 
     def provide_feedback(self, actor: ActorInterface, states: np.ndarray[float]) -> dict:
-        return self._model.actor_grads(actor.model(), states)
+        return self._model.actor_grads(actor.model, states)
 
     def update_common_head(self, actor: ActorInterface):
         actor.model.params["params"]["cnn"] = self._model.params["params"]["cnn"]

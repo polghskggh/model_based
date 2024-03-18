@@ -2,7 +2,9 @@ import numpy as np
 
 from src.agent.acstrategy import strategy, shapes
 from src.agent.agentinterface import AgentInterface
+from src.agent.actor.ddpgactor import DDPGActor
 from src.pod import ReplayBuffer
+from jax.tree_util import tree_map
 
 
 class Agent(AgentInterface):
@@ -28,11 +30,11 @@ class Agent(AgentInterface):
     def _batch_update(self) -> tuple[np.ndarray[float], np.ndarray[float]]:
         training_sample: list[np.ndarray[float]] = self._replay_buffer.sample(self._batch_size)
         actor_actions = self._actor.calculate_actions(training_sample[2])
-        critic_grads = self._critic.update_model(
+        critic_grads = self._critic.calculate_grads(
             training_sample[3], training_sample[0], training_sample[1],
             training_sample[2], actor_actions)
 
-        action_grads = self._critic.update_actor(self._actor, training_sample[0])
+        action_grads = self._critic.provide_feedback(self._actor, training_sample[0])
         return critic_grads, action_grads
 
     def update_policy(self):
@@ -51,17 +53,18 @@ class Agent(AgentInterface):
         critic_grads_sum, actor_grads_sum = self._batch_update()
         for _ in range(self._batches_per_update - 1):
             critic_grads, actor_grads = self._batch_update()
-            critic_grads_sum += critic_grads
-            actor_grads_sum += actor_grads
+            critic_grads_sum = Agent.sum_dicts(critic_grads_sum, critic_grads)
+            actor_grads_sum = Agent.sum_dicts(actor_grads_sum, actor_grads)
 
-        self._critic.update(critic_grads_sum / self._batches_per_update)
-        self._actor.update(actor_grads_sum / self._batches_per_update)
+        self._critic.update(tree_map(lambda x: x / self._batches_per_update, critic_grads_sum))
+        self._actor.update(tree_map(lambda x: -x / self._batches_per_update, actor_grads_sum))
         self._iteration = 0
 
     def select_action(self) -> np.ndarray[float]:
         if self._start_steps != 0:
             self._start_steps -= 1
             return Agent._random_action()
+
         self._selected_action = self._actor.approximate_best_action(self._new_state)
         return self._selected_action
 
@@ -73,5 +76,9 @@ class Agent(AgentInterface):
         self._new_state = state
 
     @staticmethod
+    def sum_dicts(dict1, dict2):
+        return tree_map(lambda x, y: x + y, dict1, dict2)
+
+    @staticmethod
     def _random_action():
-        return np.random.rand(4)
+        return DDPGActor.softmax_to_onehot(np.random.rand(4))
