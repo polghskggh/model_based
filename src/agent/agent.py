@@ -81,4 +81,4 @@ class Agent(AgentInterface):
 
     @staticmethod
     def _random_action():
-        return DDPGActor.softmax_to_onehot(np.random.rand(4))
+        return np.eye(4)[np.argmax(np.random.rand(4))]

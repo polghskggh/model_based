@@ -14,7 +14,6 @@ class DDPGCritic(CriticInterface):
         self._discount_factor: float = discount_factor
         self._polyak: float = polyak
         self._action_dim: int = action_dim
-        print(self._model)
 
     def calculate_grads(self, reward: np.ndarray[float], state: np.ndarray[float], action: np.ndarray[float],
                         next_state: np.ndarray[float], next_action: np.ndarray[float]) -> np.ndarray[float]:
@@ -28,6 +27,3 @@ class DDPGCritic(CriticInterface):
 
     def provide_feedback(self, actor: ActorInterface, states: np.ndarray[float]) -> dict:
         return self._model.actor_grads(actor.model, states)
-
-    def update_common_head(self, actor: ActorInterface):
-        actor.model.params["params"]["cnn"] = self._model.params["params"]["cnn"]

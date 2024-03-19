@@ -19,6 +19,6 @@ class CriticInterface:
         pass
 
     @abstractmethod
-    def update_target(self):
+    def update(self):
         pass
 
