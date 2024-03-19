@@ -25,8 +25,6 @@ class ModelWrapper:
     def train_step(self, y: np.ndarray[float], *x: np.ndarray[float]):
         loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
         self.model_writer.add_data(loss)
-        self.model_writer.save_episode()
-        ModelWriter.flush_all()
         return grads
 
     def forward(self, *x: np.ndarray[float]) -> np.ndarray[float] | float:
@@ -42,7 +40,6 @@ class ModelWrapper:
         grad_fun = value_and_grad(loss_funs["compound_grad_asc"], 3)
         q_val, grads = grad_fun(self._model, self._params, other_model._model, other_model._params, states)
         other_model.model_writer.add_data(q_val)
-        other_model.model_writer.save_episode()
         return grads
 
     def update_polyak(self, rho: float, other_model: "ModelWrapper"):

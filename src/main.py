@@ -19,7 +19,7 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: Enviroment):
     results = writer_instances["reward"]
     for episode in range(episodes):
         run_experiment(agent, env, results)
-        results.save_episode()                      # dynamically save gathered data
+        results.save_all()                      # dynamically save gathered data
         results.flush_all()
 
 
@@ -34,7 +34,6 @@ def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter)
         agent.receive_state(observation)
         agent.update_policy()
         results.add_data(reward)   # for the purpose of analysis.
-        results.save_episode()
         if terminated or truncated:
             return
 
