@@ -3,9 +3,11 @@ from flax import linen as nn
 from jax import random as random
 import optax
 from jax import value_and_grad, grad
+from jax import numpy as jnp
 
 from src.models.lossfuns import loss_funs
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
+from src.resultwriter import ModelWriter
 
 
 class ModelWrapper:
@@ -24,8 +26,8 @@ class ModelWrapper:
         loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
         self.model_writer.add_data(loss)
         self.model_writer.save_episode()
-        self.model_writer.flush_all()
-        self.apply_grads(grads)
+        ModelWriter.flush_all()
+        return grads
 
     def forward(self, *x: np.ndarray[float]) -> np.ndarray[float] | float:
         return self._model.apply(self._params, *x)
@@ -35,11 +37,16 @@ class ModelWrapper:
         opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, opt_grads)
 
-    def calculate_gradian_ascent(self, input_idx: int, *x: np.ndarray[float]) -> np.ndarray[float]:
-        return grad(loss_funs["grad_asc"], 2 + input_idx)(self._model, self._params, *x)
+    # differentiate model with respect to the parameters of another model.
+    def actor_grads(self, other_model, states: np.ndarray[float]) -> dict:
+        grad_fun = value_and_grad(loss_funs["compound_grad_asc"], 3)
+        q_val, grads = grad_fun(self._model, self._params, other_model._model, other_model._params, states)
+        other_model.model_writer.add_data(q_val)
+        other_model.model_writer.save_episode()
+        return grads
 
     def update_polyak(self, rho: float, other_model: "ModelWrapper"):
-        self._params = optax.incremental_update(self._params, other_model._params, 1 - rho)
+        self._params = optax.incremental_update(self._params, other_model._params, rho)
 
     def __str__(self):
         return self._model.tabulate(random.PRNGKey(0), *self._strategy.init_params(self._model))

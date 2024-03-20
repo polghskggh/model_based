@@ -1,11 +1,10 @@
-from .__init__ import ActorInterface
+from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
 from jax import vmap
+import jax.random as random
 
 import numpy as np
-
-from ...resultwriter import ModelWriter
 
 
 class DDPGActor(ActorInterface):
@@ -24,14 +23,18 @@ class DDPGActor(ActorInterface):
         actions = self._target_model.forward(new_states)
         return DDPGActor.softmax_to_onehot(actions)
 
-    def update_model(self, state: np.ndarray[float], selected_actions: np.ndarray[float],
-                     action_grads: np.ndarray[float]):
-        self._model.train_step(selected_actions + action_grads, state)
+    def update(self, grads: np.ndarray[float]):
+        self._model.apply_grads(grads)
         self._target_model.update_polyak(self._polyak, self._model)
 
     @staticmethod
     def softmax_to_onehot(logits: np.ndarray[float]) -> np.ndarray[float]:
-        return np.eye(logits.shape[-1])[logits.argmax(axis=-1)]
+        key = random.PRNGKey(0)
+        if logits.ndim == 1:
+            idx = random.choice(key, logits.shape[-1], p=logits)
+        else:
+            idx = vmap(random.choice, (None, None, None, None, 0))(key, logits.shape[-1], (), True, logits)
+        return np.eye(logits.shape[-1])[idx]
 
     @property
     def model(self):

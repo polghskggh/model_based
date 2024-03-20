@@ -1,4 +1,4 @@
-from src.agent.actor import ActorInterface
+from src.agent.actor.actorinterface import ActorInterface
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
@@ -16,19 +16,18 @@ class DDPGCritic(CriticInterface):
         self._action_dim: int = action_dim
         print(self._model)
 
-    def update_model(self, reward: np.ndarray[float], state: np.ndarray[float], action: np.ndarray[float],
-                     next_state: np.ndarray[float], next_action: np.ndarray[float]):
-
+    def calculate_grads(self, reward: np.ndarray[float], state: np.ndarray[float], action: np.ndarray[float],
+                        next_state: np.ndarray[float], next_action: np.ndarray[float]) -> np.ndarray[float]:
         observed_values: np.ndarray[float] = (
                 reward + self._discount_factor * self._target_model.forward(next_state, next_action).reshape(-1))
-        self._model.train_step(observed_values, state, action)
-        self.update_target()
+        return self._model.train_step(observed_values, state, action)
 
-    def update_target(self):
+    def update(self, grads: np.ndarray[float]):
+        self._model.apply_grads(grads)
         self._target_model.update_polyak(self._polyak, self._model)
 
-    def provide_feedback(self, state: np.ndarray[float], action: np.ndarray[float]) -> np.ndarray[float]:
-        return self._model.calculate_gradian_ascent(1, state, action)
+    def provide_feedback(self, actor: ActorInterface, states: np.ndarray[float]) -> dict:
+        return self._model.actor_grads(actor.model, states)
 
     def update_common_head(self, actor: ActorInterface):
         actor.model.params["params"]["cnn"] = self._model.params["params"]["cnn"]
