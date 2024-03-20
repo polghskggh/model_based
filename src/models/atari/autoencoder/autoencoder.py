@@ -1,11 +1,8 @@
 import flax.linen as nn
-import jax.numpy as jnp
 from jax import Array
 
-from src.models.atari.actoratari import CNNAtari
 from src.models.atari.autoencoder.decoder import Decoder
 from src.models.atari.autoencoder.encoder import Encoder
-from src.models.atari.base.mlpatari import MLPAtari
 
 
 class AutoEncoder(nn.Module):

@@ -7,3 +7,4 @@ jax~=0.4.23
 ale-py~=0.8.1
 gymnasium[atari]
 gymnasium[accept-rom-license]
+gymnasium[other]
