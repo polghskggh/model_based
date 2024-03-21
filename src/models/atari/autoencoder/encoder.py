@@ -4,14 +4,23 @@ from jax import Array
 
 # encoder
 class Encoder(nn.Module):
-    input_dimensions: tuple
-    output_dimensions: tuple
+    features: int
+    kernel: tuple
+    strides: tuple
+    layers: int
 
     @nn.compact
-    def __call__(self, x) -> Array:
-        x = nn.avg_pool(x, window_shape=(4, 4))
-        x = nn.Conv(features=9, kernel_size=(4, 4), strides=4)(x)
-        x = nn.avg_pool(x, window_shape=(2, 2))
-        x = nn.Conv(features=9, kernel_size=(4, 4), strides=4)(x)
-        x = nn.avg_pool(x, window_shape=(2, 2))
+    def __call__(self, x: Array) -> Array:
+        for layer_id in range(self.layers):
+            features = self.scaled_features(layer_id) # first 2 layers have less features
+            x = nn.Conv(features=features, kernel_size=self.kernel, strides=self.strides)(x)
+            x = nn.relu(x)
         return x
+
+    def scaled_features(self, layer_id: int):
+        if layer_id >= 2:
+            return self.features
+        if layer_id == 1:
+            return self.features // 2
+        if layer_id == 0:
+            return self.features // 4

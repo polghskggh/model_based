@@ -31,7 +31,7 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
 def run_experiment(agent: AgentInterface, env: gym.Env, results: ModelWriter):
     observation_old, _ = env.reset()
     autoencoder = ModelWrapper(AutoEncoder(shapes["atari-ddpg"][0], 1), "autoencoder")
-
+    print(autoencoder)
     for _ in range(1000):
         action = env.action_space.sample()
         observation_new, reward, terminated, truncated, _ = env.step(action)

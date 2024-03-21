@@ -13,7 +13,6 @@ class DDPGActor(ActorInterface):
         self._model: ModelWrapper = ModelWrapper(model, "actor")
         self._target_model: ModelWrapper = ModelWrapper(model, "actor")
         self._polyak: float = polyak
-        print(self._model)
 
     def approximate_best_action(self, state: np.ndarray[float]) -> np.ndarray[float]:
         actions = self._model.forward(state)

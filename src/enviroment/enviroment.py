@@ -1,7 +1,4 @@
-from typing import Any, SupportsFloat
-
 import gymnasium as gym
-import numpy as np
 from gymnasium.wrappers import FrameStack, ResizeObservation
 
 from src.enviroment.observationreshape import ObservationReshape

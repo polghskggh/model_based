@@ -5,7 +5,7 @@ from src.models.atari.actoratari import ActorAtari
 from math import prod
 
 shapes = {
-    "atari-ddpg": ((210, 160, 3), 4)
+    "atari-ddpg": ((105, 80, 12), 4)
 }
 
 
