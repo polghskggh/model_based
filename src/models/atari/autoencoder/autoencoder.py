@@ -26,9 +26,9 @@ class AutoEncoder(nn.Module):
     @nn.compact
     def __call__(self, image: Array, action: Array):
         embedded_image = self.pixel_embedding(image)
-        encoded = self.encoder(embedded_image)
+        encoded, skip = self.encoder(embedded_image)
         injected = self.injector(encoded, action)
-        decoded = self.decoder(injected)
+        decoded = self.decoder(injected, skip)
         logits = self.logits(decoded)
         return logits
 

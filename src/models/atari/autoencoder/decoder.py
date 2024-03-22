@@ -14,7 +14,7 @@ class Decoder(nn.Module):
         self.shape_list = [(4, 3), (7, 5), (14, 10), (27, 20), (53, 40), (105, 80)]
 
     @nn.compact
-    def __call__(self, x: Array) -> Array:
+    def __call__(self, x: Array, skip: list[Array]) -> Array:
         for layer_id in range(self.layers):
             features = self.scaled_features(layer_id) # first 2 layers have less features
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)

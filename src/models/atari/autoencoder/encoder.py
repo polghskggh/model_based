@@ -10,12 +10,14 @@ class Encoder(nn.Module):
     layers: int
 
     @nn.compact
-    def __call__(self, x: Array) -> Array:
+    def __call__(self, x: Array) -> tuple:
+        skip = []
         for layer_id in range(self.layers):
             features = self.scaled_features(layer_id) # first 2 layers have less features
             x = nn.Conv(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = nn.relu(x)
-        return x
+            skip.append(x)
+        return x, skip
 
     def scaled_features(self, layer_id: int):
         if layer_id >= 2:
