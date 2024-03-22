@@ -1,21 +1,22 @@
+import gym
 import jax
 
-from src.enviroment import Enviroment
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
+from src.enviroment import make_env
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 from jax import devices
 
 
 def main():
     check_gpu()
-    env = Enviroment()
+    env = make_env()
     agent = Agent("atari-ddpg")
     run_n_episodes(100, agent, env)
     env.close()
 
 
-def run_n_episodes(episodes: int, agent: AgentInterface, env: Enviroment):
+def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
     results = writer_instances["reward"]
     for episode in range(episodes):
         run_experiment(agent, env, results)
@@ -23,7 +24,7 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: Enviroment):
         results.flush_all()
 
 
-def run_experiment(agent: AgentInterface, env: Enviroment, results: ModelWriter):
+def run_experiment(agent: AgentInterface, env: gym.Env, results: ModelWriter):
     observation, _ = env.reset()
     agent.receive_state(observation)
 

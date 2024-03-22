@@ -12,7 +12,7 @@ class ActorAtari(nn.Module):
     output_dimensions: int
 
     def setup(self):
-        self.cnn = CNNAtari(self.input_dimensions, 10)
+        self.cnn = CNNAtari(1000)
 
     @nn.compact
     def __call__(self, x: Array):

@@ -12,9 +12,9 @@ class AtariNN(nn.Module):
     output_dimensions: int
 
     def setup(self):
-        self.bottleneck = 10
-        self.cnn = CNNAtari(self.input_dimensions, self.bottleneck)
-        self.mlp = MLPAtari(self.bottleneck + self.second_input, self.output_dimensions)
+        bottleneck = 1000
+        self.cnn = CNNAtari(bottleneck)
+        self.mlp = MLPAtari(bottleneck + self.second_input, self.output_dimensions)
 
     @nn.compact
     def __call__(self, image: Array, action: Array):

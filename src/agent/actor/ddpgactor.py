@@ -14,6 +14,7 @@ class DDPGActor(ActorInterface):
         self._target_model: ModelWrapper = ModelWrapper(model, "actor")
         self._polyak: float = polyak
         self._noise_scale: float = 0.02
+        print(self._model)
 
     def _noise(self, action: np.ndarray) -> np.ndarray:
         action += self._noise_scale
