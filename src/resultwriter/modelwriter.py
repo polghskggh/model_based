@@ -39,8 +39,13 @@ class ModelWriter:
         for instance in writer_instances.values():
             instance.flush_buffer()
 
+    @staticmethod
+    def save_all():
+        for instance in writer_instances.values():
+            instance.save_episode()
 
-writer_instances = {"actor": ModelWriter("actor", "actor_loss"),
+
+writer_instances = {"actor": ModelWriter("actor", "q_value"),
                     "critic": ModelWriter("critic", "critic_loss"),
                     "reward": ModelWriter("reward", "reward"),
                     "autoencoder": ModelWriter("autoencoder", "image_loss")}

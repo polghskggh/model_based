@@ -27,6 +27,3 @@ class DDPGCritic(CriticInterface):
 
     def provide_feedback(self, actor: ActorInterface, states: np.ndarray[float]) -> dict:
         return self._model.actor_grads(actor.model, states)
-
-    def update_common_head(self, actor: ActorInterface):
-        actor.model.params["params"]["cnn"] = self._model.params["params"]["cnn"]
