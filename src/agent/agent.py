@@ -1,10 +1,9 @@
 import numpy as np
+from jax.tree_util import tree_map
 
 from src.agent.acstrategy import strategy, shapes
 from src.agent.agentinterface import AgentInterface
-from src.agent.actor.ddpgactor import DDPGActor
 from src.pod import ReplayBuffer
-from jax.tree_util import tree_map
 
 
 class Agent(AgentInterface):
