@@ -1,16 +1,11 @@
-import gym
-import jax
-
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
 from src.enviroment import make_env
 from src.gpu import setup_gpu
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
-from jax import devices
 
 
 def main():
-    check_gpu()
     env = make_env()
     agent = Agent("atari-ddpg")
     run_n_episodes(100, agent, env)
