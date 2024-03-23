@@ -3,6 +3,7 @@ from src.agent.agentinterface import AgentInterface
 from src.enviroment import make_env
 from src.gpu import setup_gpu
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
+from gymnasium import Env
 
 
 def main():
@@ -12,7 +13,7 @@ def main():
     env.close()
 
 
-def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
+def run_n_episodes(episodes: int, agent: AgentInterface, env: Env):
     results = writer_instances["reward"]
     for episode in range(episodes):
         run_experiment(agent, env, results)
@@ -20,7 +21,7 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
         results.flush_all()
 
 
-def run_experiment(agent: AgentInterface, env: gym.Env, results: ModelWriter):
+def run_experiment(agent: AgentInterface, env: Env, results: ModelWriter):
     observation, _ = env.reset()
     agent.receive_state(observation)
 
