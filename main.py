@@ -4,6 +4,7 @@ import jax
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
 from src.enviroment import make_env
+from src.gpu import setup_gpu
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 from jax import devices
 
@@ -39,15 +40,6 @@ def run_experiment(agent: AgentInterface, env: gym.Env, results: ModelWriter):
             return
 
 
-def check_gpu():
-    try:
-        gpu_devices = devices('gpu')
-        print("GPU is available.")
-        for gpu in gpu_devices:
-            print(gpu)
-    except RuntimeError:
-        print("No GPU available.")
-
-
 if __name__ == '__main__':
+    setup_gpu()
     main()
