@@ -15,14 +15,18 @@ class Decoder(nn.Module):
 
     @nn.compact
     def __call__(self, x: Array, skip: list[Array]) -> Array:
+        skip.reverse()
         for layer_id in range(self.layers):
             features = self.scaled_features(layer_id) # first 2 layers have less features
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = self.scale_image(x, layer_id)
             x = nn.relu(x)
+            print(x.shape, skip[layer_id].shape)
+            x = nn.LayerNorm()(x + skip[layer_id])
         return x
 
     def scaled_features(self, layer_id: int):
+        print(layer_id)
         if layer_id < 4:
             return self.features
         if layer_id == 4:
