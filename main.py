@@ -38,7 +38,6 @@ def run_experiment(agent: AgentInterface, env: Env, results: ModelWriter):
         observation, last_target = observation
 
         data_gatherer.add_teacher(reward, last_target)
-        data_gatherer.flush_buffer()
 
         agent.receive_reward(reward)
         agent.receive_state(observation)
