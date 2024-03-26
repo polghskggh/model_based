@@ -1,7 +1,7 @@
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
 from src.enviroment import make_env
-from src.gpu import setup_gpu
+from src.gpu import setup_gpu, check_gpu
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 from gymnasium import Env
 
@@ -37,5 +37,5 @@ def run_experiment(agent: AgentInterface, env: Env, results: ModelWriter):
 
 
 if __name__ == '__main__':
-    setup_gpu()
+    check_gpu()
     main()
