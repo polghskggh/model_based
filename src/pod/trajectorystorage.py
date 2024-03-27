@@ -35,6 +35,6 @@ class TrajectoryStorage:
     def add_teacher(self, reward, next_frame):
         self.rewards.append(reward)
         self.next_frames.append(next_frame)
-        if self.size == 1000:
+        if self.size == 50:
             self.flush_buffer()
             self.size = 0
