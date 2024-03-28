@@ -25,7 +25,7 @@ def run_experiment(agent: AgentInterface, env: Env, results: ModelWriter):
     observation, _ = env.reset()
     agent.receive_state(observation)
 
-    for _ in range(1000):
+    for _ in range(5000):
         action = agent.select_action()
         observation, reward, terminated, truncated, _ = env.step(action)
         agent.receive_reward(reward)
