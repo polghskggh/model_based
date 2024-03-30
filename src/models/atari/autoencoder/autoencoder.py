@@ -32,3 +32,6 @@ class AutoEncoder(nn.Module):
         logits = self.logits(decoded)
         return logits
 
+    @staticmethod
+    def turn_into_batch(x: Array) -> Array:
+        return x.reshape(1, *x.shape) if x.ndim == 3 else x
