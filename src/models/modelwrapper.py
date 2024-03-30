@@ -1,9 +1,8 @@
 import numpy as np
+import optax
 from flax import linen as nn
 from jax import random as random
-import optax
-from jax import value_and_grad, grad
-from jax import numpy as jnp
+from jax import value_and_grad
 
 from src.models.lossfuns import loss_funs
 from src.models.strategy.modelstrategyfactory import model_strategy_factory

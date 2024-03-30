@@ -1,6 +1,4 @@
 import gym
-import jax
-import numpy as np
 
 from src.agent.acstrategy import shapes
 from src.agent.agent import Agent
