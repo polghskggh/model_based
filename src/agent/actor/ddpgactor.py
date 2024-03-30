@@ -1,3 +1,5 @@
+from numpy import ndarray
+
 from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
@@ -13,18 +15,16 @@ class DDPGActor(ActorInterface):
         self._model: ModelWrapper = ModelWrapper(model, "actor")
         self._target_model: ModelWrapper = ModelWrapper(model, "actor")
         self._polyak: float = polyak
-        self._noise_scale: float = 0.02
 
     def _noise(self, action: np.ndarray) -> np.ndarray:
-        action += self._noise_scale
         return np.exp(action) / np.sum(np.exp(action), axis=-1)
 
-    def approximate_best_action(self, state: np.ndarray[float]) -> np.ndarray[float]:
+    def approximate_best_action(self, state: np.ndarray[float]) -> ndarray[ndarray[float]]:
         actions = self._model.forward(state)
         actions = self._noise(actions)
         return DDPGActor.softmax_to_onehot(actions)
 
-    def calculate_actions(self, new_states: np.ndarray[float]) -> np.ndarray[float]:
+    def calculate_actions(self, new_states: np.ndarray[float]) -> ndarray[ndarray[float]]:
         actions = self._target_model.forward(new_states)
         return DDPGActor.softmax_to_onehot(actions)
 
