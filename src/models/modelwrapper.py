@@ -19,7 +19,6 @@ class ModelWrapper:
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
         self.model_writer = self._strategy.init_writer()
-        self.debug = strategy
 
     # forward pass + backwards pass
     def train_step(self, y: np.ndarray[float], *x: np.ndarray[float]):
