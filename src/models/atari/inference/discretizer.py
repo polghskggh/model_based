@@ -1,33 +1,34 @@
 import flax.linen as nn
 from jax import Array
-from jax import random, vmap
+from jax import vmap
+from numpy import random
 from jax import numpy as jnp
+
 
 class Discretizer(nn.Module):
     def setup(self):
-        self.discretizer = nn.Dense(256)
-        self.key = random.PRNGKey(0)
+        self.backprop = False
 
-    def _noise(self, x: Array) -> Array:
-        return x + random.normal(self.key, x.shape)
+    @staticmethod
+    def _noise(x: Array) -> Array:
+        return x + random.normal(x.shape)
 
     @nn.compact
     def __call__(self, continuous: Array):
         continuous = self._noise(continuous)
-        v1 = vmap(vmap(self.threshold))(continuous)
-        v2 = continuous > jnp.zeros(continuous)
 
-        if random.rand(self.key) > 0.5:
-            return v1
+        if self.differentiable():
+            return Discretizer.threshold(continuous)
         else:
-            return v2
-
-
+            return continuous > jnp.zeros(continuous)
 
     @staticmethod
-    def threshold(x: int) -> int:
-        return max(0, min(1, 1.2 * nn.sigmoid(x) - 0.1))
+    def threshold(x: Array) -> Array:
+        return jnp.maximum(jnp.minimum(1.2 * nn.sigmoid(x) - 0.1, 1), 0)
 
-    def test_mod(self):
-        pass
+    def differentiable(self) -> bool:
+        if self.backprop:
+            return True
+
+        return random.rand() > 0.5
 

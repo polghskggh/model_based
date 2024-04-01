@@ -4,7 +4,6 @@ import jax.numpy as jnp
 
 from src.models.atari.autoencoder.pixelembedding import PixelEmbedding
 from src.models.atari.inference.discretizer import Discretizer
-from src.models.atari.inference.scaledlinear import ScaledLinear
 
 
 class ConvolutionalInference(nn.Module):
