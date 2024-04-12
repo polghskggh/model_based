@@ -6,6 +6,10 @@ from src.enviroment.onehotaction import OneHotAction
 
 
 def make_env() -> gym.Env:
+    """
+    Create the Breakout environment with the necessary wrappers
+    :return: Breakout environment
+    """
     env = gym.make("ALE/Breakout-v5", render_mode="human")
     env = ResizeObservation(env, shape=(105, 80))
     env = FrameStack(env, num_stack=4)

@@ -1,6 +1,7 @@
 import optax
 from flax import linen as nn
 
+from src.models.lossfuns import cross_entropy_loss
 from src.models.strategy.modelstrategy import ModelStrategy
 from src.resultwriter import ModelWriter
 from src.resultwriter.modelwriter import writer_instances
@@ -8,9 +9,11 @@ from jax import numpy as jnp
 
 
 class AutoEncoderStrategy(ModelStrategy):
-
     def __init__(self):
         super().__init__()
+
+    def loss_fun(self):
+        return cross_entropy_loss
 
     def init_writer(self) -> ModelWriter:
         return writer_instances["autoencoder"]

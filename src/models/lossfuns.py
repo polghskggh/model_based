@@ -11,7 +11,5 @@ def compound_grad_asc(model_fixed, params_fixed, model_deriv, params_deriv, stat
     return -jnp.mean(q_values)
 
 
-loss_funs = {
-    "mse": mean_squared_error,
-    "compound_grad_asc": compound_grad_asc
-}
+def cross_entropy_loss(model, params, teacher_outputs, *inputs):
+    return -jnp.mean(teacher_outputs * jnp.log(model.apply(params, *inputs)))

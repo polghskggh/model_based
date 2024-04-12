@@ -19,3 +19,7 @@ class ModelStrategy:
     @abstractmethod
     def init_optim(self, learning_rate: float):
         pass
+
+    @abstractmethod
+    def loss_fun(self):
+        pass

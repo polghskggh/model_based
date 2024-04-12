@@ -21,12 +21,10 @@ class Decoder(nn.Module):
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = self.scale_image(x, layer_id)
             x = nn.relu(x)
-            print(x.shape, skip[layer_id].shape)
             x = nn.LayerNorm()(x + skip[layer_id])
         return x
 
     def scaled_features(self, layer_id: int):
-        print(layer_id)
         if layer_id < 4:
             return self.features
         if layer_id == 4:

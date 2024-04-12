@@ -1,5 +1,5 @@
 import flax.linen as nn
-from jax import Array
+from jax import Array, vmap
 
 from src.models.atari.autoencoder.decoder import Decoder
 from src.models.atari.autoencoder.encoder import Encoder
@@ -22,15 +22,20 @@ class AutoEncoder(nn.Module):
         self.decoder = Decoder(self.features, self.kernel, self.strides, self.layers)
         self.injector = Injector()
         self.logits = LogitsLayer()
+        self.softmax = vmap(vmap(nn.softmax))
 
     @nn.compact
     def __call__(self, image: Array, action: Array):
+        image = self.turn_into_batch(image)
+        action = self.turn_into_batch(action)
+
         embedded_image = self.pixel_embedding(image)
         encoded, skip = self.encoder(embedded_image)
         injected = self.injector(encoded, action)
         decoded = self.decoder(injected, skip)
         logits = self.logits(decoded)
-        return logits
+        prob_distribution = self.softmax(logits)
+        return prob_distribution
 
     @staticmethod
     def turn_into_batch(x: Array) -> Array:
