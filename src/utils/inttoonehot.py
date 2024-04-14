@@ -2,17 +2,12 @@ from ctypes import Array
 
 import jax.numpy as jnp
 from jax import vmap
+from jax.nn import one_hot
 
 
 def image_to_onehot(image: Array[Array[int]]) -> Array[Array[Array[int]]]:
     """
     Convert an image to a one-hot image
     """
-    return vmap(vmap(int_to_onehot))(image)
-
-
-def int_to_onehot(category: int) -> Array[int]:
-    """
-    Convert an integer category to a one-hot vector
-    """
-    return jnp.eye(256)[category]
+    print(image.shape)
+    return vmap(one_hot, (0, None))(image, 256)

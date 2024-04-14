@@ -12,4 +12,3 @@ class Injector(nn.Module):
         inject_add = nn.Dense(features, name="actions_add")(injection)
         x += inject_add
         return x
-    # TODO: make it work on batches

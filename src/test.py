@@ -15,11 +15,22 @@ from src.utils.inttoonehot import image_to_onehot
 from src.utils.tiling import tile_image
 
 
+def gen_autoencoder():
+    """
+    Generate the autoencoder
+    :return: Wrapper for the autoencoder
+    """
+    return ModelWrapper(AutoEncoder(*shapes["atari-ddpg"]), "autoencoder")
+
+
 def setup():
+    """
+    Setup the environment and the autoencoder
+    """
     env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
     env = ResizeObservation(env, shape=(105, 80))
     observation, _ = env.reset()
-    autoencoder = ModelWrapper(AutoEncoder(*shapes["atari-ddpg"]), "autoencoder")
+    autoencoder = gen_autoencoder()
     stack, action = model_strategy_factory("autoencoder").init_params(autoencoder._model)
     observation = image_to_onehot(tile_image(observation))
     return env, autoencoder, stack, action, observation
@@ -60,8 +71,27 @@ def test_autoencoder_actions():
     print(autoencoder.forward(stack, action)[0, 0, 0, 5] - autoencoder.forward(stack, action2)[0, 0, 0, 5])
 
 
+def test_on_loaded_data():
+    """
+    Test the autoencoder on loaded data
+    """
+    autoencoder = gen_autoencoder()
+    files = jnp.load("../data/data_0.npz")
+    stack, action, observation = (jnp.asarray(files["frame_stack"]),
+                                  jnp.asarray(files["action"]),
+                                  jnp.asarray(files["next_frame"]))
+
+    observation = vmap(tile_image)(observation)
+    observation = vmap(image_to_onehot)(observation)
+    for _ in range(10):
+        grads = autoencoder.train_step(observation[:10], stack[:10], action[:10])
+        autoencoder.apply_grads(grads)
+
+    print("done")
+
+
 def test():
-    test_autoencoder_actions()
+    test_on_loaded_data()
 
 
 if __name__ == '__main__':
