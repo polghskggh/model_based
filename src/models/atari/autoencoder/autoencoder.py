@@ -27,7 +27,7 @@ class AutoEncoder(nn.Module):
         self.softmax = vmap(vmap(nn.softmax))
 
     @nn.compact
-    def __call__(self, image: Array, action: Array):
+    def __call__(self, image: Array, action: Array, latent: Array = None) -> Array:
         image = self.turn_into_batch(image)
         action = self.turn_into_batch(action)
 

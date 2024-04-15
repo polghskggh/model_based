@@ -19,6 +19,7 @@ class ModelWrapper:
         self._loss_fun = self._strategy.loss_fun()
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
+        self._trainer = self._strategy.init_trainer(self._model)
         self.model_writer = self._strategy.init_writer()
 
     # forward pass + backwards pass
@@ -29,21 +30,18 @@ class ModelWrapper:
         self.model_writer.save_episode()
         return grads
 
+    # forward pass
     def forward(self, *x: Array[float]) -> Array[float] | float:
-        return self._model.apply(self._params, *x)
+        return self._model.apply_strategy(self._params, *x)
 
     # apply gradians to the model
     def apply_grads(self, grads: Array[float]):
         opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, opt_grads)
 
-    # differentiate model with respect to the parameters of another model.
-    def actor_grads(self, other_model: Self, states: np.ndarray[float]) -> dict:
-        grad_fun = value_and_grad(compound_grad_asc, 3)
-        q_val, grads = grad_fun(self._model, self._params, other_model._model, other_model._params, states)
-        other_model.model_writer.add_data(q_val)
-        other_model.model_writer.save_episode()
-        return grads
+    # use models trainer for more complex training
+    def specific_training(self, *data):
+        return self._trainer.train_step(self._params, *data)
 
     def update_polyak(self, rho: float, other_model: Self):
         self._params = optax.incremental_update(self._params, other_model._params, rho)

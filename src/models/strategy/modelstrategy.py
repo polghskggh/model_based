@@ -23,3 +23,7 @@ class ModelStrategy:
     @abstractmethod
     def loss_fun(self):
         pass
+
+    # Trainer for more complex training procedures
+    def init_trainer(self, model: nn.Module):
+        pass

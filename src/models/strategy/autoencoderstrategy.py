@@ -3,6 +3,7 @@ from flax import linen as nn
 
 from src.models.lossfuns import cross_entropy_loss
 from src.models.strategy.modelstrategy import ModelStrategy
+from src.models.trainer.saetrainer import SAETrainer
 from src.resultwriter import ModelWriter
 from src.resultwriter.modelwriter import writer_instances
 from jax import numpy as jnp
@@ -25,3 +26,5 @@ class AutoEncoderStrategy(ModelStrategy):
     def init_optim(self, learning_rate: float):
         return optax.adam(learning_rate)
 
+    def init_trainer(self, model: nn.Module):
+        return SAETrainer(model)
