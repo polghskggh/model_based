@@ -1,17 +1,11 @@
 import flax.linen as nn
 from jax import Array
-from jax import vmap
-from numpy import random
 from jax import numpy as jnp
+from numpy import random
 
 
 class Discretizer(nn.Module):
-    def setup(self):
-        self.backprop = False
-
-    @staticmethod
-    def _noise(x: Array) -> Array:
-        return x + random.normal(x.shape)
+    backprop: bool
 
     @nn.compact
     def __call__(self, continuous: Array):
@@ -20,7 +14,11 @@ class Discretizer(nn.Module):
         if self.differentiable():
             return Discretizer.threshold(continuous)
         else:
-            return continuous > jnp.zeros(continuous)
+            return jnp.where(continuous < 0, 1, 0)
+
+    @staticmethod
+    def _noise(x: Array) -> Array:
+        return x + random.normal(size=x.shape)
 
     @staticmethod
     def threshold(x: Array) -> Array:

@@ -1,44 +1,49 @@
+import gymnasium as gym
+import jax.numpy as jnp
+from gymnasium.wrappers import ResizeObservation
 from jax import vmap
 
-from src.agent.acstrategy import shapes
+from src.agent.acstrategy import Shape
 from src.enviroment import make_env
 from src.models.atari.autoencoder.autoencoder import AutoEncoder
+from src.models.atari.simple.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
-import pandas as pd
-import gymnasium as gym
-from gymnasium.wrappers import ResizeObservation
-
-import jax.numpy as jnp
-
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
+from src.models.trainer.saetrainer import SAETrainer
 from src.utils.inttoonehot import image_to_onehot
 from src.utils.tiling import tile_image
 
 
-def gen_autoencoder():
+def gen_autoencoder(stochastic: bool):
     """
     Generate the autoencoder
     :return: Wrapper for the autoencoder
     """
-    return ModelWrapper(AutoEncoder(*shapes["atari-ddpg"]), "autoencoder")
+    if stochastic:
+        return ModelWrapper(StochasticAutoencoder(*Shape()), "stochasticautoencoder")
+
+    return ModelWrapper(AutoEncoder(*Shape()), "autoencoder")
 
 
-def setup():
+def setup(stochastic: bool = False):
     """
     Setup the environment and the autoencoder
     """
+    e = make_env()
+    e.close()
     env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
     env = ResizeObservation(env, shape=(105, 80))
+
     observation, _ = env.reset()
-    autoencoder = gen_autoencoder()
-    stack, action = model_strategy_factory("autoencoder").init_params(autoencoder._model)
+    autoencoder = gen_autoencoder(stochastic)
+    stack, action = model_strategy_factory("autoencoder").init_params(autoencoder.model)
     observation = image_to_onehot(tile_image(observation))
     return env, autoencoder, stack, action, observation
 
 
-def test_autoencoder():
+def test_deterministic_autoencoder():
     """
-    Test the autoencoder on dummy input
+    Test the deterministic autoencoder on dummy input
     """
     env, autoencoder, stack, action, observation = setup()
     for i in range(100):
@@ -49,10 +54,10 @@ def test_autoencoder():
     env.close()
 
 
-def test_autoencoder_actions():
+def test_deterministic_autoencoder_actions():
     """
-    Test the autoencoder on dummy input with different actions
-    Does the autoencoder learn to differentiate between actions?
+    Test the deterministic autoencoder on dummy input with different actions
+    Does the deterministic autoencoder learn to differentiate between actions?
     """
     env, autoencoder, stack, action, observation = setup()
     action = jnp.array([1, 0, 0, 0])
@@ -71,7 +76,7 @@ def test_autoencoder_actions():
     print(autoencoder.forward(stack, action)[0, 0, 0, 5] - autoencoder.forward(stack, action2)[0, 0, 0, 5])
 
 
-def test_on_loaded_data():
+def test_deterministic_on_loaded_data():
     """
     Test the autoencoder on loaded data
     """
@@ -90,8 +95,20 @@ def test_on_loaded_data():
     print("done")
 
 
+def test_stochastic_autoencoder():
+    """
+    Test the autoencoder on dummy input
+    """
+    env, autoencoder, stack, action, observation = setup(stochastic=True)
+    trainer = SAETrainer(autoencoder.model)
+    for i in range(5):
+        params = trainer.train_step(autoencoder.params, stack, action, observation)
+        autoencoder.params = params
+    env.close()
+
+
 def test():
-    test_on_loaded_data()
+    test_stochastic_autoencoder()
 
 
 if __name__ == '__main__':

@@ -2,6 +2,8 @@ from abc import abstractmethod
 
 import numpy as np
 
+from src.models.modelwrapper import ModelWrapper
+
 
 class ActorInterface:
     def __init__(self):
@@ -20,5 +22,5 @@ class ActorInterface:
         pass
 
     @abstractmethod
-    def model(self):
+    def model(self) -> ModelWrapper:
         pass

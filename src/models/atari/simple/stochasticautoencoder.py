@@ -6,10 +6,14 @@ from src.models.atari.autoencoder.autoencoder import AutoEncoder
 from src.models.atari.inference.bitpredictior import BitPredictor
 
 
-class StochasticAutoEncoder(nn.Module):
+class StochasticAutoencoder(nn.Module):
+    input_dimensions: tuple
+    second_input: int
+    bits: int = 128
+
     def setup(self):
-        self.autoencoder = AutoEncoder()
-        self.bit_predictor = BitPredictor(128)
+        self.autoencoder = AutoEncoder(self.input_dimensions, self.second_input)
+        self.bit_predictor = BitPredictor(self.bits)
 
     @nn.compact
     def __call__(self, stack: Array, actions: Array):

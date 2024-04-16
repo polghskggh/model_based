@@ -1,6 +1,6 @@
 import gymnasium as gym
 
-from src.agent.acstrategy import shapes
+from src.agent.acstrategy import Shape
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
 from src.enviroment import make_env
@@ -28,7 +28,7 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
 
 def run_experiment(agent: AgentInterface, env: gym.Env, results: ModelWriter):
     observation_old, _ = env.reset()
-    autoencoder = ModelWrapper(AutoEncoder(shapes["atari-ddpg"][0], 1), "autoencoder")
+    autoencoder = ModelWrapper(AutoEncoder(Shape.shape[0], 1), "autoencoder")
     for _ in range(1000):
         action = env.action_space.sample()
         observation_new, reward, terminated, truncated, _ = env.step(action)

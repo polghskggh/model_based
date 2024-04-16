@@ -9,5 +9,4 @@ def image_to_onehot(image: Array[Array[int]]) -> Array[Array[Array[int]]]:
     """
     Convert an image to a one-hot image
     """
-    print(image.shape)
     return vmap(one_hot, (0, None))(image, 256)

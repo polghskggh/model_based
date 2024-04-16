@@ -1,7 +1,12 @@
 from abc import abstractmethod
-import flax.linen as nn
+from typing import Tuple
 
+import flax.linen as nn
+import optax
+
+from src.models.lossfuns import mean_squared_error
 from src.resultwriter import ModelWriter
+from src.resultwriter.modelwriter import writer_instances
 
 
 class ModelStrategy:
@@ -9,21 +14,19 @@ class ModelStrategy:
         pass
 
     @abstractmethod
-    def init_writer(self) -> ModelWriter:
-        pass
-
-    @abstractmethod
     def init_params(self, model: nn.Module) -> tuple:
         pass
 
     @abstractmethod
+    def batch_dims(self) -> Tuple:
+        pass
+
+    def init_writer(self) -> ModelWriter:
+        return writer_instances["mock"]
+
     def init_optim(self, learning_rate: float):
-        pass
+        return optax.adam(learning_rate)
 
-    @abstractmethod
     def loss_fun(self):
-        pass
+        return mean_squared_error
 
-    # Trainer for more complex training procedures
-    def init_trainer(self, model: nn.Module):
-        pass

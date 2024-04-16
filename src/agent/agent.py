@@ -1,8 +1,9 @@
 import numpy as np
 
-from src.agent.acstrategy import strategy, shapes
+from src.agent.acstrategy import Shape
 from src.agent.agentinterface import AgentInterface
 from src.agent.actor.ddpgactor import DDPGActor
+from src.agent.critic import DDPGCritic
 from src.pod import ReplayBuffer
 from jax.tree_util import tree_map
 
@@ -10,14 +11,14 @@ from jax.tree_util import tree_map
 class Agent(AgentInterface):
     def __init__(self, agent_type: str):
         super().__init__()
-        self._old_state: np.ndarray[float] = np.array(shapes[agent_type][0], float)
-        self._new_state: np.ndarray[float] = np.array(shapes[agent_type][0], float)
-        self._selected_action: np.ndarray[float] = np.zeros(shapes[agent_type][1])
+        self._old_state: np.ndarray[float] = np.array(Shape.shape[0], float)
+        self._new_state: np.ndarray[float] = np.array(Shape.shape[0], float)
+        self._selected_action: np.ndarray[float] = np.zeros(Shape.shape[1])
         self._reward: float = 0
 
-        self._actor, self._critic = strategy[agent_type]
+        self._actor, self._critic = DDPGActor(*Shape.shape), DDPGCritic(*Shape.shape)
 
-        self._replay_buffer: ReplayBuffer = ReplayBuffer(shapes[agent_type][0], shapes[agent_type][1])
+        self._replay_buffer: ReplayBuffer = ReplayBuffer(Shape.shape[0], Shape.shape[1])
         self._batch_size: int = 100
 
         self._batches_per_update: int = 5
@@ -28,7 +29,7 @@ class Agent(AgentInterface):
         self._iteration: int = self._update_every
 
     def _batch_update(self) -> tuple[np.ndarray[float], np.ndarray[float]]:
-        training_sample: list[np.ndarray[float]] = self._replay_buffer.sample(self._batch_size)
+        training_sample = self._replay_buffer.sample(self._batch_size)
         actor_actions = self._actor.calculate_actions(training_sample[2])
         critic_grads = self._critic.calculate_grads(
             training_sample[3], training_sample[0], training_sample[1],

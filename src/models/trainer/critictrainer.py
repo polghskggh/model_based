@@ -15,7 +15,7 @@ class CriticTrainer(Trainer):
 
     def train_step(self, params, other_model: ModelWrapper, states: Array[float]):
         grad_fun = value_and_grad(CriticTrainer.compound_grad_asc, 3)
-        q_val, grads = grad_fun(params, other_model._model, other_model._params, states)
+        q_val, grads = grad_fun(params, other_model.model, other_model.params, states)
         other_model.model_writer.add_data(q_val)
         other_model.model_writer.save_episode()
         return grads

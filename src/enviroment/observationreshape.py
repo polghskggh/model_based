@@ -1,8 +1,15 @@
-from gymnasium import ObservationWrapper
 import numpy as np
+from gym import Space
+from gymnasium import ObservationWrapper
 
 
 class ObservationReshape(ObservationWrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.observation_space = Space(shape=env.observation_space.shape[1:3] +
+                                       (env.observation_space.shape[0] * env.observation_space.shape[3], ),
+                                       dtype=env.observation_space.dtype)
+
     def observation(self, observation: "LazyFrames"):
         """
         transform observation from (Stack, Height, Width, Channel)
