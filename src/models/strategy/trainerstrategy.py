@@ -18,7 +18,7 @@ class StochasticAETrainerStrategy(ModelStrategy):
                 jnp.ones(model.third_input, dtype=jnp.float32))
 
     def batch_dims(self):
-        return (4, 2, 4), 4
+        return (4, 2, 4), (4, )
 
 
 class StochasticAEStratgy(ModelStrategy):
@@ -30,7 +30,7 @@ class StochasticAEStratgy(ModelStrategy):
                 jnp.ones(model.second_input, dtype=jnp.float32))
 
     def batch_dims(self):
-        return (4, 2), 4
+        return (4, 2), (4, )
 
 
 class InferenceStrategy(ModelStrategy):
@@ -43,7 +43,7 @@ class InferenceStrategy(ModelStrategy):
                 jnp.ones(model.third_input, dtype=jnp.float32))
 
     def batch_dims(self) -> tuple:
-        return (4, 2, 4), 2
+        return (4, 2, 4), (2, )
 
 
 class BitPredictorStrategy(ModelStrategy):
@@ -51,7 +51,7 @@ class BitPredictorStrategy(ModelStrategy):
         super().__init__()
 
     def init_params(self, model):
-        return model.initialize_carry(jr.PRNGKey(0), (1, )), jnp.ones(1)
+        return ()
 
     def batch_dims(self) -> tuple:
         return None, None

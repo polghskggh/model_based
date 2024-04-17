@@ -22,9 +22,10 @@ class ModelWrapper:
 
     # forward pass + backwards pass
     def train_step(self, y: Array[float], *x: Array[float]):
-        in_dims, out_dims = self._strategy.batch_dims()
-        x = self.batch_input(*x)
-        y = transform_to_batch(y, out_dims)
+        in_dim, out_dim = self._strategy.batch_dims()
+        x = self.batch(x, in_dim)
+        y = self.batch((y, ), out_dim)
+
         loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
         self.model_writer.add_data(loss)
         self.model_writer.save_episode()
@@ -32,15 +33,8 @@ class ModelWrapper:
 
     # forward pass
     def forward(self, *x: Array[float]) -> Array[float]:
-        x = self.batch_input(*x)
-        return self._model.apply_strategy(self._params, *x)
-
-    def batch_input(self, *x: Array[float]):
-        in_dims, _ = self._strategy.batch_dims()
-        if in_dims is None:
-            return x
-
-        return (transform_to_batch(input, in_dim) for input, in_dim in zip(x, in_dims))
+        x = self.batch_input(x)
+        return self._model.apply(self._params, *x)
 
     # apply gradians to the model
     def apply_grads(self, grads: Array[float]):
@@ -51,7 +45,7 @@ class ModelWrapper:
         self._params = optax.incremental_update(self._params, other_model._params, rho)
 
     def __str__(self):
-        return self._model.tabulate(random.PRNGKey(0), *self._strategy.init_params(self._model))
+        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)))
 
     @property
     def model(self):
@@ -64,3 +58,15 @@ class ModelWrapper:
     @params.setter
     def params(self, params):
         self._params = params
+
+    def batch_input(self, *data):
+        in_dim, _ = self._strategy.batch_dims()
+        return self.batch(data, in_dim)
+
+    @staticmethod
+    def batch(data, dims):
+        if dims is None:
+            return data
+
+        return (transform_to_batch(datum, dim) for datum, dim in zip(data, dims))
+

@@ -14,7 +14,7 @@ class DDPGCriticStrategy(ModelStrategy):
                 jnp.ones(model.second_input, dtype=jnp.float32))
 
     def batch_dims(self) -> tuple:
-        return (4, 2), 2
+        return (4, 2), (2, )
 
     def init_writer(self):
         return writer_instances["critic"]

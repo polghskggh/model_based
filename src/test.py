@@ -10,7 +10,7 @@ from src.models.atari.simple.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.models.trainer.saetrainer import SAETrainer
-from src.utils.inttoonehot import image_to_onehot
+from src.utils.inttoonehot import tiles_to_onehot
 from src.utils.tiling import tile_image
 
 
@@ -34,18 +34,18 @@ def setup(stochastic: bool = False):
     env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
     env = ResizeObservation(env, shape=(105, 80))
 
-    observation, _ = env.reset()
+    next_frame, _ = env.reset()
     autoencoder = gen_autoencoder(stochastic)
+    reconstructed_observation = tiles_to_onehot(tile_image(next_frame))
     stack, action = model_strategy_factory("autoencoder").init_params(autoencoder.model)
-    observation = image_to_onehot(tile_image(observation))
-    return env, autoencoder, stack, action, observation
+    return env, autoencoder, stack, action, next_frame, reconstructed_observation
 
 
 def test_deterministic_autoencoder():
     """
     Test the deterministic autoencoder on dummy input
     """
-    env, autoencoder, stack, action, observation = setup()
+    env, autoencoder, stack, action, _, observation = setup()
     for i in range(100):
         grads = autoencoder.train_step(observation, stack, action)
         autoencoder.apply_grads(grads)
@@ -59,7 +59,7 @@ def test_deterministic_autoencoder_actions():
     Test the deterministic autoencoder on dummy input with different actions
     Does the deterministic autoencoder learn to differentiate between actions?
     """
-    env, autoencoder, stack, action, observation = setup()
+    env, autoencoder, stack, action, _, observation = setup()
     action = jnp.array([1, 0, 0, 0])
 
     observation2 = jnp.array(observation, copy=True)
@@ -87,7 +87,7 @@ def test_deterministic_on_loaded_data():
                                   jnp.asarray(files["next_frame"]))
 
     observation = vmap(tile_image)(observation)
-    observation = vmap(image_to_onehot)(observation)
+    observation = vmap(tiles_to_onehot)(observation)
     for _ in range(10):
         grads = autoencoder.train_step(observation[:10], stack[:10], action[:10])
         autoencoder.apply_grads(grads)
@@ -99,10 +99,10 @@ def test_stochastic_autoencoder():
     """
     Test the autoencoder on dummy input
     """
-    env, autoencoder, stack, action, observation = setup(stochastic=True)
+    env, autoencoder, stack, action, next_frame, observation = setup(stochastic=True)
     trainer = SAETrainer(autoencoder.model)
     for i in range(5):
-        params = trainer.train_step(autoencoder.params, stack, action, observation)
+        params = trainer.train_step(autoencoder.params, stack, action, next_frame)
         autoencoder.params = params
     env.close()
 
