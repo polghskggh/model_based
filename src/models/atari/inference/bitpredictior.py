@@ -9,7 +9,8 @@ class BitPredictor(nn.Module):
 
     def setup(self):
         self.last_bit = jnp.array([0])
-        self.carry = self.lstm.initialize_carry(jr.PRNGKey(0), self.last_bit.shape)
+        rng = self.make_rng('carry')
+        self.carry = self.lstm.initialize_carry(rng, self.last_bit.shape)
 
     @nn.compact
     def __call__(self):

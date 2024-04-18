@@ -9,6 +9,8 @@ class Decoder(nn.Module):
     kernel: tuple
     strides: tuple
     layers: int
+    deterministic: bool
+    dropout: float = 0.15
 
     def setup(self):
         self.shape_list = [(4, 3), (7, 5), (14, 10), (27, 20), (53, 40), (105, 80)]
@@ -18,6 +20,8 @@ class Decoder(nn.Module):
         skip.reverse()
         for layer_id in range(self.layers):
             features = self.scaled_features(layer_id) # first 2 layers have less features
+            x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
+            x = nn.LayerNorm()(x)
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = self.scale_image(x, layer_id)
             x = nn.relu(x)

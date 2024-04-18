@@ -24,7 +24,3 @@ class AutoEncoderStrategy(ModelStrategy):
 
     def init_writer(self) -> ModelWriter:
         return writer_instances["autoencoder"]
-
-
-    def init_optim(self, learning_rate: float):
-        return optax.adam(learning_rate)

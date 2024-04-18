@@ -14,27 +14,35 @@ class ModelWrapper:
     def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001):
         self._strategy = model_strategy_factory(strategy)
         self._model = model
-        self._params = model.init(random.PRNGKey(1), *self.batch_input(*self._strategy.init_params(model)))
+        self._rngs = {"dropout": random.PRNGKey(0),
+                      "normal": random.PRNGKey(1),
+                      "carry": random.PRNGKey(2),
+                      "params": random.PRNGKey(3)}
+
+        self._params = model.init(self._rngs, *self.batch_input(*self._strategy.init_params(model)))
         self._loss_fun = self._strategy.loss_fun()
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
         self.model_writer = self._strategy.init_writer()
+        self.debug = strategy
 
     # forward pass + backwards pass
     def train_step(self, y: Array[float], *x: Array[float]):
         in_dim, out_dim = self._strategy.batch_dims()
         x = self.batch(x, in_dim)
-        y = self.batch((y, ), out_dim)
+        y = self.batch(y, out_dim)
 
-        loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x)
+        loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x, rngs=self._rngs)
         self.model_writer.add_data(loss)
         self.model_writer.save_episode()
+
+        print(f"Name: {self.debug}, Loss: {loss}")
         return grads
 
     # forward pass
     def forward(self, *x: Array[float]) -> Array[float]:
-        x = self.batch_input(x)
-        return self._model.apply(self._params, *x)
+        x = self.batch_input(*x)
+        return self._model.apply(self._params, *x, rngs=self._rngs)
 
     # apply gradians to the model
     def apply_grads(self, grads: Array[float]):
@@ -68,5 +76,7 @@ class ModelWrapper:
         if dims is None:
             return data
 
-        return (transform_to_batch(datum, dim) for datum, dim in zip(data, dims))
+        if len(dims) == 1:
+            return transform_to_batch(data, dims[0])
 
+        return (transform_to_batch(datum, dim) for datum, dim in zip(data, dims))

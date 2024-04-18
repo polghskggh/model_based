@@ -6,7 +6,7 @@ from jax import vmap
 from src.agent.acstrategy import Shape
 from src.enviroment import make_env
 from src.models.atari.autoencoder.autoencoder import AutoEncoder
-from src.models.atari.simple.stochasticautoencoder import StochasticAutoencoder
+from src.models.atari.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.models.trainer.saetrainer import SAETrainer
@@ -20,7 +20,7 @@ def gen_autoencoder(stochastic: bool):
     :return: Wrapper for the autoencoder
     """
     if stochastic:
-        return ModelWrapper(StochasticAutoencoder(*Shape()), "stochasticautoencoder")
+        return ModelWrapper(StochasticAutoencoder(*Shape()), "stochastic_autoencoder")
 
     return ModelWrapper(AutoEncoder(*Shape()), "autoencoder")
 

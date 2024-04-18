@@ -11,6 +11,7 @@ class ConvolutionalInference(nn.Module):
     second_input: int
     third_input: tuple
     backprop: bool
+    dropout: float = 0.15
 
     def setup(self):
         self.features = 128
@@ -19,7 +20,6 @@ class ConvolutionalInference(nn.Module):
         self.strides = (4, 4)
         self.layers = 6
         self.discretizer = Discretizer(self.backprop)
-        self.key = jr.PRNGKey(1)
 
     @nn.compact
     def __call__(self, stack: Array, actions: Array, next_frame: Array):
@@ -27,14 +27,16 @@ class ConvolutionalInference(nn.Module):
         embedded_image = self.pixel_embedding(embedding_input)
         embedded_image = nn.relu(embedded_image)
 
-        conv = nn.Conv(features=self.features, kernel_size=self.kernel, strides=self.strides)(embedded_image)
-        conv = nn.relu(conv)
+        convolutions = []
+        for _ in range(self.layers):
+            embedded_image = nn.Dropout(rate=self.dropout, deterministic=False)(embedded_image)
+            embedded_image = nn.LayerNorm()(embedded_image)
+            embedded_image = nn.Conv(features=self.features, kernel_size=self.kernel, strides=self.strides)(embedded_image)
+            embedded_image = nn.relu(embedded_image)
+            convolutions.append(embedded_image)
 
-        conv2 = nn.Conv(features=self.features, kernel_size=self.kernel, strides=self.strides)(conv)
-        conv2 = nn.relu(conv2)
-
-        top = conv.reshape(conv.shape[0], -1)
-        bottom = conv.reshape(conv2.shape[0], -1)
+        top = convolutions[0].reshape(convolutions[0].shape[0], -1)
+        bottom = convolutions[1].reshape(convolutions[1].shape[0], -1)
 
         mean = nn.Dense(self.features)(top)
         std = nn.Dense(self.features)(bottom)
@@ -44,7 +46,8 @@ class ConvolutionalInference(nn.Module):
         return discrete
 
     def sample_normal(self, mean, std):
-        return jr.normal(self.key, std.shape) * std + mean
+        rng = self.make_rng('normal')
+        return jr.normal(rng, std.shape) * std + mean
 
     @staticmethod
     def merge(inputs, dims, axis):

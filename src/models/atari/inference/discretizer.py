@@ -5,11 +5,12 @@ from numpy import random
 
 
 class Discretizer(nn.Module):
-    backprop: bool
+    train: bool
 
     @nn.compact
     def __call__(self, continuous: Array):
-        continuous = self._noise(continuous)
+        if self.train:
+            continuous = self._noise(continuous)
 
         if self.differentiable():
             return Discretizer.threshold(continuous)
@@ -25,7 +26,7 @@ class Discretizer(nn.Module):
         return jnp.maximum(jnp.minimum(1.2 * nn.sigmoid(x) - 0.1, 1), 0)
 
     def differentiable(self) -> bool:
-        if self.backprop:
+        if self.train:
             return True
 
         return random.rand() > 0.5

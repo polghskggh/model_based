@@ -11,6 +11,8 @@ from src.models.atari.autoencoder.rewardpredictor import RewardPredictor
 class AutoEncoder(nn.Module):
     input_dimensions: tuple
     second_input: int
+    latent: int = 128
+    deterministic: bool = False
 
     def setup(self):
         self.features = 256
@@ -18,8 +20,8 @@ class AutoEncoder(nn.Module):
         self.strides = (2, 2)
         self.layers = 6
         self.pixel_embedding = nn.Dense(features=self.features // 4, name="embedding")
-        self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers)
-        self.decoder = Decoder(self.features, self.kernel, self.strides, self.layers)
+        self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
+        self.decoder = Decoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
         self.action_injector = Injector(self.features)
         self.latent_injector = Injector(self.features)
         self.logits = LogitsLayer()

@@ -12,7 +12,7 @@ class StochasticAutoencoder(nn.Module):
     bits: int = 128
 
     def setup(self):
-        self.autoencoder = AutoEncoder(self.input_dimensions, self.second_input)
+        self.autoencoder = AutoEncoder(self.input_dimensions, self.second_input, deterministic=True)
         self.bit_predictor = BitPredictor(self.bits)
 
     @nn.compact

@@ -3,7 +3,7 @@ from src.models.strategy.ddpgactorstrategy import DDPGActorStrategy
 from src.models.strategy.ddpgcriticstrategy import DDPGCriticStrategy
 from src.models.strategy.modelstrategy import ModelStrategy
 from src.models.strategy.trainerstrategy import InferenceStrategy, BitPredictorStrategy, StochasticAEStratgy, \
-    StochasticAETrainerStrategy
+    StochasticAETrainerStrategy, LatentAutoEncoderStrategy
 
 
 def model_strategy_factory(strategy_type: str) -> ModelStrategy:
@@ -14,13 +14,15 @@ def model_strategy_factory(strategy_type: str) -> ModelStrategy:
             return DDPGCriticStrategy()
         case "autoencoder":
             return AutoEncoderStrategy()
-        case "stochasticautoencoder":
+        case "stochastic_autoencoder":
             return StochasticAEStratgy()
         case "inference":
             return InferenceStrategy()
-        case "bitpredictor":
+        case "bit_predictor":
             return BitPredictorStrategy()
-        case "trainerstochastic":
+        case "trainer_stochastic":
             return StochasticAETrainerStrategy()
+        case "autoencoder_with_latent":
+            return LatentAutoEncoderStrategy()
         case _:
             raise ValueError(f"Strategy {strategy_type} not found")
