@@ -1,11 +1,7 @@
-import optax
-
-from src.models.lossfuns import mean_squared_error, cross_entropy_loss
-from src.models.strategy.modelstrategy import ModelStrategy
-from src.resultwriter.modelwriter import writer_instances
-
-import jax.random as jr
 import jax.numpy as jnp
+
+from src.models.lossfuns import cross_entropy_loss, cross_entropy_with_kl_loss
+from src.models.strategy.modelstrategy import ModelStrategy
 
 
 class StochasticAETrainerStrategy(ModelStrategy):
@@ -21,7 +17,7 @@ class StochasticAETrainerStrategy(ModelStrategy):
         return (4, 2, 4), (4, )
 
     def loss_fun(self):
-        return cross_entropy_loss_with_kl
+        return cross_entropy_with_kl_loss
 
 
 class StochasticAEStratgy(ModelStrategy):

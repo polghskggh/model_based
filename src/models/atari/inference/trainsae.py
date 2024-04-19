@@ -17,8 +17,14 @@ class TrainStochasticAutoencoder(nn.Module):
 
     @nn.compact
     def __call__(self, stack: Array, actions: Array, next_frame: Array, kl_divergence: bool = False):
-        bit_prediction = self.inference(stack, actions, next_frame)
+        kl_loss = 0
+
+        if kl_divergence:
+            bit_prediction, kl_loss = self.inference(stack, actions, next_frame, True)
+        else:
+            bit_prediction = self.inference(stack, actions, next_frame)
+
         pixels = self.autoencoder(stack, actions, bit_prediction)
 
-        latent_ret = bit_prediction if kl_divergence else None
-        return latent_ret, pixels
+        return pixels, kl_loss
+

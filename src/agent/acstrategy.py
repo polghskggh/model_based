@@ -1,12 +1,7 @@
 from typing import Self
 
-from src.agent.actor.ddpgactor import DDPGActor
-from src.agent.critic import DDPGCritic
-from src.models.atari import AtariNN
-from src.models.atari.actoratari import ActorAtari
 
-
-class Shape:
+class Shape(tuple):
     shape: tuple = None
 
     def __new__(cls, env=None) -> Self:
