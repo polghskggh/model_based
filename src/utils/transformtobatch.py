@@ -8,8 +8,11 @@ def transform_to_batch(data, batch_dim=None):
 
     :return: data with batch dimension
     """
+
     if batch_dim is None:
         return data
 
     if data.ndim < batch_dim:
         return jnp.expand_dims(data, 0)
+
+    return data

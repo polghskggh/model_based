@@ -10,3 +10,7 @@ gymnasium[atari]
 gymnasium[accept-rom-license]
 gymnasium[other]
 pandas~=2.2.2
+rlax~=0.1.6
+pip~=24.0
+distrax~=0.1.5
+gym~=0.26.2

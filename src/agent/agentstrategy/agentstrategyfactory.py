@@ -5,6 +5,12 @@ from src.agent.agentstrategy.strategyinterface import StrategyInterface
 
 
 def agent_strategy_factory(strategy_name: str) -> StrategyInterface:
+    """
+    Factory method for creating agent strategies
+
+    :param strategy_name: name of the strategy
+    :return: a new instance of the strategy
+    """
     match strategy_name:
         case "ddpg":
             return DDPGStrategy()

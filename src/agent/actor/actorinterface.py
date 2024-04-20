@@ -6,9 +6,6 @@ from src.models.modelwrapper import ModelWrapper
 
 
 class ActorInterface:
-    def __init__(self):
-        pass
-
     @abstractmethod
     def approximate_best_action(self, state: np.ndarray[float]) -> np.ndarray[float]:
         pass

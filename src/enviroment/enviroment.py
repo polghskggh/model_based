@@ -1,9 +1,9 @@
 import gymnasium as gym
 from gymnasium.wrappers import FrameStack, ResizeObservation
 
-from src.agent.acstrategy import Shape
 from src.enviroment.observationreshape import ObservationReshape
 from src.enviroment.onehotaction import OneHotAction
+from src.enviroment.shape import Shape
 
 
 def make_env() -> gym.Env:

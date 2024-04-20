@@ -1,7 +1,7 @@
 from flax import linen as nn
 from jax import Array
 
-from src.models.autoencoder import Encoder
+from src.models.autoencoder.encoder import Encoder
 
 
 # A simple feed forward neural network
@@ -13,7 +13,7 @@ class CNNAtari(nn.Module):
         kernel = (4, 4)
         strides = (2, 2)
         layers = 6
-        self.encoder = Encoder(features, kernel, strides, layers)
+        self.encoder = Encoder(features, kernel, strides, layers, True)
 
     @nn.compact
     def __call__(self, x: Array) -> Array:

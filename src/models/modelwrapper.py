@@ -7,6 +7,7 @@ from jax import random as random
 from jax import value_and_grad
 
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
+from src.pod.hyperparameters import hyperparameters
 from src.utils.transformtobatch import transform_to_batch
 
 
@@ -14,10 +15,10 @@ class ModelWrapper:
     def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001):
         self._strategy = model_strategy_factory(strategy)
         self._model = model
-        self._rngs = {"dropout": random.PRNGKey(0),
-                      "normal": random.PRNGKey(1),
-                      "carry": random.PRNGKey(2),
-                      "params": random.PRNGKey(3)}
+        self._rngs = {"dropout": random.PRNGKey(hyperparameters["rng"]["dropout"]),
+                      "normal": random.PRNGKey(hyperparameters["rng"]["normal"]),
+                      "carry": random.PRNGKey(hyperparameters["rng"]["carry"]),
+                      "params": random.PRNGKey(hyperparameters["rng"]["params"])}
 
         self._params = model.init(self._rngs, *self.batch_input(*self._strategy.init_params(model)))
         self._loss_fun = self._strategy.loss_fun()
@@ -38,15 +39,32 @@ class ModelWrapper:
 
     # forward pass
     def forward(self, *x: Array[float]) -> Array[float]:
+        """
+        Forward pass through the model
+
+        :param x: the input to the model
+        :return: the output of the model
+        """
         x = self.batch_input(*x)
         return self._model.apply(self._params, *x, rngs=self._rngs)
 
-    # apply gradians to the model
     def apply_grads(self, grads: dict):
+        """
+        Apply gradients to the model using the optimizer
+
+        :param grads: the gradients to apply
+        """
         opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, opt_grads)
 
     def update_polyak(self, rho: float, other_model: Self):
+        """
+        Update the parameters of the model using Polyak averaging
+
+        :param rho: the averaging factor
+        :param other_model: the model to average with
+        :return: None
+        """
         self._params = optax.incremental_update(self._params, other_model._params, rho)
 
     def __str__(self):
@@ -76,4 +94,4 @@ class ModelWrapper:
         if len(dims) == 1:
             return transform_to_batch(data, dims[0])
 
-        return (transform_to_batch(datum, dim) for datum, dim in zip(data, dims))
+        return tuple(transform_to_batch(datum, dim) for datum, dim in zip(data, dims))

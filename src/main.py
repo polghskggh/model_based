@@ -1,19 +1,16 @@
 import gymnasium as gym
+from jax import devices
 
-from src.agent.acstrategy import Shape
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
 from src.enviroment import make_env
-from src.models.autoencoder.autoencoder import AutoEncoder
-from src.models.modelwrapper import ModelWrapper
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
-from jax import devices
 
 
 def main():
     check_gpu()
     env = make_env()
-    agent = Agent("atari-ddpg")
+    agent = Agent("dqn")
     run_n_episodes(100, agent, env)
     env.close()
 
@@ -27,14 +24,14 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
 
 
 def run_experiment(agent: AgentInterface, env: gym.Env, results: ModelWriter):
-    observation_old, _ = env.reset()
-    autoencoder = ModelWrapper(AutoEncoder(Shape.shape[0], 1), "autoencoder")
+    observation, _ = env.reset()
+    agent.receive_state(observation)
     for _ in range(1000):
-        action = env.action_space.sample()
-        observation_new, reward, terminated, truncated, _ = env.step(action)
-
-        observation_old = observation_new
-
+        action = agent.select_action()
+        observation, reward, terminated, truncated, _ = env.step(action)
+        agent.receive_reward(reward)
+        agent.receive_state(observation)
+        results.add_data(reward)
         if terminated or truncated:
             return
 

@@ -18,5 +18,11 @@ hyperparameters = {
         'discount_factor': 0.95,
         'polyak': 0.995,
     },
-    'seed': 0,
+    'rng': {
+        'dropout': 0,
+        'normal': 0,
+        'carry': 0,
+        'params': 0,
+        'action': 0,
+    }
 }

@@ -1,13 +1,12 @@
 from ctypes import Array
 
-from src.agent.actor.actorinterface import ActorInterface
+from flax import linen as nn
+
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
-from flax import linen as nn
-import numpy as np
-
 from src.models.trainer.critictrainer import CriticTrainer
 from src.pod.hyperparameters import hyperparameters
+import jax.numpy as jnp
 
 
 class DDPGCritic(CriticInterface):
@@ -24,6 +23,8 @@ class DDPGCritic(CriticInterface):
                         next_state: Array[float], next_action: Array[float]) -> dict:
         observed_values: Array[float] = (
                 reward + self._discount_factor * self._target_model.forward(next_state, next_action).reshape(-1))
+        observed_values = jnp.expand_dims(observed_values, 1)
+        print(observed_values.shape)
         return self._model.train_step(observed_values, state, action)
 
     def update(self, grads: dict):

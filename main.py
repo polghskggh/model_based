@@ -8,7 +8,7 @@ from gymnasium import Env
 
 def main():
     env = make_env()
-    agent = Agent("atari-ddpg")
+    agent = Agent("dqn")
     run_n_episodes(100, agent, env)
     env.close()
 
