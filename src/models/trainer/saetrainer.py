@@ -30,7 +30,7 @@ class SAETrainer(Trainer):
         self._bit_predictor_trainer = ParamCopyingTrainer(self._bit_predictor, "bit_predictor")
 
     def train_step(self, params: dict, stack: Array, actions: Array, next_frame: Array):
-        reconstructed = tiles_to_onehot(tile_image(next_frame))
+        reconstructed = tile_image(next_frame)
         params = self._train_autoencoder(params, stack, actions, reconstructed)
         params = self._train_inference_autoencoder(params, stack, actions, next_frame, reconstructed)
         params = self._train_inference_autoencoder_with_kl(params, stack, actions, next_frame, reconstructed)

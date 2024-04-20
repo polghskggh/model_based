@@ -1,16 +1,18 @@
 import jax.numpy as jnp
-from optax.losses import kl_divergence
+import optax
+from optax import softmax_cross_entropy_with_integer_labels
 
 
 def mean_squared_error(model, params, teacher_outputs, *inputs, **kwargs):
-    return jnp.mean((model.apply(params, *inputs, **kwargs) - teacher_outputs) ** 2)
+    outputs = model.apply(params, *inputs, **kwargs)
+    return jnp.mean(optax.squared_error(outputs, teacher_outputs[0])) # output is not batch format
 
 
 def cross_entropy_loss(model, params, teacher_outputs, *inputs, **kwargs):
     outputs = model.apply(params, *inputs, **kwargs)
-    return -jnp.mean(teacher_outputs * jnp.log(outputs))
+    return jnp.mean(softmax_cross_entropy_with_integer_labels(outputs, teacher_outputs))
 
 
 def cross_entropy_with_kl_loss(model, params, teacher_outputs, *inputs, **kwargs):
     outputs, kl_loss = model.apply(params, *inputs, **kwargs)
-    return -jnp.mean(teacher_outputs * jnp.log(outputs)) + kl_loss
+    return jnp.mean(softmax_cross_entropy_with_integer_labels(outputs, teacher_outputs)) + kl_loss

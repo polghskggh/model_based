@@ -12,7 +12,6 @@ class LogitsLayer(nn.Module):
     @nn.compact
     def __call__(self, x: Array) -> Array:
         x = self.mapped_layer(x)
-        x = nn.sigmoid(x)
         return x
 
 
