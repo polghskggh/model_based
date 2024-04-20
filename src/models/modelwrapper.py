@@ -31,7 +31,7 @@ class ModelWrapper:
         return self._model.apply(self._params, *x)
 
     # apply gradians to the model
-    def apply_grads(self, grads: np.ndarray[float]):
+    def apply_grads(self, grads: dict):
         opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, opt_grads)
 

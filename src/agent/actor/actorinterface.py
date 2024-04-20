@@ -16,7 +16,7 @@ class ActorInterface:
         pass
 
     @abstractmethod
-    def update(self, grads: np.ndarray[float]):
+    def update(self, grads: dict):
         pass
 
     @abstractmethod

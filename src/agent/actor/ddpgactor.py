@@ -1,4 +1,6 @@
+import rlax
 from numpy import ndarray
+from rlax import one_hot
 
 from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
@@ -15,13 +17,12 @@ class DDPGActor(ActorInterface):
         self._model: ModelWrapper = ModelWrapper(model, "actor")
         self._target_model: ModelWrapper = ModelWrapper(model, "actor")
         self._polyak: float = polyak
-
-    def _noise(self, action: np.ndarray) -> np.ndarray:
-        return np.exp(action) / np.sum(np.exp(action), axis=-1)
+        self.key = random.PRNGKey(0)
 
     def approximate_best_action(self, state: np.ndarray[float]) -> ndarray[ndarray[float]]:
         actions = self._model.forward(state)
-        actions = self._noise(actions)
+        self.key, subkey = random.split(self.key)
+        actions = rlax.add_gaussian_noise(subkey, actions, 1)
         return DDPGActor.softmax_to_onehot(actions)
 
     def calculate_actions(self, new_states: np.ndarray[float]) -> ndarray[ndarray[float]]:
@@ -32,15 +33,11 @@ class DDPGActor(ActorInterface):
         self._model.apply_grads(grads)
         self._target_model.update_polyak(self._polyak, self._model)
 
-    @staticmethod
-    def softmax_to_onehot(logits: np.ndarray[float]) -> np.ndarray[np.ndarray[float]]:
-        key = random.PRNGKey(np.random.randint(0, 10000))
-        if logits.ndim == 1:
-            idx = random.choice(key, logits.shape[-1], p=logits)
-        else:
-            idx = vmap(random.choice, (None, None, None, None, 0))(key, logits.shape[-1], (), True, logits)
-        return np.eye(logits.shape[-1])[idx]
+    @classmethod
+    def softmax_to_onehot(cls, actions):
+        return one_hot(np.argmax(actions, axis=1), 4)
 
     @property
     def model(self):
         return self._model
+

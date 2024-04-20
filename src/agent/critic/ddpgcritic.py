@@ -21,7 +21,7 @@ class DDPGCritic(CriticInterface):
                 reward + self._discount_factor * self._target_model.forward(next_state, next_action).reshape(-1))
         return self._model.train_step(observed_values, state, action)
 
-    def update(self, grads: np.ndarray[float]):
+    def update(self, grads: dict):
         self._model.apply_grads(grads)
         self._target_model.update_polyak(self._polyak, self._model)
 

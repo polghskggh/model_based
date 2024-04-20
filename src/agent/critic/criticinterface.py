@@ -19,6 +19,6 @@ class CriticInterface:
         pass
 
     @abstractmethod
-    def update(self):
+    def update(self, grads: dict):
         pass
 
