@@ -2,8 +2,8 @@ from ctypes import Array
 
 import flax.linen as nn
 
-from src.models.atari.autoencoder.autoencoder import AutoEncoder
-from src.models.atari.inference.bitpredictior import BitPredictor
+from src.models.autoencoder.autoencoder import AutoEncoder
+from src.models.inference.bitpredictior import BitPredictor
 
 
 class StochasticAutoencoder(nn.Module):

@@ -2,8 +2,8 @@ import flax.linen as nn
 import jax.numpy as jnp
 from jax import Array
 
-from src.models.atari.actorcritic.actoratari import CNNAtari
-from src.models.atari.base.mlpatari import MLPAtari
+from src.models.actorcritic.actoratari import CNNAtari
+from src.models.base.mlpatari import MLPAtari
 
 
 class AtariNN(nn.Module):

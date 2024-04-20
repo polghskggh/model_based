@@ -2,11 +2,10 @@ import distrax
 import flax.linen as nn
 import jax.numpy as jnp
 import jax.random as jr
-import rlax
 from distrax import MultivariateNormalDiag
 from jax import Array, vmap
 
-from src.models.atari.inference.discretizer import Discretizer
+from src.models.inference.discretizer import Discretizer
 
 
 class ConvolutionalInference(nn.Module):

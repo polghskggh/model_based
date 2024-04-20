@@ -5,8 +5,8 @@ from jax import vmap
 
 from src.agent.acstrategy import Shape
 from src.enviroment import make_env
-from src.models.atari.autoencoder.autoencoder import AutoEncoder
-from src.models.atari.inference.stochasticautoencoder import StochasticAutoencoder
+from src.models.autoencoder.autoencoder import AutoEncoder
+from src.models.inference import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.models.trainer.saetrainer import SAETrainer

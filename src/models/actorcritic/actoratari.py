@@ -1,10 +1,9 @@
 import flax.linen as nn
-from jax.lax import stop_gradient
 from jax import Array
 import jax.numpy as jnp
 
 
-from src.models.atari.base.cnnatari import CNNAtari
+from src.models.base.cnnatari import CNNAtari
 
 
 class ActorAtari(nn.Module):

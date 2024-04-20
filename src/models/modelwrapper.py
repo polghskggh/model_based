@@ -3,10 +3,9 @@ from typing import Self
 
 import optax
 from flax import linen as nn
-from jax import random as random, vmap
+from jax import random as random
 from jax import value_and_grad
 
-from src.models.lossfuns import loss_funs
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.utils.transformtobatch import transform_to_batch
 

@@ -5,7 +5,8 @@ from rlax import one_hot
 from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
 from flax import linen as nn
-from jax import vmap
+
+import jax.numpy as jnp
 import jax.random as random
 
 import numpy as np
@@ -24,21 +25,25 @@ class DDPGActor(ActorInterface):
         self._new_states = None
         self.key = random.PRNGKey(0)
 
-    def approximate_best_action(self, state: np.ndarray[float]) -> ndarray[ndarray[float]]:
+    def approximate_best_action(self, state:  jnp.ndarray) -> jnp.ndarray:
         actions = self._model.forward(state)
         self.key, subkey = random.split(self.key)
         actions = rlax.add_gaussian_noise(subkey, actions, 1)
         return DDPGActor.softmax_to_onehot(actions)
 
-    def calculate_actions(self, new_states: np.ndarray[float]) -> ndarray[ndarray[float]]:
+    def calculate_actions(self, new_states:  jnp.ndarray) -> ndarray[ndarray[float]]:
         self._new_states = new_states
         actions = self._target_model.forward(new_states)
         return DDPGActor.softmax_to_onehot(actions)
 
-    def update(self, action_grads: np.ndarray[float]):
+    def update(self, action_grads:  jnp.ndarray):
         grads = self._trainer.train_step(self._model.params, self._new_states, action_grads)
         self._model.apply_grads(grads)
         self._target_model.update_polyak(self._polyak, self._model)
+
+    @classmethod
+    def softmax_to_onehot(cls, actions):
+        return one_hot(np.argmax(actions, axis=1), 4)
 
     @property
     def model(self):

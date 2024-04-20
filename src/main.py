@@ -4,7 +4,7 @@ from src.agent.acstrategy import Shape
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
 from src.enviroment import make_env
-from src.models.atari.autoencoder.autoencoder import AutoEncoder
+from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.modelwrapper import ModelWrapper
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 from jax import devices

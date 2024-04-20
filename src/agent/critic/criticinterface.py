@@ -10,7 +10,7 @@ class CriticInterface:
         pass
 
     @abstractmethod
-    def calculate_grads(self, reward: np.ndarray[float], state: np.ndarray[float], action: np.ndarray[float],
+    def calculate_grads(self, state: np.ndarray[float], action: np.ndarray[float], reward: np.ndarray[float],
                         next_state: np.ndarray[float], next_action: np.ndarray[float]):
         pass
 

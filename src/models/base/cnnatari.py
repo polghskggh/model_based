@@ -1,7 +1,7 @@
 from flax import linen as nn
 from jax import Array
 
-from src.models.atari.autoencoder.encoder import Encoder
+from src.models.autoencoder import Encoder
 
 
 # A simple feed forward neural network

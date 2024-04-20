@@ -3,13 +3,13 @@ from ctypes import Array
 from jax import random as jr
 
 from src.agent.acstrategy import Shape
-from src.models.atari.autoencoder.autoencoder import AutoEncoder
-from src.models.atari.inference.bitpredictior import BitPredictor
-from src.models.atari.inference.convolutionalinference import ConvolutionalInference
-from src.models.atari.inference.trainsae import TrainStochasticAutoencoder
+from src.models.autoencoder.autoencoder import AutoEncoder
+from src.models.inference import BitPredictor
+from src.models.inference.convolutionalinference import ConvolutionalInference
+from src.models.inference.trainsae import TrainStochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.trainer.trainer import Trainer
-from src.utils.inttoonehot import tiles_to_onehot
+from src.pod.hyperparameters import hyperparameters
 from src.utils.tiling import tile_image
 
 
@@ -19,11 +19,17 @@ class SAETrainer(Trainer):
         self._batch_size = 32
 
         self._model = model
-        self._autoencoder = ModelWrapper(AutoEncoder(*Shape()), "autoencoder_with_latent")
+        self._autoencoder = ModelWrapper(AutoEncoder(*Shape()), "autoencoder_with_latent",
+                                         learning_rate=hyperparameters["world"]["deterministic_lr"])
+
         third_input = (Shape()[0][0], Shape()[0][1], 3)
-        self._stochastic_ae = ModelWrapper(TrainStochasticAutoencoder(*Shape(), third_input), "trainer_stochastic")
-        self._bit_predictor = ModelWrapper(BitPredictor(model.bits), "bit_predictor")
-        self._inference = ModelWrapper(ConvolutionalInference(*Shape(), third_input, False), "inference")
+        self._stochastic_ae = ModelWrapper(TrainStochasticAutoencoder(*Shape(), third_input), "trainer_stochastic",
+                                           learning_rate=hyperparameters["world"]["stochastic_lr"])
+        self._bit_predictor = ModelWrapper(BitPredictor(model.bits), "bit_predictor",
+                                           learning_rate=hyperparameters["world"]["bit_predictor_lr"])
+
+        self._inference = ModelWrapper(ConvolutionalInference(*Shape(), third_input, False), "inference",
+                                       learning_rate=0)
 
         self._ae_trainer = ParamCopyingTrainer(self._autoencoder, "autoencoder")
         self._sae_trainer = ParamCopyingTrainer(self._stochastic_ae, "autoencoder", "autoencoder")

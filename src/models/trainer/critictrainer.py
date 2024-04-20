@@ -2,6 +2,7 @@ from ctypes import Array
 
 from jax import value_and_grad
 
+from src.models.lossfuns import mean_squared_error
 from src.models.modelwrapper import ModelWrapper
 from src.models.trainer.trainer import Trainer
 
@@ -11,13 +12,12 @@ import jax.numpy as jnp
 class CriticTrainer(Trainer):
     def __init__(self, model):
         super().__init__()
-        self.model = model
+        self._model = model
 
-    def train_step(self, params, other_model: ModelWrapper, states: Array[float]):
-        grad_fun = value_and_grad(CriticTrainer.compound_grad_asc, 3)
-        q_val, grads = grad_fun(params, other_model.model, other_model.params, states)
-        other_model.model_writer.add_data(q_val)
-        other_model.model_writer.save_episode()
+    def train_step(self, params, states: Array[float], actions: Array[float]):
+        grad_fun = value_and_grad(mean_squared_error, 3)
+        q_val, grads = grad_fun(self._model, params, states, actions)
+        print(q_val)
         return grads
 
     @staticmethod

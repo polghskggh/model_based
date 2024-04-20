@@ -1,11 +1,11 @@
 import flax.linen as nn
 from jax import Array, vmap
 
-from src.models.atari.autoencoder.decoder import Decoder
-from src.models.atari.autoencoder.encoder import Encoder
-from src.models.atari.autoencoder.injector import Injector
-from src.models.atari.autoencoder.logitslayer import LogitsLayer
-from src.models.atari.autoencoder.rewardpredictor import RewardPredictor
+from src.models.autoencoder.decoder import Decoder
+from src.models.autoencoder.encoder import Encoder
+from src.models.autoencoder.injector import Injector
+from src.models.autoencoder.logitslayer import LogitsLayer
+from src.models.autoencoder.rewardpredictor import RewardPredictor
 
 
 class AutoEncoder(nn.Module):

@@ -2,15 +2,16 @@ from ctypes import Array
 
 import flax.linen as nn
 
-from src.models.atari.autoencoder.autoencoder import AutoEncoder
-from src.models.atari.inference.convolutionalinference import ConvolutionalInference
+from src.models.autoencoder.autoencoder import AutoEncoder
+from src.models.inference.convolutionalinference import ConvolutionalInference
+from src.pod.hyperparameters import hyperparameters
 
 
 class TrainStochasticAutoencoder(nn.Module):
     input_dimensions: tuple
     second_input: int
     third_input: tuple
-    kl_divergence_weight: float = 3.0
+    kl_divergence_weight: float = hyperparameters["world"]["kl_divergence_weight"]
 
     def setup(self):
         self.autoencoder = AutoEncoder(self.input_dimensions, self.second_input)
