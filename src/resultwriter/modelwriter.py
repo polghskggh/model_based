@@ -1,11 +1,11 @@
-import csv
-
+from src.resultwriter.abstractmodelwriter import AbstractModelWriter
 from src.resultwriter.csvwriter import CsvWriter
 from src.resultwriter.onlinedatatracker import OnlineDataTracker
 
 
-class ModelWriter:
+class ModelWriter(AbstractModelWriter):
     def __init__(self, filename, loss_name: str):
+        super().__init__()
         headers = ["episode", loss_name, "variance"]
         self.csv_writer = CsvWriter(filename, headers)
         self.tracker = OnlineDataTracker()
@@ -48,4 +48,5 @@ class ModelWriter:
 writer_instances = {"actor": ModelWriter("actor", "q_value"),
                     "critic": ModelWriter("critic", "critic_loss"),
                     "reward": ModelWriter("reward", "reward"),
-                    "autoencoder": ModelWriter("autoencoder", "image_loss")}
+                    "autoencoder": ModelWriter("autoencoder", "image_loss"),
+                    "mock": AbstractModelWriter()}

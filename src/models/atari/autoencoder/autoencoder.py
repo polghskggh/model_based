@@ -1,34 +1,45 @@
 import flax.linen as nn
-from jax import Array
+from jax import Array, vmap
 
 from src.models.atari.autoencoder.decoder import Decoder
 from src.models.atari.autoencoder.encoder import Encoder
 from src.models.atari.autoencoder.injector import Injector
 from src.models.atari.autoencoder.logitslayer import LogitsLayer
-from src.models.atari.autoencoder.pixelembedding import PixelEmbedding
+from src.models.atari.autoencoder.rewardpredictor import RewardPredictor
 
 
 class AutoEncoder(nn.Module):
     input_dimensions: tuple
     second_input: int
+    latent: int = 128
+    deterministic: bool = False
 
     def setup(self):
         self.features = 256
         self.kernel = (4, 4)
         self.strides = (2, 2)
         self.layers = 6
-        self.pixel_embedding = PixelEmbedding(64)
-        self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers)
-        self.decoder = Decoder(self.features, self.kernel, self.strides, self.layers)
-        self.injector = Injector()
+        self.pixel_embedding = nn.Dense(features=self.features // 4, name="embedding")
+        self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
+        self.decoder = Decoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
+        self.action_injector = Injector(self.features)
+        self.latent_injector = Injector(self.features)
         self.logits = LogitsLayer()
+        self.reward_predictor = RewardPredictor()
+        self.softmax = vmap(vmap(nn.softmax))
 
     @nn.compact
-    def __call__(self, image: Array, action: Array):
+    def __call__(self, image: Array, action: Array, latent: Array = None) -> Array:
         embedded_image = self.pixel_embedding(image)
         encoded, skip = self.encoder(embedded_image)
-        injected = self.injector(encoded, action)
+        injected = self.action_injector(encoded, action)
+
+        if latent is not None:
+            injected = self.latent_injector(encoded, latent)
+
         decoded = self.decoder(injected, skip)
         logits = self.logits(decoded)
-        return logits
+        #reward = self.reward_predictor(injected, logits)
+        pixels = self.softmax( logits)
+        return pixels
 
