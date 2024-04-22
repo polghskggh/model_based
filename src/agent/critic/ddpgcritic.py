@@ -4,7 +4,7 @@ from flax import linen as nn
 
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.critictrainer import CriticTrainer
+from src.models.trainer.critictrainer import DDPGCriticTrainer
 from src.pod.hyperparameters import hyperparameters
 import jax.numpy as jnp
 
@@ -17,14 +17,14 @@ class DDPGCritic(CriticInterface):
 
         self._discount_factor: float = hyperparameters["ddpg"]["discount_factor"]
         self._polyak: float = hyperparameters["ddpg"]["polyak"]
-        self._trainer = CriticTrainer(self._model.model)
+        self._trainer = DDPGCriticTrainer(self._model.model)
 
     def calculate_grads(self, state: Array[float], action: Array[float], reward: float,
                         next_state: Array[float], next_action: Array[float]) -> dict:
         observed_values: Array[float] = (
                 reward + self._discount_factor * self._target_model.forward(next_state, next_action).reshape(-1))
         observed_values = jnp.expand_dims(observed_values, 1)
-        print(observed_values.shape)
+
         return self._model.train_step(observed_values, state, action)
 
     def update(self, grads: dict):

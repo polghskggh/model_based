@@ -15,7 +15,7 @@ class ActorInterface:
         pass
 
     @abstractmethod
-    def update(self, grads: dict):
+    def update(self, *args):
         pass
 
     @abstractmethod

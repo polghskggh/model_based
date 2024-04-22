@@ -18,6 +18,12 @@ hyperparameters = {
         'discount_factor': 0.95,
         'polyak': 0.995,
     },
+    'ppo': {
+        'discount_factor': 0.95,
+        'lambda': 0.7,
+        'clip_threshold': 0.2,
+        'sequence_length': 10,
+    },
     'rng': {
         'dropout': 0,
         'normal': 0,

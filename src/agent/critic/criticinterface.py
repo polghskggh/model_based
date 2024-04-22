@@ -10,12 +10,11 @@ class CriticInterface:
         pass
 
     @abstractmethod
-    def calculate_grads(self, state: np.ndarray[float], action: np.ndarray[float], reward: np.ndarray[float],
-                        next_state: np.ndarray[float], next_action: np.ndarray[float]):
+    def calculate_grads(self, *args):
         pass
 
     @abstractmethod
-    def provide_feedback(self, actor: ActorInterface, states: np.ndarray[float]):
+    def provide_feedback(self, *args):
         pass
 
     @abstractmethod

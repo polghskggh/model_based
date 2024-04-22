@@ -33,12 +33,12 @@ class DDPGStrategy(StrategyInterface):
         action_grads = self._critic.provide_feedback(training_sample[2], actor_actions)
         return critic_grads, action_grads
 
-    def update(self, trajectory: TrajectoryInterface):
-        critic_grads_sum, actor_grads_sum = trajectory.update_input()
+    def update(self, replay_buffer: ReplayBuffer):
+        critic_grads_sum, actor_grads_sum = self._batch_update(replay_buffer.sample(self._batch_size))
 
         # maybe do multiple updates per batch for PPO
         for _ in range(self._batches_per_update - 1):
-            critic_grads, actor_grads = self._batch_update(trajectory.update_input())
+            critic_grads, actor_grads = self._batch_update(replay_buffer.sample(self._batch_size))
             critic_grads_sum = sum_dicts(critic_grads_sum, critic_grads)
             actor_grads_sum = sum_dicts(actor_grads_sum, actor_grads)
 

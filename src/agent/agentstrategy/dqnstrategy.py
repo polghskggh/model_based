@@ -4,9 +4,9 @@ from rlax import one_hot
 
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.agent.critic import DDPGCritic
-from src.agent.trajectory.trajectoryinterface import TrajectoryInterface
 from src.enviroment.shape import Shape
 from src.models.actorcritic.atarinn import AtariNN
+from src.pod import ReplayBuffer
 from src.pod.hyperparameters import hyperparameters
 
 
@@ -26,9 +26,9 @@ class DQNStrategy(StrategyInterface):
 
         self._q_network.update(grads)
 
-    def update(self, trajectory: TrajectoryInterface):
+    def update(self, buffer: ReplayBuffer):
         for _ in range(self._batches_per_update):
-            self._batch_update(trajectory.update_input())
+            self._batch_update(buffer.sample(self._batch_size))
 
     def select_action(self, state: jnp.ndarray) -> jnp.ndarray:
         is_batch: bool = len(state.shape) > 3

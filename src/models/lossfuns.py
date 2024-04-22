@@ -19,4 +19,5 @@ def grad_ascend(model, params, *inputs, **kwargs):
 
 def cross_entropy_with_kl_loss(model, params, teacher_outputs, *inputs, **kwargs):
     outputs, kl_loss = model.apply(params, *inputs, **kwargs)
+    # TODO: start with mixing the two losses by coefficient of 0.5
     return jnp.mean(softmax_cross_entropy_with_integer_labels(outputs, teacher_outputs)) + kl_loss

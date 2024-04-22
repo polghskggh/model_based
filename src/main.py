@@ -10,7 +10,7 @@ from src.resultwriter.modelwriter import writer_instances, ModelWriter
 def main():
     check_gpu()
     env = make_env()
-    agent = Agent("dqn")
+    agent = Agent("ppo")
     run_n_episodes(100, agent, env)
     env.close()
 
