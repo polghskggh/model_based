@@ -16,8 +16,8 @@ class PPOActorStrategy(ModelStrategy):
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32), )
 
     def batch_dims(self) -> tuple:
-        return 2, 2
+        return (4, ), (2,)
 
     def init_writer(self) -> ModelWriter:
-        writer_instances["actor"] = ModelWriter("actor", "q_value")
+        writer_instances["actor"] = ModelWriter("actor", ["q_value"])
         return writer_instances["actor"]

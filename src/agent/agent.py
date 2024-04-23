@@ -23,10 +23,9 @@ class Agent(AgentInterface):
         self._strategy: StrategyInterface = agent_strategy_factory(agent_type)
         self._replay_buffer = ReplayBuffer(*Shape())
 
-        self._start_steps: int = 200
+        self._start_steps: int = hyperparameters["agent"]["start_steps"]
 
-        self._update_after: int = 100
-        self._update_every: int = 50
+        self._update_every: int = hyperparameters["agent"]["update_every"]
         self._iteration: int = self._update_every
 
     def update_policy(self):
@@ -47,7 +46,6 @@ class Agent(AgentInterface):
 
     def select_action(self) -> jax.Array:
         if self._start_steps != 0:
-            self._start_steps -= 1
             self._selected_action = self._random_action()
         else:
             self._selected_action = self._strategy.select_action(self._new_state)

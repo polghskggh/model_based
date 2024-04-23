@@ -1,6 +1,6 @@
+from src.models.strategy.actorstrategy import PPOActorStrategy
 from src.models.strategy.autoencoderstrategy import AutoEncoderStrategy
-from src.models.strategy.actorstrategy import DDPGActorStrategy
-from src.models.strategy.criticstrategy import DDPGCriticStrategy
+from src.models.strategy.criticstrategy import DQNCriticStrategy, PPOCriticStrategy
 from src.models.strategy.modelstrategy import ModelStrategy
 from src.models.strategy.trainerstrategy import InferenceStrategy, BitPredictorStrategy, StochasticAEStratgy, \
     StochasticAETrainerStrategy, LatentAutoEncoderStrategy
@@ -9,9 +9,11 @@ from src.models.strategy.trainerstrategy import InferenceStrategy, BitPredictorS
 def model_strategy_factory(strategy_type: str) -> ModelStrategy:
     match strategy_type:
         case "actor":
-            return DDPGActorStrategy()
-        case "critic":
-            return DDPGCriticStrategy()
+            return PPOActorStrategy()
+        case "dqncritic":
+            return DQNCriticStrategy()
+        case "ppocritic":
+            return PPOCriticStrategy()
         case "autoencoder":
             return AutoEncoderStrategy()
         case "stochastic_autoencoder":

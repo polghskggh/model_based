@@ -27,10 +27,17 @@ class ModelWrapper:
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
         self.model_writer = self._strategy.init_writer()
-        self.debug = strategy
+        self._version = 0
 
     # forward pass + backwards pass
     def train_step(self, y: Array[float], *x: Array[float]):
+        """
+        Train the model using a single step
+
+        :param y: the target output
+        :param x: the model input
+        :return: the gradients of the model parameters
+        """
         in_dim, out_dim = self._strategy.batch_dims()
         x = self.batch(x, in_dim)
         y = self.batch(y, out_dim)
@@ -69,48 +76,86 @@ class ModelWrapper:
         """
         self._params = optax.incremental_update(self._params, other_model._params, rho)
 
-    def __str__(self):
-        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)))
-
     @property
     def model(self):
+        """
+        Get the model
+
+        :return: the model
+        """
         return self._model
 
     @property
     def params(self):
+        """
+        Get the parameters of the model
+
+        :return: the parameters of the model
+        """
         return self._params
 
     @params.setter
     def params(self, params):
+        """
+        Set the parameters of the model
+
+        :param params: the parameters to set
+        """
         self._params = params
 
     def batch_input(self, *data):
+        """
+        batches the input of the model
+
+        :param data: the input to the model
+        :return: batched input
+        """
         in_dim, _ = self._strategy.batch_dims()
         return self.batch(data, in_dim)
 
     @staticmethod
     def batch(data, dims):
+        """
+        Batch the data
+
+        :param data: the data to batch
+        :param dims: the batch dimensions of the data
+        :return: batched data
+        """
         if dims is None:
             return data
-
-        if len(dims) == 1:
-            return transform_to_batch(data, dims[0])
 
         return tuple(transform_to_batch(datum, dim) for datum, dim in zip(data, dims))
 
     def save(self, path: str):
+        """
+        Save the model to a checkpoint
+
+        :param path: the path to save the model
+        """
         checkpoint = {"params": self._params, "opt_state": self._opt_state, "rngs": self._rngs}
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
-        save_args = orbax_utils.save_args_from_target(checkpoint)
-        path = hyperparameters["save_path"] + path
-
-        orbax_checkpointer.save(path, checkpoint, save_args=save_args)
-        self._model.save(self._params)
+        path = hyperparameters["save_path"] + "/" + path + str(self._version)
+        orbax_checkpointer.save(path, checkpoint)
+        self._version += 1
 
     def load(self, path: str):
+        """
+        Load the model from a checkpoint
+
+        :param path: the path to the checkpoint
+        """
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         path = hyperparameters["save_path"] + path
         checkpoint = orbax_checkpointer.restore(path)
         self._params = checkpoint["params"]
         self._opt_state = checkpoint["opt_state"]
         self._rngs = checkpoint["rngs"]
+
+    def __str__(self):
+        """
+        String representation of the model
+
+        :return: the string representation of the model architecture
+        """
+        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)))

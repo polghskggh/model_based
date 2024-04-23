@@ -5,10 +5,7 @@ from src.models.strategy.modelstrategy import ModelStrategy
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 
 
-class DDPGCriticStrategy(ModelStrategy):
-    def __init__(self):
-        super().__init__()
-
+class DQNCriticStrategy(ModelStrategy):
     def init_params(self, model: nn.Module) -> tuple:
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32),
                 jnp.ones(model.second_input, dtype=jnp.float32))
@@ -17,6 +14,17 @@ class DDPGCriticStrategy(ModelStrategy):
         return (4, 2), (2, )
 
     def init_writer(self):
-        writer_instances["critic"] = ModelWriter("critic", "critic_loss")
+        writer_instances["critic"] = ModelWriter("critic", ["critic_loss"])
         return writer_instances["critic"]
 
+
+class PPOCriticStrategy(ModelStrategy):
+    def init_params(self, model: nn.Module) -> tuple:
+        return (jnp.ones(model.input_dimensions, dtype=jnp.float32), )
+
+    def batch_dims(self) -> tuple:
+        return (4, ), (2, )
+
+    def init_writer(self):
+        writer_instances["critic"] = ModelWriter("critic", ["critic_loss"])
+        return writer_instances["critic"]

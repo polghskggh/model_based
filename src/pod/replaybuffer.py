@@ -28,6 +28,7 @@ class ReplayBuffer:
         if trajectory_length == 1:
             return [self._old_states[idx], self._actions[idx], self._new_states[idx], self._rewards[idx]]
 
+        # TODO: not working for trajectory_length > 1
         return [self._old_states[idx: idx + trajectory_length],
                 self._actions[idx: idx + trajectory_length],
                 self._new_states[idx: idx + trajectory_length],

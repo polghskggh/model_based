@@ -3,7 +3,7 @@ import jax.numpy as jnp
 from rlax import one_hot
 
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
-from src.agent.critic import DDPGCritic
+from src.agent.critic import DQNNetwork
 from src.enviroment.shape import Shape
 from src.models.actorcritic.atarinn import AtariNN
 from src.pod import ReplayBuffer
@@ -14,7 +14,7 @@ class DQNStrategy(StrategyInterface):
     def __init__(self):
         self._batch_size: int = hyperparameters["ddpg"]['batch_size']
         self._batches_per_update: int = hyperparameters["ddpg"]['batches_per_update']
-        self._q_network = DDPGCritic(AtariNN(*Shape(), 1))
+        self._q_network = DQNNetwork(AtariNN(*Shape(), 1))
         self._action_space = Shape()[1]
 
     def _batch_update(self, training_sample: list[jax.Array]):

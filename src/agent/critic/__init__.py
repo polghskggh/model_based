@@ -1,2 +1,2 @@
 from .criticinterface import *
-from .ddpgcritic import *
+from .dqnnetwork import *

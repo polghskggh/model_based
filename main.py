@@ -28,16 +28,16 @@ def main():
 
 
 def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
-    results = writer_instances["reward"]
+    writer_instances["reward"] = ModelWriter("reward", ["reward", "return"])
     for episode in range(episodes):
-        run_experiment(agent, env, results)
+        run_experiment(agent, env)
         ModelWriter.save_all()                      # dynamically save gathered data
         ModelWriter.flush_all()
         agent.save()
 
 
-def run_experiment(agent: AgentInterface, env: gym.Env, results: ModelWriter):
-    model_free_train_loop(agent, env, results)
+def run_experiment(agent: AgentInterface, env: gym.Env):
+    model_free_train_loop(agent, env)
 
 
 if __name__ == '__main__':

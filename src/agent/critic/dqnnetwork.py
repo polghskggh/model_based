@@ -9,7 +9,7 @@ from src.pod.hyperparameters import hyperparameters
 import jax.numpy as jnp
 
 
-class DDPGCritic(CriticInterface):
+class DQNNetwork(CriticInterface):
     def __init__(self, model: nn.Module):
         super().__init__()
         self._model: ModelWrapper = ModelWrapper(model, "critic")

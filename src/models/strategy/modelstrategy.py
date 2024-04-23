@@ -10,9 +10,6 @@ from src.resultwriter.modelwriter import writer_instances
 
 
 class ModelStrategy:
-    def __init__(self):
-        pass
-
     @abstractmethod
     def init_params(self, model: nn.Module) -> tuple:
         pass

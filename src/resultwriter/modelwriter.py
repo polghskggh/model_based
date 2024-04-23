@@ -1,6 +1,3 @@
-from enum import Enum
-
-from src.resultwriter.abstractmodelwriter import AbstractModelWriter
 from src.resultwriter.csvwriter import CsvWriter
 from src.resultwriter.onlinedatatracker import OnlineDataTracker
 
