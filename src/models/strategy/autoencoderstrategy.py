@@ -23,4 +23,5 @@ class AutoEncoderStrategy(ModelStrategy):
         return cross_entropy_loss
 
     def init_writer(self) -> ModelWriter:
+        writer_instances["autoencoder"] = ModelWriter("world_model", "autoencoder_loss")
         return writer_instances["autoencoder"]

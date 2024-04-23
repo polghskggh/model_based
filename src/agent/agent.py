@@ -65,3 +65,10 @@ class Agent(AgentInterface):
         self._key, subkey = jr.split(self._key)
         actions = jr.randint(subkey, (1, ), 0, Shape()[1])
         return one_hot(actions, Shape()[1])[0]
+
+    def save(self):
+        self._strategy.save()
+
+    def load(self):
+        self._strategy.load()
+

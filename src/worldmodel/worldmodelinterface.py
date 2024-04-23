@@ -1,14 +1,17 @@
 from abc import abstractmethod
-import jax.numpy as jnp
 
 
-class StrategyInterface:
+class WorldModelInterface:
     @abstractmethod
-    def update(self, *data):
+    def step(self, action):
         pass
 
     @abstractmethod
-    def select_action(self, state: jnp.ndarray):
+    def reset(self):
+        pass
+
+    @abstractmethod
+    def update(self):
         pass
 
     @abstractmethod
@@ -18,3 +21,6 @@ class StrategyInterface:
     @abstractmethod
     def load(self):
         pass
+
+
+

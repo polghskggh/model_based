@@ -25,6 +25,9 @@ class ReplayBuffer:
     def sample(self, n: int, trajectory_length: int = 1) -> list[jax.Array]:
         self._key, subkey = jr.split(self._key)
         idx = jr.choice(subkey, self._rewards.shape[0] - (trajectory_length - 1), (n,), False)
+        if trajectory_length == 1:
+            return [self._old_states[idx], self._actions[idx], self._new_states[idx], self._rewards[idx]]
+
         return [self._old_states[idx: idx + trajectory_length],
                 self._actions[idx: idx + trajectory_length],
                 self._new_states[idx: idx + trajectory_length],

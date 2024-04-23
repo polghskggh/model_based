@@ -1,38 +1,47 @@
+from enum import Enum
+
 from src.resultwriter.abstractmodelwriter import AbstractModelWriter
 from src.resultwriter.csvwriter import CsvWriter
 from src.resultwriter.onlinedatatracker import OnlineDataTracker
 
 
-class ModelWriter(AbstractModelWriter):
-    def __init__(self, filename, loss_name: str):
+class ModelWriter:
+    def __init__(self, filename, tracked_values: list[str]):
         super().__init__()
-        headers = ["episode", loss_name, "variance"]
-        self.csv_writer = CsvWriter(filename, headers)
-        self.tracker = OnlineDataTracker()
-        self.losses_mean = []
-        self.losses_var = []
-        # flush data into file
+
+        self._trackers = {value: OnlineDataTracker() for value in tracked_values}
+        headers = ["episode"]
+
+        for value in tracked_values:
+            headers.append(value + "_mean")
+            headers.append(value + "_var")
+
+        self._tracked_values = tracked_values
+        self._data = []
+        self._csv_writer = CsvWriter(filename, headers)
+        self._episode = 0
 
     def save_episode(self):
-        mean, var = self.tracker.get_curr_mean_variance()
-        self.losses_mean.append(mean)
-        self.losses_var.append(var)
-        if len(self.losses_mean) == 1000:
-            self.flush_buffer()
+        self._data.append(self._prepare_episode_data())
+        self._episode += 1
 
     def flush_buffer(self):
-        data = self._prepare_data()
-        self.csv_writer.store_data(data)
-        self.losses_var = []
-        self.losses_mean = []
+        self._csv_writer.store_data(self._data)
+        self._data = []
 
-    def _prepare_data(self):
-        data = [[episode, mean, var] for episode, (mean, var) in enumerate(zip(self.losses_mean, self.losses_var))]
-        return data
+    def _prepare_episode_data(self):
+        episode_data = [self._episode]
+        for var in self._tracked_values:
+            mean, var = self._trackers[var].get_curr_mean_variance()
+            episode_data.append(mean)
+            episode_data.append(var)
+        return episode_data
 
     # add new data
-    def add_data(self, loss: float):
-        self.tracker.update_aggr(loss)
+    def add_data(self, value: float, category: str = None):
+        if category is None:
+            category = self._tracked_values[0]
+        self._trackers[category].update_aggr(value)
 
     @staticmethod
     def flush_all():
@@ -45,8 +54,4 @@ class ModelWriter(AbstractModelWriter):
             instance.save_episode()
 
 
-writer_instances = {"actor": ModelWriter("actor", "q_value"),
-                    "critic": ModelWriter("critic", "critic_loss"),
-                    "reward": ModelWriter("reward", "reward"),
-                    "autoencoder": ModelWriter("autoencoder", "image_loss"),
-                    "mock": AbstractModelWriter()}
+writer_instances = {}

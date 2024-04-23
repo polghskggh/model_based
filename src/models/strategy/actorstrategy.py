@@ -8,7 +8,7 @@ from src.resultwriter import ModelWriter
 from src.resultwriter.modelwriter import writer_instances
 
 
-class DDPGActorStrategy(ModelStrategy):
+class PPOActorStrategy(ModelStrategy):
     def __init__(self):
         super().__init__()
 
@@ -19,4 +19,5 @@ class DDPGActorStrategy(ModelStrategy):
         return 2, 2
 
     def init_writer(self) -> ModelWriter:
+        writer_instances["actor"] = ModelWriter("actor", "q_value")
         return writer_instances["actor"]

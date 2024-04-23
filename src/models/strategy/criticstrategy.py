@@ -2,7 +2,7 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from src.models.strategy.modelstrategy import ModelStrategy
-from src.resultwriter.modelwriter import writer_instances
+from src.resultwriter.modelwriter import writer_instances, ModelWriter
 
 
 class DDPGCriticStrategy(ModelStrategy):
@@ -17,4 +17,6 @@ class DDPGCriticStrategy(ModelStrategy):
         return (4, 2), (2, )
 
     def init_writer(self):
+        writer_instances["critic"] = ModelWriter("critic", "critic_loss")
         return writer_instances["critic"]
+

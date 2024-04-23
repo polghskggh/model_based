@@ -25,8 +25,3 @@ class OnlineDataTracker:
             variance = self.M2 / self.count
             sample_variance = self.M2 / (self.count - 1)
             return self.mean, variance, sample_variance
-
-    def reset(self):
-        self.count = 0
-        self.mean = 0.0
-        self.M2 = 0.0

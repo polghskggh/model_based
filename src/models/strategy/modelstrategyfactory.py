@@ -1,6 +1,6 @@
 from src.models.strategy.autoencoderstrategy import AutoEncoderStrategy
-from src.models.strategy.ddpgactorstrategy import DDPGActorStrategy
-from src.models.strategy.ddpgcriticstrategy import DDPGCriticStrategy
+from src.models.strategy.actorstrategy import DDPGActorStrategy
+from src.models.strategy.criticstrategy import DDPGCriticStrategy
 from src.models.strategy.modelstrategy import ModelStrategy
 from src.models.strategy.trainerstrategy import InferenceStrategy, BitPredictorStrategy, StochasticAEStratgy, \
     StochasticAETrainerStrategy, LatentAutoEncoderStrategy

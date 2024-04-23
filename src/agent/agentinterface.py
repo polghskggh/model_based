@@ -23,3 +23,11 @@ class AgentInterface:
     @abstractmethod
     def receive_state(self, state: np.ndarray[float]):
         pass
+
+    @abstractmethod
+    def save(self):
+        pass
+
+    @abstractmethod
+    def load(self):
+        pass

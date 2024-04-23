@@ -30,5 +30,7 @@ hyperparameters = {
         'carry': 0,
         'params': 0,
         'action': 0,
-    }
+    },
+    'save_path': '/tmp/flax_ckpt',
+    'max_episode_length': 1000,
 }

@@ -20,14 +20,14 @@ class PPOStrategy(StrategyInterface):
         self._sequence_length: int = hyperparameters["ppo"]['sequence_length']
         self._actor, self._critic = PPOActor(ActorAtari(Shape()[0])), PPOCritic(AtariNN(*Shape(), 1))
 
-    def _batch_update(self, training_sample: list[jax.Array]) -> tuple[jax.Array, jax.Array]:
+    def _batch_update(self, training_sample: list[jax.Array]):
         states, rewards = jnp.append(training_sample[0], training_sample[3][-1]), training_sample[2]
 
         grads = self._critic.calculate_grads(states, rewards)
         self._critic.update(grads)
         advantage = self._critic.provide_feedback(states, rewards)
-        self._actor.update(states, advantage)
-        return critic_grads, action_grads
+        grads = self._actor.calculate_grads(states, advantage)
+        self._actor.update(grads)
 
     def update(self, replay_buffer: ReplayBuffer):
         # maybe do multiple updates per batch for PPO
@@ -35,4 +35,12 @@ class PPOStrategy(StrategyInterface):
             self._batch_update(replay_buffer.sample(self._batch_size, self._sequence_length))
 
     def select_action(self, state: jnp.ndarray) -> jnp.ndarray:
-        return self._actor.approximate_best_action(state)
+        return self._actor.calculate_action(state)
+
+    def save(self):
+        self._actor.save()
+        self._critic.save()
+
+    def load(self):
+        self._actor.load()
+        self._critic.load()

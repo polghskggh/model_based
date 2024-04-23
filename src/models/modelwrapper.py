@@ -2,9 +2,11 @@ from ctypes import Array
 from typing import Self
 
 import optax
+from flax.training import orbax_utils
 from flax import linen as nn
 from jax import random as random
 from jax import value_and_grad
+import orbax.checkpoint
 
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.pod.hyperparameters import hyperparameters
@@ -95,3 +97,20 @@ class ModelWrapper:
             return transform_to_batch(data, dims[0])
 
         return tuple(transform_to_batch(datum, dim) for datum, dim in zip(data, dims))
+
+    def save(self, path: str):
+        checkpoint = {"params": self._params, "opt_state": self._opt_state, "rngs": self._rngs}
+        orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
+        save_args = orbax_utils.save_args_from_target(checkpoint)
+        path = hyperparameters["save_path"] + path
+
+        orbax_checkpointer.save(path, checkpoint, save_args=save_args)
+        self._model.save(self._params)
+
+    def load(self, path: str):
+        orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
+        path = hyperparameters["save_path"] + path
+        checkpoint = orbax_checkpointer.restore(path)
+        self._params = checkpoint["params"]
+        self._opt_state = checkpoint["opt_state"]
+        self._rngs = checkpoint["rngs"]

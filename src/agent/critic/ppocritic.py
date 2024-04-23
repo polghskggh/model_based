@@ -1,13 +1,10 @@
 from ctypes import Array
 
-from etils.etree import jax
+import jax
+from flax import linen as nn
 
-from src.agent.actor.actorinterface import ActorInterface
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
-from flax import linen as nn
-import numpy as np
-
 from src.models.trainer.critictrainer import PPOCriticTrainer
 from src.pod.hyperparameters import hyperparameters
 
