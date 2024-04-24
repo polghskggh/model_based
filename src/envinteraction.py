@@ -15,8 +15,8 @@ def model_free_train_loop(agent: AgentInterface, env: gym.Env):
     for _ in range(hyperparameters["max_episode_length"]):
         reward, done = interact(agent, env)
         episode_return += reward
+        writer_instances["reward"].add_data(reward, "reward")
         if done:
-            writer_instances["reward"].add_data(reward, "reward")
             writer_instances["reward"].add_data(episode_return, "return")
             return
 

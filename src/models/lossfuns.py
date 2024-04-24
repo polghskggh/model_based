@@ -7,7 +7,6 @@ from src.pod.hyperparameters import hyperparameters
 
 def mean_squared_error(model, params, teacher_outputs, *inputs, **kwargs):
     outputs = model.apply(params, *inputs, **kwargs)
-    print(outputs.shape, teacher_outputs.shape)
     return jnp.mean(optax.squared_error(outputs, teacher_outputs))  # output is not batch format
 
 

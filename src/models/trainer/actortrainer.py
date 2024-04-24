@@ -9,6 +9,7 @@ import jax.numpy as jnp
 from src.models.modelwrapper import ModelWrapper
 from src.models.trainer.trainer import Trainer
 from src.pod.hyperparameters import hyperparameters
+from src.resultwriter.modelwriter import writer_instances
 
 
 class DDPGActorTrainer(Trainer):
@@ -39,6 +40,7 @@ class PPOActorTrainer(Trainer):
         grad_fun = value_and_grad(PPOActorTrainer.batch_ppo_grad, 1)
         loss, grads = grad_fun(self._model, params, states, advantage, action_index, self._clip_threshold,
                                self._rng)
+        writer_instances["actor"].add_data(loss)
         grads = jax.tree_util.tree_map(lambda x: -x, grads)
         return grads
 

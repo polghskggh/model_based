@@ -19,5 +19,5 @@ class PPOActorStrategy(ModelStrategy):
         return (4, ), (2,)
 
     def init_writer(self) -> ModelWriter:
-        writer_instances["actor"] = ModelWriter("actor", ["q_value"])
+        writer_instances["actor"] = ModelWriter("actor", ["actor_loss"])
         return writer_instances["actor"]
