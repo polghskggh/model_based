@@ -35,6 +35,7 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
         ModelWriter.save_all()                      # dynamically save gathered data
         ModelWriter.flush_all()
 
+
 def run_experiment(agent: AgentInterface, env: gym.Env):
     model_free_train_loop(agent, env)
 

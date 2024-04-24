@@ -1,20 +1,10 @@
 import jax
-import rlax
-from numpy import ndarray
-from rlax import one_hot
+import jax.random as random
+from flax import linen as nn
 
 from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
-from flax import linen as nn
-
-import jax.numpy as jnp
-import jax.random as random
-
-import numpy as np
-
-from src.models.trainer.actortrainer import DDPGActorTrainer, PPOActorTrainer
-from src.pod.hyperparameters import hyperparameters
-from src.utils.inttoonehot import softmax_to_onehot
+from src.models.trainer.actortrainer import PPOActorTrainer
 
 
 class PPOActor(ActorInterface):

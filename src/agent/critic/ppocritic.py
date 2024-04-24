@@ -3,7 +3,7 @@ from ctypes import Array
 import jax
 import rlax
 from flax import linen as nn
-from jax import vmap
+from jax import vmap, jit
 
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
@@ -39,6 +39,7 @@ class PPOCritic(CriticInterface):
         discount = self._discount_factor * jnp.ones_like(rewards)
         return rlax.discounted_returns(rewards, discount, values)
 
+    @jit
     def __batch_calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array) -> jax.Array:
         self.__update_bootstrap_values(states)
         return vmap(self.__calculate_rewards_to_go, (0, 0))(rewards, self._bootstrapped_values)

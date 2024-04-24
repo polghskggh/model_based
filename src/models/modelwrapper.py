@@ -1,8 +1,6 @@
 from ctypes import Array
-from typing import Self
 
 import optax
-from flax.training import orbax_utils
 from flax import linen as nn
 from jax import random as random
 from jax import value_and_grad
@@ -62,7 +60,7 @@ class ModelWrapper:
         opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, opt_grads)
 
-    def update_polyak(self, rho: float, other_model: Self):
+    def update_polyak(self, rho: float, other_model):
         """
         Update the parameters of the model using Polyak averaging
 
