@@ -30,6 +30,9 @@ hyperparameters = {
         'start_steps': 200,
         'update_every': 50,
     },
+    'mixing_coefficients': {
+        'kl_loss': 0.8,
+    },
     'save_path': '/tmp/flax_ckpt',
     'max_episode_length': 1000,
 }

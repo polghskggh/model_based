@@ -1,22 +1,23 @@
 import jax.numpy as jnp
 import jax.random as jr
 import jax
+from jax import lax, vmap, jit
 
 
 class ReplayBuffer:
     def __init__(self, state_shape: tuple[int], action_shape: int, limit: int = 1000):
         self._old_states = jnp.empty((0, *state_shape))
-        self._actions = jnp.empty((0, action_shape))
-        self._new_states = jnp.empty((0, *state_shape))
+        self._actions = jnp.empty(0, dtype=jnp.int32)
         self._rewards = jnp.empty(0)
+        self._new_states = jnp.empty((0, *state_shape))
         self._limit = limit
         self._key = jr.PRNGKey(0)
 
     # put data into buffer
-    def add_transition(self, old_state: jax.Array, action: jax.Array, reward: float,
+    def add_transition(self, old_state: jax.Array, action: int, reward: float,
                        new_state: jax.Array):
         self._old_states = jnp.append(self._old_states, jnp.array([old_state]), axis=0)
-        self._actions = jnp.append(self._actions, jnp.array([action]), axis=0)
+        self._actions = jnp.append(self._actions, action)
         self._new_states = jnp.append(self._new_states, jnp.array([new_state]), axis=0)
         self._rewards = jnp.append(self._rewards, reward)
         self._check_limit()
@@ -25,14 +26,20 @@ class ReplayBuffer:
     def sample(self, n: int, trajectory_length: int = 1) -> list[jax.Array]:
         self._key, subkey = jr.split(self._key)
         idx = jr.choice(subkey, self._rewards.shape[0] - (trajectory_length - 1), (n,), False)
-        if trajectory_length == 1:
-            return [self._old_states[idx], self._actions[idx], self._new_states[idx], self._rewards[idx]]
+        slice = ReplayBuffer.curried_slice_fun(trajectory_length)
 
-        # TODO: not working for trajectory_length > 1
-        return [self._old_states[idx: idx + trajectory_length],
-                self._actions[idx: idx + trajectory_length],
-                self._new_states[idx: idx + trajectory_length],
-                self._rewards[idx: idx + trajectory_length]]
+        return [slice(self._old_states, idx),
+                slice(self._actions, idx),
+                slice(self._rewards, idx),
+                slice(self._new_states, idx)]
+
+    @staticmethod
+    def curried_slice_fun(offset: int):
+        @jit
+        def slice_fun(x: jax.Array, index: int) -> jax.Array:
+            return lax.dynamic_slice_in_dim(x, index, offset)
+
+        return vmap(slice_fun, in_axes=(None, 0))
 
     def _check_limit(self):
         current = self._rewards.shape[0]

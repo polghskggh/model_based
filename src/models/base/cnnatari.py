@@ -17,12 +17,8 @@ class CNNAtari(nn.Module):
 
     @nn.compact
     def __call__(self, x: Array) -> Array:
-        x, skip = self.encoder(x)
-        x = CNNAtari.flatten(x)
+        x, _ = self.encoder(x)
+        x = x.reshape(x.shape[0], -1)
         x = nn.Dense(self.output_dimensions)(x)
         x = nn.relu(x)
         return x
-
-    @staticmethod
-    def flatten(x: Array) -> Array:
-        return x.reshape(-1) if x.ndim == 3 else x.reshape((x.shape[0], -1))

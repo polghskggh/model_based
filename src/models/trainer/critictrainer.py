@@ -1,6 +1,6 @@
 from ctypes import Array
 
-from jax import value_and_grad
+from jax import value_and_grad, vmap
 
 from src.models.lossfuns import mean_squared_error
 from src.models.modelwrapper import ModelWrapper
@@ -32,5 +32,14 @@ class PPOCriticTrainer:
         self._lambda = hyperparameters["ppo"]["lambda"]
 
     def train_step(self, rewards, values):
-        advantage = truncated_generalized_advantage_estimation(rewards, self._discount_factor, self._lambda, values)
+        advantage_fun = vmap(PPOCriticTrainer.calculate_advantage, in_axes=(0, 0, None, None))
+        return advantage_fun(rewards, values, self._discount_factor, self._lambda)
+
+    @staticmethod
+    def calculate_advantage(rewards, values, discount_factor, lambda_):
+        values = values.reshape(-1)
+        rewards = rewards.reshape(-1)
+
+        discounts = discount_factor * jnp.ones_like(rewards)
+        advantage = truncated_generalized_advantage_estimation(rewards, discounts, lambda_, values)
         return advantage

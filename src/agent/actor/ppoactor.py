@@ -26,11 +26,10 @@ class PPOActor(ActorInterface):
         self.key = random.PRNGKey(0)
 
     def calculate_actions(self, states: jax.Array) -> jax.Array:
-        actions = self._model.forward(states)
-        return softmax_to_onehot(actions)
+        return self._model.forward(states)
 
-    def calculate_grads(self, states: jax.Array, advantage: jax.Array) -> dict:
-        grads = self._trainer.train_step(self._model.params, states, advantage)
+    def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array) -> dict:
+        grads = self._trainer.train_step(self._model.params, states, advantage, action)
         return grads
 
     def update(self, grads: dict):

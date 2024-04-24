@@ -17,11 +17,7 @@ class ModelWrapper:
     def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001):
         self._strategy = model_strategy_factory(strategy)
         self._model = model
-        self._rngs = {"dropout": random.PRNGKey(hyperparameters["rng"]["dropout"]),
-                      "normal": random.PRNGKey(hyperparameters["rng"]["normal"]),
-                      "carry": random.PRNGKey(hyperparameters["rng"]["carry"]),
-                      "params": random.PRNGKey(hyperparameters["rng"]["params"])}
-
+        self._rngs = ModelWrapper.make_rng_keys()
         self._params = model.init(self._rngs, *self.batch_input(*self._strategy.init_params(model)))
         self._loss_fun = self._strategy.loss_fun()
         self._optimizer = self._strategy.init_optim(learning_rate)
@@ -125,6 +121,9 @@ class ModelWrapper:
         if dims is None:
             return data
 
+        if not isinstance(data, tuple):
+            return transform_to_batch(data, dims[0])
+
         return tuple(transform_to_batch(datum, dim) for datum, dim in zip(data, dims))
 
     def save(self, path: str):
@@ -159,3 +158,10 @@ class ModelWrapper:
         :return: the string representation of the model architecture
         """
         return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)))
+
+    @staticmethod
+    def make_rng_keys():
+        return {"dropout": random.PRNGKey(hyperparameters["rng"]["dropout"]),
+                "normal": random.PRNGKey(hyperparameters["rng"]["normal"]),
+                "carry": random.PRNGKey(hyperparameters["rng"]["carry"]),
+                "params": random.PRNGKey(hyperparameters["rng"]["params"])}

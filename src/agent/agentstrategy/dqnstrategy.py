@@ -6,8 +6,8 @@ from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.agent.critic import DQNNetwork
 from src.enviroment.shape import Shape
 from src.models.actorcritic.atarinn import AtariNN
-from src.pod import ReplayBuffer
 from src.pod.hyperparameters import hyperparameters
+from src.pod.replaybuffer import ReplayBuffer
 
 
 class DQNStrategy(StrategyInterface):
@@ -18,7 +18,7 @@ class DQNStrategy(StrategyInterface):
         self._action_space = Shape()[1]
 
     def _batch_update(self, training_sample: list[jax.Array]):
-        best_actions = self.select_action(training_sample[2])
+        best_actions = self.action_policy(training_sample[2])
 
         grads = self._q_network.calculate_grads(
             training_sample[0], training_sample[1], training_sample[3],
@@ -30,7 +30,7 @@ class DQNStrategy(StrategyInterface):
         for _ in range(self._batches_per_update):
             self._batch_update(buffer.sample(self._batch_size))
 
-    def select_action(self, state: jnp.ndarray) -> jnp.ndarray:
+    def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
         is_batch: bool = len(state.shape) > 3
 
         batch_size = state.shape[0] if is_batch else 1

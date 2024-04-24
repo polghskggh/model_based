@@ -10,6 +10,7 @@ import jax.numpy as jnp
 
 
 class DQNNetwork(CriticInterface):
+
     def __init__(self, model: nn.Module):
         super().__init__()
         self._model: ModelWrapper = ModelWrapper(model, "critic")
@@ -33,3 +34,11 @@ class DQNNetwork(CriticInterface):
 
     def provide_feedback(self, state: Array, action: Array) -> Array:
         return self._trainer.train_step(self._model.params, state, action)
+
+    def save(self):
+        self._model.save("critic")
+        self._target_model.save("target_critic")
+
+    def load(self):
+        self._model.load("critic")
+        self._target_model.load("target_critic")
