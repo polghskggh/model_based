@@ -37,7 +37,7 @@ class ModelWrapper:
         y = self.batch(y, out_dim)
 
         grad_fun = value_and_grad(self._loss_fun, 1)
-        loss, grads = jit(grad_fun)(self._model, self._params, y, *x, rngs=self._rngs)
+        loss, grads = grad_fun(self._model, self._params, y, *x, rngs=self._rngs)
         self.model_writer.add_data(loss)
         return grads
 
