@@ -1,5 +1,6 @@
 from ctypes import Array
 
+import jax
 import optax
 from flax import linen as nn
 from jax import random as random, jit
@@ -24,7 +25,7 @@ class ModelWrapper:
         self._version = 0
 
     # forward pass + backwards pass
-    def train_step(self, y: Array[float], *x: Array[float]):
+    def train_step(self, y: jax.Array | tuple, *x: jax.Array) -> dict:
         """
         Train the model using a single step
 

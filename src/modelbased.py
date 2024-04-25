@@ -1,9 +1,10 @@
 import gymnasium as gym
+from jax import lax
 
 from src.agent.agentinterface import AgentInterface
 from src.modelfree import interact
 from src.pod.hyperparameters import hyperparameters
-from src.resultwriter import ModelWriter
+from src.pod.trajectorystorage import TrajectoryStorage
 from src.resultwriter.modelwriter import writer_instances
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
@@ -15,11 +16,19 @@ def model_based_train_loop(agent: AgentInterface, world_model: WorldModelInterfa
 
 
 def sample_batches(agent: AgentInterface, env: gym.Env):
+    data_storage = TrajectoryStorage()
     episode_return = 0
     for _ in range(hyperparameters["world"]["batch"]):
-        reward, done = interact(agent, env)
+        _, done = interact(agent, env)
+
+        stack, action, reward, next_stack = agent.replay_buffer[-1]
+        next_frame = lax.dynamic_slice_in_dim(next_stack, -3, 3, axis=-1)
+        data_storage.add_input(stack, action)
+        data_storage.add_teacher(reward, next_frame)
+
         episode_return += reward
         writer_instances["reward"].add_data(reward, "reward")
+
         if done:
             writer_instances["reward"].add_data(episode_return, "return")
             episode_return = 0

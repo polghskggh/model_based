@@ -35,6 +35,7 @@ hyperparameters = {
     },
     'mixing_coefficients': {
         'kl_loss': 0.8,
+        'pixel_reward': 0.5,
     },
     'save_path': '/tmp/flax_ckpt',
     'max_episode_length': 1000,

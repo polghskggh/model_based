@@ -12,11 +12,20 @@ def mean_squared_error(model, params, teacher_outputs, *inputs, **kwargs):
 
 
 def cross_entropy_loss(model, params, teacher_outputs, *inputs, **kwargs):
-    outputs = jit(model.apply)(params, *inputs, **kwargs)
-    return jnp.mean(softmax_cross_entropy_with_integer_labels(outputs, teacher_outputs))
+    teach_pixels, teach_reward = teacher_outputs
+    pixels, reward = jit(model.apply)(params, *inputs, **kwargs)
+    alpha = hyperparameters["mixing_coefficients"]["pixel_reward"]
+
+    return alpha * jnp.mean(softmax_cross_entropy_with_integer_labels(pixels, teach_pixels)) \
+        + (1 - alpha) * jnp.mean(optax.squared_error(reward, teach_reward))
 
 
 def cross_entropy_with_kl_loss(model, params, teacher_outputs, *inputs, **kwargs):
-    outputs, kl_loss = jit(model.apply)(params, *inputs, **kwargs)
-    alpha = hyperparameters["mixing_coefficients"]["kl_loss"]
-    return (1 - alpha) * jnp.mean(softmax_cross_entropy_with_integer_labels(outputs, teacher_outputs)) + alpha * kl_loss
+    teach_pixels, teach_reward = teacher_outputs
+    pixel, reward, kl_loss = jit(model.apply)(params, *inputs, **kwargs)
+    alpha = hyperparameters["mixing_coefficients"]["pixel_reward"]
+    beta = hyperparameters["mixing_coefficients"]["kl_loss"]
+
+    return alpha * (1 - beta) * jnp.mean(softmax_cross_entropy_with_integer_labels(pixel, teach_pixels)) \
+        + alpha * beta * kl_loss \
+        + (1 - alpha) * jnp.mean(optax.squared_error(reward, teach_reward))
