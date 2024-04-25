@@ -25,7 +25,6 @@ class PPOActorTrainer(Trainer):
                                self._rng)
 
         writer_instances["actor"].add_data(loss)
-        grads = jax.tree_util.tree_map(lambda x: -x, grads)
         return grads
 
     @staticmethod

@@ -30,7 +30,7 @@ class AgentInterface:
     def load(self):
         pass
 
-    @abstractmethod
     @property
+    @abstractmethod
     def replay_buffer(self) -> ReplayBuffer:
         pass

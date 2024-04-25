@@ -1,7 +1,6 @@
 import jax
 import jax.numpy as jnp
 import jax.random as jr
-from rlax import one_hot
 
 from src.agent.agentinterface import AgentInterface
 from src.agent.agentstrategy.agentstrategyfactory import agent_strategy_factory
