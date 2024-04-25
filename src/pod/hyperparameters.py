@@ -5,6 +5,9 @@ hyperparameters = {
         'lstm_lr': 0.0001,
         'kl_loss_weight': 2,
         'batch_size': 32,
+        'data_size': 1000,
+        'rollout_length': 10,
+        'frame_stack': 4,
     },
     'dqn': {
         'batch_size': 100,

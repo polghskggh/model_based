@@ -9,20 +9,23 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
 def model_based_train_loop(agent: AgentInterface, world_model: WorldModelInterface, env: gym.Env):
-    sample_batches(agent, env)
-    world_model.update()
-    update_agent(agent, env)
+    data = sample_batches(agent, env)
+    world_model.update(data)
+    update_agent(agent, world_model)
 
 
 def sample_batches(agent: AgentInterface, env: gym.Env):
     episode_return = 0
-    for _ in range(hyperparameters["max_episode_length"]):
+    for _ in range(hyperparameters["world"]["batch"]):
         reward, done = interact(agent, env)
         episode_return += reward
+        writer_instances["reward"].add_data(reward, "reward")
         if done:
-            writer_instances["reward"].add_data(reward, "reward")
             writer_instances["reward"].add_data(episode_return, "return")
-            return episode_return
+            episode_return = 0
+            env.reset()
+
+    return agent.replay_buffer
 
 
 def update_agent(agent: AgentInterface, env: WorldModelInterface):

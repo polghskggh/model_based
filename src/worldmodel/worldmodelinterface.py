@@ -1,17 +1,21 @@
 from abc import abstractmethod
 
+import jax
+
+from src.pod.replaybuffer import ReplayBuffer
+
 
 class WorldModelInterface:
     @abstractmethod
-    def step(self, action):
+    def step(self, action) -> (jax.Array, float, bool, bool, dict):
         pass
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> (jax.Array, float, bool, bool, dict):
         pass
 
     @abstractmethod
-    def update(self):
+    def update(self, data: ReplayBuffer):
         pass
 
     @abstractmethod

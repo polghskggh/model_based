@@ -3,14 +3,12 @@ import jax.numpy as jnp
 from gymnasium.wrappers import ResizeObservation
 from jax import vmap
 
-from src.agent.acstrategy import Shape
-from src.enviroment import make_env
+from src.enviroment import make_env, Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
-from src.models.inference import StochasticAutoencoder
+from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.models.trainer.saetrainer import SAETrainer
-from src.utils.inttoonehot import tiles_to_onehot
 from src.utils.tiling import tile_image
 
 
@@ -36,9 +34,8 @@ def setup(stochastic: bool = False):
 
     next_frame, _ = env.reset()
     autoencoder = gen_autoencoder(stochastic)
-    reconstructed_observation = tiles_to_onehot(tile_image(next_frame))
     stack, action = model_strategy_factory("autoencoder").init_params(autoencoder.model)
-    return env, autoencoder, stack, action, next_frame, reconstructed_observation
+    return env, autoencoder, stack, action, next_frame
 
 
 def test_deterministic_autoencoder():
@@ -87,7 +84,6 @@ def test_deterministic_on_loaded_data():
                                   jnp.asarray(files["next_frame"]))
 
     observation = vmap(tile_image)(observation)
-    observation = vmap(tiles_to_onehot)(observation)
     for _ in range(10):
         grads = autoencoder.train_step(observation[:10], stack[:10], action[:10])
         autoencoder.apply_grads(grads)

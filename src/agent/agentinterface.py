@@ -2,12 +2,10 @@ from abc import abstractmethod
 
 import numpy as np
 
+from src.pod.replaybuffer import ReplayBuffer
+
 
 class AgentInterface:
-    @abstractmethod
-    def __init__(self):
-        pass
-
     @abstractmethod
     def update_policy(self):
         pass
@@ -30,4 +28,9 @@ class AgentInterface:
 
     @abstractmethod
     def load(self):
+        pass
+
+    @abstractmethod
+    @property
+    def replay_buffer(self) -> ReplayBuffer:
         pass

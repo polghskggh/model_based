@@ -79,3 +79,7 @@ class Agent(AgentInterface):
 
     def load(self):
         self._strategy.load()
+
+    @property
+    def replay_buffer(self):
+        return self._replay_buffer

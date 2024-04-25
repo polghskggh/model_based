@@ -49,5 +49,8 @@ class ReplayBuffer:
             self._new_states = self._new_states[amount:]
             self._rewards = self._rewards[amount:]
 
+    def data(self):
+        return [self._old_states, self._actions, self._new_states, self._rewards]
+
     def __getitem__(self, item):
         return self._old_states[item], self._actions[item], self._new_states[item], self._rewards[item]
