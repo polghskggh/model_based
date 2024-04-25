@@ -2,7 +2,7 @@ from ctypes import Array
 
 import optax
 from flax import linen as nn
-from jax import random as random
+from jax import random as random, jit
 from jax import value_and_grad
 import orbax.checkpoint
 
@@ -36,7 +36,8 @@ class ModelWrapper:
         x = self.batch(x, in_dim)
         y = self.batch(y, out_dim)
 
-        loss, grads = value_and_grad(self._loss_fun, 1)(self._model, self._params, y, *x, rngs=self._rngs)
+        grad_fun = value_and_grad(self._loss_fun, 1)
+        loss, grads = jit(grad_fun)(self._model, self._params, y, *x, rngs=self._rngs)
         self.model_writer.add_data(loss)
         return grads
 
@@ -49,7 +50,7 @@ class ModelWrapper:
         :return: the output of the model
         """
         x = self.batch_input(*x)
-        return self._model.apply(self._params, *x, rngs=self._rngs)
+        return jit(self._model.apply)(self._params, *x, rngs=self._rngs)
 
     def apply_grads(self, grads: dict):
         """

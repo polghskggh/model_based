@@ -5,7 +5,7 @@ import gymnasium as gym
 
 from src.agent.agent import Agent
 from src.agent.agentinterface import AgentInterface
-from src.envinteraction import model_free_train_loop
+from src.modelfree import model_free_train_loop
 from src.enviroment import make_env
 from src.gpu import check_gpu
 from src.pod.hyperparameters import hyperparameters

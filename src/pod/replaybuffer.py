@@ -35,11 +35,10 @@ class ReplayBuffer:
 
     @staticmethod
     def curried_slice_fun(offset: int):
-        @jit
         def slice_fun(x: jax.Array, index: int) -> jax.Array:
             return lax.dynamic_slice_in_dim(x, index, offset)
 
-        return vmap(slice_fun, in_axes=(None, 0))
+        return vmap(jit(slice_fun), in_axes=(None, 0))
 
     def _check_limit(self):
         current = self._rewards.shape[0]

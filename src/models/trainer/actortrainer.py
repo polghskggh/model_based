@@ -30,7 +30,7 @@ class PPOActorTrainer(Trainer):
 
     @staticmethod
     def ppo_grad(model, params: dict, states: jax.Array, advantage: float, action_index: int, epsilon: float, rng: dict):
-        policy = jit(model.apply(params, states, rngs=rng))
+        policy = jit(model.apply)(params, states, rngs=rng)
         prob = jnp.take_along_axis(policy, jnp.expand_dims(action_index, 0), axis=1)
         old_prob = lax.stop_gradient(prob)
 

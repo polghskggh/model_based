@@ -39,7 +39,6 @@ class PPOCritic(CriticInterface):
         discount = self._discount_factor * jnp.ones_like(rewards)
         return rlax.discounted_returns(rewards, discount, values)
 
-    @jit
     def __batch_calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array) -> jax.Array:
         self.__update_bootstrap_values(states)
         return vmap(self.__calculate_rewards_to_go, (0, 0))(rewards, self._bootstrapped_values)
