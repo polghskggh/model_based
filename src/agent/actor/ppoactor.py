@@ -20,7 +20,6 @@ class PPOActor(ActorInterface):
 
     def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array) -> dict:
         grads = self._trainer.train_step(self._model.params, states, advantage, action)
-        grads = jax.tree_util.tree_map(lambda x: -x, grads)
         return grads
 
     def update(self, grads: dict):

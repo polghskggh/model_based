@@ -35,7 +35,7 @@ class PPOActorTrainer(Trainer):
 
         clipped_loss = jnp.minimum(prob / old_prob * advantage,
                                    jnp.clip(prob / old_prob, 1 - epsilon, 1 + epsilon) * advantage)
-        return clipped_loss
+        return -clipped_loss
 
     @staticmethod
     def batch_ppo_grad(model, params: dict, states: jax.Array, advantage: float, action_index: jax.Array,

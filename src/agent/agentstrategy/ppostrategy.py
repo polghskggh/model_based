@@ -30,7 +30,6 @@ class PPOStrategy(StrategyInterface):
         rewards = training_sample[2]
 
         advantage = self._critic.provide_feedback(extended_states, rewards)
-        print("advantage", advantage.shape)
         states = training_sample[0]
         actor_grads = self._actor.calculate_grads(states, advantage, action)
         critic_grads = self._critic.calculate_grads(extended_states, rewards)

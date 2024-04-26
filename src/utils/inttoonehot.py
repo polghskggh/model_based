@@ -1,7 +1,4 @@
-from ctypes import Array
-
 import jax.numpy as jnp
-from jax import vmap
 from jax.nn import one_hot
 
 
