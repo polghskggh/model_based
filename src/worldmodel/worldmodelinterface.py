@@ -3,6 +3,7 @@ from abc import abstractmethod
 import jax
 
 from src.pod.replaybuffer import ReplayBuffer
+from src.pod.trajectorystorage import TrajectoryStorage
 
 
 class WorldModelInterface:
@@ -15,7 +16,7 @@ class WorldModelInterface:
         pass
 
     @abstractmethod
-    def update(self, data: ReplayBuffer):
+    def update(self, data: TrajectoryStorage):
         pass
 
     @abstractmethod

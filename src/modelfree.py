@@ -22,13 +22,14 @@ def model_free_train_loop(agent: AgentInterface, env: gym.Env):
             return
 
 
-def interact(agent: AgentInterface, enviroment: WorldModelInterface|gym.Env, update: bool = True, return_all: bool = False):
+def interact(agent: AgentInterface, enviroment: WorldModelInterface|gym.Env, update: bool = True):
     action = agent.select_action()
     observation, reward, terminated, truncated, _ = enviroment.step(action)
     agent.receive_reward(reward)
     agent.receive_state(observation)
+    done = terminated or truncated
 
     if update:
-        agent.update_policy()
+        agent.update_policy(done)
 
     return reward, terminated or truncated

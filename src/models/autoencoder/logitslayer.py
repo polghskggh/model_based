@@ -13,6 +13,3 @@ class LogitsLayer(nn.Module):
     def __call__(self, x: Array) -> Array:
         x = self.mapped_layer(x)
         return x
-
-
-

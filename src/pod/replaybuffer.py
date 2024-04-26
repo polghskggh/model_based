@@ -5,7 +5,7 @@ from jax import lax, vmap, jit
 
 
 class ReplayBuffer:
-    def __init__(self, state_shape: tuple[int], action_shape: int, limit: int = 1000):
+    def __init__(self, state_shape: tuple[int], limit: int = 1000):
         self._old_states = jnp.empty((0, *state_shape))
         self._actions = jnp.empty(0, dtype=jnp.int32)
         self._rewards = jnp.empty(0)
@@ -23,22 +23,14 @@ class ReplayBuffer:
         self._check_limit()
 
     # sample n samples from buffer
-    def sample(self, n: int, trajectory_length: int = 1) -> list[jax.Array]:
+    def sample(self, n: int) -> list[jax.Array]:
         self._key, subkey = jr.split(self._key)
-        idx = jr.choice(subkey, self._rewards.shape[0] - (trajectory_length - 1), (n,), False)
-        slice = ReplayBuffer.curried_slice_fun(trajectory_length)
+        idx = jr.choice(subkey, self._rewards.shape[0], (n,), False)
 
-        return [slice(self._old_states, idx),
-                slice(self._actions, idx),
-                slice(self._rewards, idx),
-                slice(self._new_states, idx)]
-
-    @staticmethod
-    def curried_slice_fun(offset: int):
-        def slice_fun(x: jax.Array, index: int) -> jax.Array:
-            return lax.dynamic_slice_in_dim(x, index, offset)
-
-        return vmap(jit(slice_fun), in_axes=(None, 0))
+        return [self._old_states[idx],
+                self._actions[idx],
+                self._rewards[idx],
+                self._new_states[idx]]
 
     def _check_limit(self):
         current = self._rewards.shape[0]

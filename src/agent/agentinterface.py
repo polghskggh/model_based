@@ -7,7 +7,7 @@ from src.pod.replaybuffer import ReplayBuffer
 
 class AgentInterface:
     @abstractmethod
-    def update_policy(self):
+    def update_policy(self, done: bool):
         pass
 
     @abstractmethod
@@ -30,7 +30,6 @@ class AgentInterface:
     def load(self):
         pass
 
-    @property
     @abstractmethod
-    def replay_buffer(self) -> ReplayBuffer:
+    def last_transition(self):
         pass

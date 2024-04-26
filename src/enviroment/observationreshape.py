@@ -1,10 +1,11 @@
 import numpy as np
 from gym import Space
 from gymnasium import ObservationWrapper
+import gymnasium as gym
 
 
 class ObservationReshape(ObservationWrapper):
-    def __init__(self, env):
+    def __init__(self, env) -> gym.Env:
         super().__init__(env)
         self.observation_space = Space(shape=env.observation_space.shape[1:3] +
                                        (env.observation_space.shape[0] * env.observation_space.shape[3], ),

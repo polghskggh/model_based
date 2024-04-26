@@ -18,6 +18,7 @@ class Encoder(nn.Module):
             skip.append(x)
             features = self.scaled_features(layer_id) # first 2 layers have less features
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
+            print("error_spot", x.shape)
             x = nn.LayerNorm()(x)
             x = nn.Conv(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = nn.relu(x)

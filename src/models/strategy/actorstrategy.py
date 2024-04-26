@@ -1,8 +1,6 @@
-import optax
-from flax import linen as nn
 import jax.numpy as jnp
+from flax import linen as nn
 
-from src.models.lossfuns import mean_squared_error
 from src.models.strategy.modelstrategy import ModelStrategy
 from src.resultwriter import ModelWriter
 from src.resultwriter.modelwriter import writer_instances

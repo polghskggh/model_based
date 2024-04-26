@@ -3,7 +3,7 @@ from ctypes import Array
 import jax
 import rlax
 from flax import linen as nn
-from jax import vmap, jit
+from jax import vmap, jit, lax
 
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
@@ -24,6 +24,7 @@ class PPOCritic(CriticInterface):
         self._bootstrapped_values = None
 
     def __update_bootstrap_values(self, states: jax.Array) -> None:
+        print("states", states.shape)
         if self._bootstrapped_values is None:
             self._bootstrapped_values = vmap(self._model.forward)(states)
 
@@ -45,8 +46,14 @@ class PPOCritic(CriticInterface):
 
     def calculate_grads(self, states: jax.Array, reward: jax.Array) -> dict:
         rewards_to_go = self.__batch_calculate_rewards_to_go(reward, states)
-        states = states[:, 0, :, :, :]
-        grads = self._model.train_step(rewards_to_go, states)
+        rewards_to_go = jnp.expand_dims(rewards_to_go, axis=-1)
+        states = lax.slice_in_dim(states, 0, -1, axis=1)
+        grads = vmap(self.__batch_train_step, in_axes=(0, 0))(rewards_to_go, states)
+
+        return grads
+
+    def __batch_train_step(self, rewards: jax.Array, states: jax.Array) -> jax.Array:
+        grads = self._model.train_step(rewards, states)
         return grads
 
     def update(self, grads: dict):

@@ -21,10 +21,9 @@ def sample_batches(agent: AgentInterface, env: gym.Env):
     for _ in range(hyperparameters["world"]["batch"]):
         _, done = interact(agent, env)
 
-        stack, action, reward, next_stack = agent.replay_buffer[-1]
+        stack, action, reward, next_stack = agent.last_transition()
         next_frame = lax.dynamic_slice_in_dim(next_stack, -3, 3, axis=-1)
-        data_storage.add_input(stack, action)
-        data_storage.add_teacher(reward, next_frame)
+        data_storage.add_transition(stack, action, reward, next_frame)
 
         episode_return += reward
         writer_instances["reward"].add_data(reward, "reward")
@@ -34,7 +33,7 @@ def sample_batches(agent: AgentInterface, env: gym.Env):
             episode_return = 0
             env.reset()
 
-    return agent.replay_buffer
+    return data_storage
 
 
 def update_agent(agent: AgentInterface, env: WorldModelInterface):
