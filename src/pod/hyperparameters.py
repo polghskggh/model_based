@@ -38,5 +38,5 @@ hyperparameters = {
         'pixel_reward': 0.5,
     },
     'save_path': '/tmp/flax_ckpt',
-    'max_episode_length': 10,
+    'max_episode_length': 500,
 }
