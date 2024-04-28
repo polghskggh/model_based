@@ -8,6 +8,7 @@ hyperparameters = {
         'data_size': 1000,
         'rollout_length': 10,
         'frame_stack': 4,
+        'samples': 400
     },
     'dqn': {
         'batch_size': 100,

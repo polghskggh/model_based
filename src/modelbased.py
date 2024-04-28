@@ -18,7 +18,10 @@ def model_based_train_loop(agent: AgentInterface, world_model: WorldModelInterfa
 def sample_batches(agent: AgentInterface, env: gym.Env):
     data_storage = TrajectoryStorage()
     episode_return = 0
-    for _ in range(hyperparameters["world"]["batch"]):
+    observation, _ = env.reset()
+    agent.receive_state(observation)
+
+    for _ in range(hyperparameters["world"]["samples"]):
         _, done = interact(agent, env, False)
 
         stack, action, reward, next_stack = agent.last_transition()

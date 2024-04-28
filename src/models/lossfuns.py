@@ -15,7 +15,7 @@ def cross_entropy_loss(model, params, teacher_outputs, *inputs, **kwargs):
     teach_pixels, teach_reward = teacher_outputs
     pixels, reward = jit(model.apply)(params, *inputs, **kwargs)
     alpha = hyperparameters["mixing_coefficients"]["pixel_reward"]
-
+    print(pixels.shape, teach_pixels.shape)
     return alpha * jnp.mean(softmax_cross_entropy_with_integer_labels(pixels, teach_pixels)) \
         + (1 - alpha) * jnp.mean(optax.squared_error(reward, teach_reward))
 
