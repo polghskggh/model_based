@@ -21,10 +21,10 @@ hyperparameters = {
         'batch_size': 100,
         'discount_factor': 0.95,
         'lambda': 0.7,
-        'trajectory_length': 100,
         'clip_threshold': 0.2,
         'sequence_length': 1,
         'number_of_trajectories': 5,
+        'trajectory_length': 50
     },
     'rng': {
         'dropout': 0,
@@ -38,5 +38,5 @@ hyperparameters = {
         'pixel_reward': 0.5,
     },
     'save_path': '/tmp/flax_ckpt',
-    'max_episode_length': 100,
+    'max_episode_length': 1000,
 }

@@ -7,7 +7,7 @@ from src.pod.replaybuffer import ReplayBuffer
 
 class AgentInterface:
     @abstractmethod
-    def update_policy(self, done: bool):
+    def update_policy(self):
         pass
 
     @abstractmethod

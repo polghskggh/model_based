@@ -18,6 +18,7 @@ class PPOStrategy(StrategyInterface):
         self._actor, self._critic = PPOActor(ActorAtari(*Shape())), PPOCritic(StateValueAtariNN(Shape()[0], 1))
         self._trajectory_storage = TrajectoryStorage()
         self._number_of_trajectories: int = hyperparameters['ppo']['number_of_trajectories']
+        self._trajectory_length: int = hyperparameters['ppo']['trajectory_length']
         self._iteration: int = 0
 
     def _batch_update(self, training_sample: list[jax.Array]):
@@ -35,13 +36,12 @@ class PPOStrategy(StrategyInterface):
         critic_grads = self._critic.calculate_grads(extended_states, rewards)
         return actor_grads, critic_grads
 
-    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
-        if done:
-            self._iteration += 1
+    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray):
+        self._iteration += 1
 
         self._trajectory_storage.add_transition(old_state, selected_action, reward, new_state)
 
-        if self._iteration == 0 or self._iteration % self._number_of_trajectories != 0:
+        if self._iteration == 0 or self._iteration % (self._number_of_trajectories * self._trajectory_length) != 0:
             return
 
         transitions = self._trajectory_storage.episodic_data()

@@ -40,7 +40,7 @@ class TrajectoryStorage:
         return self.frame_stack[item], self.actions[item], self.rewards[item], self.next_frames[item]
 
     def episodic_data(self):
-        trajectory_length = hyperparameters["max_episode_length"]
+        trajectory_length = hyperparameters["ppo"]["trajectory_length"]
         episodes = self.size // trajectory_length
         return (jnp.array(self.frame_stack).reshape(episodes, trajectory_length, *Shape()[0]),
                 jnp.array(self.actions).reshape(episodes, trajectory_length, 1),
