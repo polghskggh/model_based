@@ -1,4 +1,9 @@
+import jax.random as jr
 import jax.numpy as jnp
+
+
+def sample_normal(rng, mean, std):
+    return jr.normal(rng, std.shape) * std + mean
 
 
 def transform_to_batch(data, batch_dim=None):

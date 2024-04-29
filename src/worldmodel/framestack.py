@@ -19,6 +19,7 @@ class FrameStack:
 
     def reset(self):
         self._lazy_frames = deque([], maxlen=self.size)
+        self._frames = None
         for _ in range(self.size):
             self._lazy_frames.append(self.initial_state)
         return self.frames
