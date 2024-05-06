@@ -19,9 +19,8 @@ hyperparameters = {
     },
     'ppo': {
         'batch_size': 100,
-        'discount_factor': 0.95,
-        'lambda': 0.7,
-        'trajectory_length': 10,
+        'discount_factor': 0.99,
+        'lambda': 0.97,
         'clip_threshold': 0.2,
         'sequence_length': 1,
         'number_of_trajectories': 5,

@@ -2,8 +2,6 @@ import gymnasium as gym
 
 from src.agent.agentinterface import AgentInterface
 from src.pod.hyperparameters import hyperparameters
-from src.pod.replaybuffer import ReplayBuffer
-from src.resultwriter import ModelWriter
 from src.resultwriter.modelwriter import writer_instances
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 

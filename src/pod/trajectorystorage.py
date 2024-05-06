@@ -23,10 +23,10 @@ class TrajectoryStorage:
         self.size += 1
 
     def reset(self):
-        self.rewards = []
-        self.frame_stack = []
-        self.actions = []
-        self.next_frames = []
+        del self.rewards[:]
+        del self.frame_stack[:]
+        del self.actions[:]
+        del self.next_frames[:]
         self.size = 0
 
     def store(self):
