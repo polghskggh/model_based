@@ -1,9 +1,12 @@
+from jax import vmap
+
 from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.modelwrapper import ModelWrapper
 from src.pod.hyperparameters import hyperparameters
 from src.pod.replaybuffer import ReplayBuffer
 from src.pod.trajectorystorage import TrajectoryStorage
+from src.utils.tiling import tile_image
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 import gymnasium as gym
@@ -29,7 +32,10 @@ class DeterministicSimple(WorldModelInterface):
         for index in range(0, data.size, self._batch_size):
             end_idx = min(index + self._batch_size, data.size)
             batch = data[index:end_idx]
-            grads = self._model.train_step((batch[3], batch[2]), batch[0], batch[1])
+            print(batch[1].shape)
+            teach_pixels = vmap(tile_image)(batch[3])
+            teach_reward = batch[2].reshape(-1, 1)
+            grads = self._model.train_step((teach_pixels, teach_reward), batch[0], batch[1])
             self._model.apply_grads(grads)
 
     def save(self):

@@ -23,8 +23,8 @@ class Agent(AgentInterface):
 
         self._strategy: StrategyInterface = agent_strategy_factory(agent_type)
 
-    def update_policy(self, done: bool):
-        self._strategy.update(self._old_state, self._selected_action, self._reward, self._new_state, done)
+    def update_policy(self):
+        self._strategy.update(self._old_state, self._selected_action, self._reward, self._new_state)
 
     def select_action(self) -> jax.Array:
         followed_policy = self._strategy.action_policy(self._new_state)
