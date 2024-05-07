@@ -3,15 +3,16 @@ from ctypes import Array
 import jax
 import rlax
 from flax import linen as nn
-from jax import vmap, jit, lax
+from jax import vmap, lax
 from rlax import truncated_generalized_advantage_estimation
 
 from src.agent.critic import CriticInterface
 from src.enviroment import Shape
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.critictrainer import PPOCriticTrainer
 from src.pod.hyperparameters import hyperparameters
 import jax.numpy as jnp
+
+from src.trainer.critictrainer import PPOCriticTrainer
 
 
 class PPOCritic(CriticInterface):

@@ -3,8 +3,7 @@ from ctypes import Array
 from jax import value_and_grad, vmap
 
 from src.models.lossfuns import mean_squared_error
-from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.trainer import Trainer
+from src.trainer.trainer import Trainer
 
 import jax.numpy as jnp
 

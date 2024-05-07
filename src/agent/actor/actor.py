@@ -1,19 +1,18 @@
+import flax.linen as nn
+from jax import random as jr
 import jax
-import jax.random as random
-from flax import linen as nn
 
-from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.actortrainer import PPOActorTrainer
+from src.trainer.actortrainer import PPOActorTrainer
 
 
-class PPOActor(ActorInterface):
-    def __init__(self, model: nn.Module):
+class Actor:
+    def __init__(self, model: nn.Module, strategy: str):
         super().__init__()
-        self._model: ModelWrapper = ModelWrapper(model, "actor")
-        self._trainer = PPOActorTrainer(self._model.model)
+        self._model: ModelWrapper = ModelWrapper(model, strategy)
+        self._trainer = PPOActorTrainer(self._model.model) if strategy == "ppo" else DreamerActorTrainer(self._model.model)
         self._new_states = None
-        self.key = random.PRNGKey(0)
+        self.key = jr.PRNGKey(0)
 
     def calculate_actions(self, states: jax.Array) -> jax.Array:
         return self._model.forward(states)

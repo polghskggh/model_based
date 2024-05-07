@@ -8,7 +8,7 @@ from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
-from src.models.trainer.saetrainer import SAETrainer
+from src.trainer import SAETrainer
 from src.utils.tiling import tile_image
 
 

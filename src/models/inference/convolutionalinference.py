@@ -1,8 +1,6 @@
 import distrax
 import flax.linen as nn
 import jax.numpy as jnp
-import jax.random as jr
-from distrax import MultivariateNormalDiag
 from jax import Array, vmap
 
 from src.models.inference.discretizer import Discretizer
@@ -52,12 +50,11 @@ class ConvolutionalInference(nn.Module):
         discrete = self.discretizer(continuous)
         nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(discrete)
 
-        distribution = distrax.MultivariateNormalDiag(mean, std)
-
         if not calculate_kl_loss:
             return discrete
 
-        kl_loss = distribution.kl_divergence(MultivariateNormalDiag(jnp.zeros_like(mean), jnp.ones_like(std)))
+        distribution = distrax.MultivariateNormalDiag(mean, std)
+        kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(jnp.zeros_like(mean), jnp.ones_like(std)))
         return discrete, kl_loss
 
 

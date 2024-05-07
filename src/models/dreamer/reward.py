@@ -11,16 +11,19 @@ class RewardModel(nn.Module):
     activation_function: str = 'relu'
 
     def setup(self):
-        self.activation_fun =  activation_function_dict[self.activation_function]
-        self.fc1 = nn.Dense(self.belief_size + self.state_size, self.hidden_size)
-        self.fc2 = nn.Dense(self.hidden_size, self.hidden_size)
-        self.fc3 = nn.Dense(self.hidden_size, 1)
+        self.hidden_size = 256
+        self.activation_fun = activation_function_dict[self.activation_function]
 
     def __call__(self, belief, state):
         x = jnp.append(belief, state, axis=1)
-        hidden = self.activation_fun(self.fc1(x))
-        hidden = self.activation_fun(self.fc2(hidden))
-        reward = self.fc3(hidden)
-        reward = jnp.squeeze(reward, axis=-1)
+
+        hidden = nn.Dense(self.belief_size + self.state_size, self.hidden_size)(x)
+        hidden = self.activation_fun(hidden)
+
+        hidden = nn.Dense(self.hidden_size, self.hidden_size)(hidden)
+        hidden = self.activation_fun(hidden)
+
+        output = nn.Dense(self.hidden_size, 1)(hidden)
+        reward = jnp.squeeze(output, axis=-1)
         return reward
 

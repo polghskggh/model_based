@@ -2,13 +2,13 @@ from ctypes import Array
 
 from jax import random as jr
 
-from src.agent.acstrategy import Shape
+from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
-from src.models.inference import BitPredictor
+from src.models.inference.bitpredictior import BitPredictor
 from src.models.inference.convolutionalinference import ConvolutionalInference
 from src.models.inference.trainsae import TrainStochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.trainer import Trainer
+from src.trainer.trainer import Trainer
 from src.pod.hyperparameters import hyperparameters
 from src.utils.tiling import tile_image
 

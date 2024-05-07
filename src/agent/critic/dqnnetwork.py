@@ -4,7 +4,7 @@ from flax import linen as nn
 
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.critictrainer import DDPGCriticTrainer
+from src.trainer import DDPGCriticTrainer
 from src.pod.hyperparameters import hyperparameters
 import jax.numpy as jnp
 

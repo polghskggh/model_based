@@ -1,13 +1,9 @@
-from ctypes import Array
-from functools import partial
-
 import jax
-import rlax
 from jax import value_and_grad, vmap, lax, jit
 import jax.numpy as jnp
 
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.trainer import Trainer
+from src.trainer.trainer import Trainer
 from src.pod.hyperparameters import hyperparameters
 from src.resultwriter.modelwriter import writer_instances
 
@@ -44,3 +40,8 @@ class PPOActorTrainer(Trainer):
         batch_loss_fun = vmap(PPOActorTrainer.ppo_grad, in_axes=in_axes)
         batch_loss = batch_loss_fun(model, params, states, advantage, action_index, epsilon, rng)
         return jnp.mean(batch_loss)
+
+
+class DreamerActorTrainer(Trainer):
+    def train_step(self, *data):
+        pass

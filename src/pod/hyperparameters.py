@@ -26,6 +26,16 @@ hyperparameters = {
         'sequence_length': 1,
         'number_of_trajectories': 5,
     },
+    'dreamer': {
+        'belief_size': 200,
+        'state_size': 30,
+        'embedding_size': 30,
+        'hidden_size': 200,
+        'min_std_dev': 0.1,
+        'gradient_steps': 100,
+        'batch_size': 100,
+        'loss_weights': (0.25, 0.5, 0.25),
+    },
     'rng': {
         'dropout': 0,
         'normal': 0,
