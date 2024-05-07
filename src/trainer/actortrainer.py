@@ -1,3 +1,5 @@
+import flax.linen as nn
+
 import jax
 from jax import value_and_grad, vmap, lax, jit
 import jax.numpy as jnp
@@ -9,8 +11,7 @@ from src.resultwriter.modelwriter import writer_instances
 
 
 class PPOActorTrainer(Trainer):
-    def __init__(self, model: ModelWrapper):
-        super().__init__()
+    def __init__(self, model: nn.Module):
         self._model = model
         self._clip_threshold = hyperparameters["ppo"]["clip_threshold"]
         self._rng = ModelWrapper.make_rng_keys()
@@ -41,7 +42,3 @@ class PPOActorTrainer(Trainer):
         batch_loss = batch_loss_fun(model, params, states, advantage, action_index, epsilon, rng)
         return jnp.mean(batch_loss)
 
-
-class DreamerActorTrainer(Trainer):
-    def train_step(self, *data):
-        pass

@@ -3,14 +3,14 @@ from jax import random as jr
 import jax
 
 from src.models.modelwrapper import ModelWrapper
-from src.trainer.actortrainer import PPOActorTrainer
+from src.trainer.actortrainer import PPOActorTrainer, DreamerActorTrainer
 
 
 class Actor:
-    def __init__(self, model: nn.Module, strategy: str):
+    def __init__(self, model: nn.Module):
         super().__init__()
-        self._model: ModelWrapper = ModelWrapper(model, strategy)
-        self._trainer = PPOActorTrainer(self._model.model) if strategy == "ppo" else DreamerActorTrainer(self._model.model)
+        self._model: ModelWrapper = ModelWrapper(model, "actor")
+        self._trainer = PPOActorTrainer(self._model.model)
         self._new_states = None
         self.key = jr.PRNGKey(0)
 

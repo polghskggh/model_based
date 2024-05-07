@@ -18,7 +18,7 @@ class DreamerTrainer(Trainer):
                        "observation": observation_model,
                        "reward": reward_model}
 
-    def train_step(self, observations, actions, rewards, nonterminals, **params):
+    def train_step(self, observations, actions, rewards, nonterminals, params: dict):
         init_belief = jnp.zeros(self.batch_size, self.belief_size)
         init_state = jnp.zeros(self.batch_size, self.state_size)
 

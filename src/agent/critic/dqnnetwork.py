@@ -4,9 +4,10 @@ from flax import linen as nn
 
 from src.agent.critic import CriticInterface
 from src.models.modelwrapper import ModelWrapper
-from src.trainer import DDPGCriticTrainer
 from src.pod.hyperparameters import hyperparameters
 import jax.numpy as jnp
+
+from src.trainer.critictrainer import DDPGCriticTrainer
 
 
 class DQNNetwork(CriticInterface):
