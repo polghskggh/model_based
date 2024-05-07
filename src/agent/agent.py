@@ -20,7 +20,6 @@ class Agent(AgentInterface):
         self._reward: float = 0
 
         self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
-
         self._strategy: StrategyInterface = agent_strategy_factory(agent_type)
 
     def update_policy(self):
@@ -29,7 +28,6 @@ class Agent(AgentInterface):
     def select_action(self) -> jax.Array:
         followed_policy = self._strategy.action_policy(self._new_state)
         self._selected_action = self.__sample_from_distribution(followed_policy)
-
         return self._selected_action
 
     def receive_reward(self, reward: float):

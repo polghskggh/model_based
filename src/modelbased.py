@@ -21,7 +21,7 @@ def sample_batches(agent: AgentInterface, env: gym.Env):
     observation, _ = env.reset()
     agent.receive_state(observation)
 
-    for _ in range(hyperparameters["world"]["samples"]):
+    for _ in range(hyperparameters["max_episode_length"]):
         _, done = interact(agent, env, False)
 
         stack, action, reward, next_stack = agent.last_transition()
