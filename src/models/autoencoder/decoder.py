@@ -19,7 +19,7 @@ class Decoder(nn.Module):
     def __call__(self, x: Array, skip: list[Array]) -> Array:
         skip.reverse()
         for layer_id in range(self.layers):
-            features = self.scaled_features(layer_id) # first 2 layers have less features
+            features = self.scaled_features(layer_id) # first 2 layers more features
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
             x = nn.LayerNorm()(x)
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)

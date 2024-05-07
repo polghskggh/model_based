@@ -43,6 +43,12 @@ class TransitionModel(nn.Module):
     # s : -x--X--X--X--X--X-
     # @jit.script_method
 
+    def variational_encode(self, data):
+        mean, std_dev = jnp.array_split(self.dense_state_posterior(data), 2, axis=1)
+        std_dev = nn.softplus(std_dev) + self.min_std_dev
+        sample = sample_normal(self.make_rng('normal'), mean, std_dev)
+        return sample, mean, std_dev
+
     def update_belief(self, state, belief, action):
         # Compute belief (deterministic hidden state)
         state_action = self.activation_fun(self.dense_embed_state_action(jnp.append(state, action)))
@@ -53,22 +59,12 @@ class TransitionModel(nn.Module):
         # Compute state posterior by applying transition dynamics and using current observation
         hidden = self.activation_fun(
             self.dense_embed_belief_posterior(jnp.append(belief, observation, axis=0)))
-
-        future_posterior_mean, _posterior_std_dev = jnp.array_split(self.dense_state_posterior(hidden), 1, axis=1)
-        future_posterior_std_dev = nn.softplus(_posterior_std_dev) + self.min_std_dev
-        future_posterior_state = sample_normal(self.make_rng('normal'), future_posterior_mean,
-                                               future_posterior_std_dev)
-        return future_posterior_state, future_posterior_mean, future_posterior_std_dev
+        return self.variational_encode(hidden)
 
     def prior_update(self, belief):
         # Compute state prior by applying transition dynamics
         hidden = self.activation_fun(self.dense_embed_belief_prior(belief))
-
-        future_prior_mean, _prior_std_dev = jnp.array_split(self.dense_state_prior(hidden), 2, axis=1)
-        future_prior_std_dev = nn.softplus(_prior_std_dev) + self.min_std_dev
-        future_prior_state = sample_normal(self.make_rng('normal'), future_prior_mean, future_prior_std_dev)
-
-        return future_prior_state, future_prior_mean, future_prior_std_dev
+        return self.variational_encode(hidden)
 
     def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array,
                  observations: Optional[jnp.ndarray] = None, nonterminals: Optional[jax.Array] = None) \
