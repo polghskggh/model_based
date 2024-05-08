@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 import jax.random as jr
+import numpy as np
 
 from src.agent.agentinterface import AgentInterface
 from src.agent.agentstrategy.agentstrategyfactory import agent_strategy_factory
@@ -18,12 +19,13 @@ class Agent(AgentInterface):
 
         self._selected_action: int = 0
         self._reward: float = 0
+        self._done = False
 
         self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
         self._strategy: StrategyInterface = agent_strategy_factory(agent_type)
 
     def update_policy(self):
-        self._strategy.update(self._old_state, self._selected_action, self._reward, self._new_state)
+        self._strategy.update(self._old_state, self._selected_action, self._reward, self._new_state, self._done)
 
     def select_action(self) -> jax.Array:
         followed_policy = self._strategy.action_policy(self._new_state)
@@ -36,6 +38,9 @@ class Agent(AgentInterface):
     def receive_state(self, state: jax.Array):
         self._old_state = self._new_state
         self._new_state = state
+
+    def receive_term(self, done: bool):
+        self._done = done
 
     def __sample_from_distribution(self, distribution: jax.Array) -> jax.Array:
         self._key, subkey = jr.split(self._key)

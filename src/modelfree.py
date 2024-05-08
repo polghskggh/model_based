@@ -26,7 +26,11 @@ def interact(agent: AgentInterface, enviroment: WorldModelInterface|gym.Env, upd
     agent.receive_reward(reward)
     agent.receive_state(observation)
 
+    done = terminated or truncated
+
+    agent.receive_term(done)
+
     if update:
         agent.update_policy()
 
-    return reward, terminated or truncated
+    return reward, done

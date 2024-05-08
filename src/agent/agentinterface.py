@@ -23,6 +23,10 @@ class AgentInterface:
         pass
 
     @abstractmethod
+    def receive_term(self, done: bool):
+        pass
+
+    @abstractmethod
     def save(self):
         pass
 
