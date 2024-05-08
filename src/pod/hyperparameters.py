@@ -18,7 +18,7 @@ hyperparameters = {
         'update_every': 50,
     },
     'ppo': {
-        'batch_size': 100,
+        'batch_size': 300,
         'discount_factor': 0.99,
         'lambda': 0.97,
         'clip_threshold': 0.2,

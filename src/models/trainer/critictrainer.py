@@ -1,5 +1,6 @@
 from ctypes import Array
 
+import jax
 from jax import value_and_grad, vmap
 
 from src.models.lossfuns import mean_squared_error
@@ -11,6 +12,8 @@ import jax.numpy as jnp
 from rlax import truncated_generalized_advantage_estimation
 
 from src.pod.hyperparameters import hyperparameters
+from src.resultwriter.modelwriter import writer_instances
+from src.utils.rebatch import rebatch
 
 
 class DDPGCriticTrainer(Trainer):
@@ -28,18 +31,22 @@ class PPOCriticTrainer:
     def __init__(self, model):
         super().__init__()
         self._model = model
-        self._discount_factor = hyperparameters["ppo"]["discount_factor"]
-        self._lambda = hyperparameters["ppo"]["lambda"]
 
-    def train_step(self, rewards, values):
-        advantage_fun = vmap(PPOCriticTrainer.calculate_advantage, in_axes=(0, 0, None, None))
-        return advantage_fun(rewards, values, self._discount_factor, self._lambda)
+    def train_step(self, params, rewards, states):
+        batch_size = min(hyperparameters["ppo"]["batch_size"], states.shape[0] + states.shape[1])
+        rewards, states = rebatch(batch_size, rewards, states)
+
+        grad_fn = jax.value_and_grad(PPOCriticTrainer.loss_fun, 1)
+        loss, grad = grad_fn(self._model, params, rewards, states)
+
+        writer_instances["critic"].add_data(loss)
+        return grad
 
     @staticmethod
-    def calculate_advantage(rewards, values, discount_factor, lambda_):
-        values = values.reshape(-1)
-        rewards = rewards.reshape(-1)
+    def loss_fun(model, params, rewards, states):
+        batch_loss = 0
+        for reward_b, state_b in rewards, states:
+            batch_loss += mean_squared_error(model, params, reward_b, state_b)
 
-        discounts = discount_factor * jnp.ones_like(rewards)
-        advantage = truncated_generalized_advantage_estimation(rewards, discounts, lambda_, values)
-        return advantage
+        batch_loss /= len(rewards)
+        return batch_loss

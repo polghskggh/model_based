@@ -21,6 +21,8 @@ class FrameStack:
         self._lazy_frames = deque([], maxlen=self.size)
         for _ in range(self.size):
             self._lazy_frames.append(self.initial_state)
+
+        self._frames = None
         return self.frames
 
     def add_frame(self, next_frame):
@@ -32,6 +34,7 @@ class FrameStack:
         if self._frames is not None:
             return self._frames
 
+        # TODO: Shape is wrong (channels 1) || (channels 12)
         frames = jnp.array(self._lazy_frames, dtype=jnp.float32)
         new_shape = frames.shape[1:3] + (frames.shape[0] * frames.shape[3],)
         self._frames = frames.transpose(1, 2, 0, 3).reshape(new_shape)

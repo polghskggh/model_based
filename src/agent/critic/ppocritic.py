@@ -13,14 +13,16 @@ from src.models.trainer.critictrainer import PPOCriticTrainer
 from src.pod.hyperparameters import hyperparameters
 import jax.numpy as jnp
 
+from src.utils.rebatch import rebatch
+
 
 class PPOCritic(CriticInterface):
     def __init__(self, model: nn.Module):
         super().__init__()
         self._model: ModelWrapper = ModelWrapper(model, "ppocritic")
         self._action_dim: int = Shape()[1]
-        self._trainer = PPOCriticTrainer(self._model.model)
         self._bootstrapped_values = None
+        self._trainer = PPOCriticTrainer(self._model.model)
         self._discount_factor: float = hyperparameters["ppo"]["discount_factor"]
         self._lambda = hyperparameters["ppo"]["lambda"]
 
@@ -36,10 +38,8 @@ class PPOCritic(CriticInterface):
         return grads
 
     def __batch_train_step(self, rewards: jax.Array, states: jax.Array) -> dict:
-        rewards = rewards.reshape(-1, *rewards.shape[2:])
-        states = states.reshape(-1, *states.shape[2:])
+        grads = self._trainer.train_step(self._model.params, rewards, states)
 
-        grads = self._model.train_step(rewards, states)
         return grads
 
     def update(self, grads: dict):
@@ -51,12 +51,21 @@ class PPOCritic(CriticInterface):
 
     def __batch_calculate_advantage(self, states: jax.Array, rewards: jax.Array) -> jax.Array:
         self.__update_bootstrap_values(states)
-        advantage_fun = vmap(PPOCriticTrainer.calculate_advantage, in_axes=(0, 0, None, None))
+        advantage_fun = jit(vmap(PPOCritic.calculate_advantage, in_axes=(0, 0, None, None)))
         return advantage_fun(rewards, self._bootstrapped_values, self._discount_factor, self._lambda)
+
+    @staticmethod
+    def calculate_advantage(rewards, values, discount_factor, lambda_):
+        values = values.reshape(-1)
+        rewards = rewards.reshape(-1)
+
+        discounts = discount_factor * jnp.ones_like(rewards)
+        advantage = truncated_generalized_advantage_estimation(rewards, discounts, lambda_, values)
+        return advantage
 
     def __batch_calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array) -> jax.Array:
         self.__update_bootstrap_values(states)
-        return vmap(self.__calculate_rewards_to_go, (0, 0))(rewards, self._bootstrapped_values)
+        return jit(vmap(self.__calculate_rewards_to_go, (0, 0)))(rewards, self._bootstrapped_values)
 
     @staticmethod
     def __calculate_advantage(rewards, values, discount_factor, lambda_par):
