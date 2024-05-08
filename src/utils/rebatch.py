@@ -1,3 +1,6 @@
+import jax.numpy as jnp
+
+
 def rebatch(batch_size, *data):
     """
     input_dims: (batch1, batch2, data_dims)
@@ -9,6 +12,6 @@ def rebatch(batch_size, *data):
     """
     def _rebatch(data_array):
         single_batch_dim = data_array.reshape(-1, *data_array.shape[2:])
-        return single_batch_dim.array_split(single_batch_dim.shape[0] // batch_size)
+        return jnp.array_split(single_batch_dim, single_batch_dim.shape[0] // batch_size)
 
     return (_rebatch(data_array) for data_array in data)
