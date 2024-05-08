@@ -16,15 +16,18 @@ class SimpleWorldModel(WorldModelInterface):
     def __init__(self, env: gym.Env):
         self._model: ModelWrapper = ModelWrapper(StochasticAutoencoder(*Shape()), "autoencoder")
         self._frame_stack = FrameStack(env)
+        self._time_step = 0
         self._trainer = SAETrainer(self._model)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
         next_frame, reward = self._model.forward(action, self._frame_stack.frames)
         self._frame_stack.add_frame(next_frame)
-        return self._frame_stack.frames, reward, False, False, {}
+        truncated = self._time_step >= hyperparameters["max_episode_length"] - 1
+        return self._frame_stack.frames, reward, False, truncated, {}
 
     def reset(self):
         self._frame_stack.reset()
+        self._time_step = 0
         return self._frame_stack.frames, 0, False, False, {}
 
     def update(self, data: TrajectoryStorage):

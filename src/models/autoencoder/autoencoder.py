@@ -34,9 +34,7 @@ class AutoEncoder(nn.Module):
         embedded_image = self.pixel_embedding(image)
         encoded, skip = self.encoder(embedded_image)
 
-        print(action.shape)
         encoded_action = one_hot(action, self.second_input)
-        print(encoded_action.shape)
         injected = self.action_injector(encoded, encoded_action)
 
         if latent is not None:

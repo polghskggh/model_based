@@ -44,9 +44,9 @@ def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
 
 
 def run_experiment(agent: AgentInterface, env: gym.Env, world_model: WorldModelInterface):
-    #model_based_train_loop(agent, world_model, env)
+    model_based_train_loop(agent, world_model, env)
     #with jax.profiler.trace("/tmp/jax-trace", create_perfetto_link=True):
-    model_free_train_loop(agent, env)
+    #model_free_train_loop(agent, env)
 
 
 if __name__ == '__main__':

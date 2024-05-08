@@ -40,5 +40,5 @@ def sample_batches(agent: AgentInterface, env: gym.Env):
 
 
 def update_agent(agent: AgentInterface, env: WorldModelInterface):
-    for _ in range(hyperparameters["max_episode_length"]):
+    for time_step in range(hyperparameters["max_episode_length"]):
         interact(agent, env, update=True)
