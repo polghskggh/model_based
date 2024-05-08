@@ -7,6 +7,7 @@ from src.enviroment.shape import Shape
 from src.pod.hyperparameters import hyperparameters
 
 
+# TODO: Dreamer -> grayscale and stack 1 frame
 def make_env() -> gym.Env:
     """
     Create the Breakout environment with the necessary wrappers

@@ -16,17 +16,6 @@ from src.resultwriter.modelwriter import writer_instances
 from src.utils.rebatch import rebatch
 
 
-class DDPGCriticTrainer(Trainer):
-    def __init__(self, model):
-        super().__init__()
-        self._model = model
-
-    def train_step(self, params, states: Array[float], actions: Array[float]):
-        grad_fun = value_and_grad(mean_squared_error, 3)
-        q_val, grads = grad_fun(self._model, params, states, actions)
-        return grads
-
-
 class PPOCriticTrainer:
     def __init__(self, model):
         super().__init__()

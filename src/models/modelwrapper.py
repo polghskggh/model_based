@@ -62,16 +62,6 @@ class ModelWrapper:
         opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, opt_grads)
 
-    def update_polyak(self, rho: float, other_model):
-        """
-        Update the parameters of the model using Polyak averaging
-
-        :param rho: the averaging factor
-        :param other_model: the model to average with
-        :return: None
-        """
-        self._params = optax.incremental_update(self._params, other_model._params, rho)
-
     @property
     def model(self):
         """

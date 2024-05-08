@@ -13,7 +13,7 @@ hyperparameters = {
         'batch_size': 100,
         'batches_per_update': 5,
         'discount_factor': 0.95,
-        'polyak': 0.995,
+        'target_update_period': 10,
         'start_steps': 200,
         'update_every': 50,
     },
