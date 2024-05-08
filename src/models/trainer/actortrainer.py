@@ -7,6 +7,7 @@ from src.models.modelwrapper import ModelWrapper
 from src.models.trainer.trainer import Trainer
 from src.pod.hyperparameters import hyperparameters
 from src.resultwriter.modelwriter import writer_instances
+from src.utils.rebatch import rebatch
 
 
 class PPOActorTrainer(Trainer):
@@ -19,9 +20,7 @@ class PPOActorTrainer(Trainer):
     def train_step(self, params: dict, states: jax.Array, advantage: jax.Array, action_index: jax.Array):
         batch_size = min(hyperparameters["ppo"]["batch_size"], states.shape[0] + states.shape[1])
 
-        states = states.reshape(-1, batch_size, *states.shape[2:])
-        advantage = advantage.reshape(-1, batch_size, *advantage.shape[2:])
-        action_index = action_index.reshape(-1, batch_size, *action_index.shape[2:])
+        states, advantage, action_index = rebatch(batch_size, states, advantage, action_index)
 
         grad_fun = value_and_grad(PPOActorTrainer.batch_ppo_grad, 1)
         loss, grads = grad_fun(self._model, params, states, advantage, action_index, self._clip_threshold,

@@ -10,7 +10,6 @@ from src.models.actorcritic.actoratari import ActorAtari
 from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.pod.hyperparameters import hyperparameters
 from src.pod.montecarlostorage import MonteCarloStorage
-from src.pod.trajectorystorage import TrajectoryStorage
 
 
 class PPOStrategy(StrategyInterface):

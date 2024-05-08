@@ -1,7 +1,7 @@
 import gymnasium as gym
 from jax import lax
 
-from src.agent.agentinterface import AgentInterface
+from src.agent.agent import Agent
 from src.modelfree import interact
 from src.pod.hyperparameters import hyperparameters
 from src.pod.trajectorystorage import TrajectoryStorage
@@ -9,13 +9,13 @@ from src.resultwriter.modelwriter import writer_instances
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
-def model_based_train_loop(agent: AgentInterface, world_model: WorldModelInterface, env: gym.Env):
+def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: gym.Env):
     data = sample_batches(agent, env)
     world_model.update(data)
     update_agent(agent, world_model)
 
 
-def sample_batches(agent: AgentInterface, env: gym.Env):
+def sample_batches(agent: Agent, env: gym.Env):
     data_storage = TrajectoryStorage()
     episode_return = 0
     observation, _ = env.reset()
@@ -39,6 +39,6 @@ def sample_batches(agent: AgentInterface, env: gym.Env):
     return data_storage
 
 
-def update_agent(agent: AgentInterface, env: WorldModelInterface):
+def update_agent(agent: Agent, env: WorldModelInterface):
     for time_step in range(hyperparameters["max_episode_length"]):
         interact(agent, env, update=True)

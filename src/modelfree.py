@@ -1,12 +1,12 @@
 import gymnasium as gym
 
-from src.agent.agentinterface import AgentInterface
+from src.agent.agent import Agent
 from src.pod.hyperparameters import hyperparameters
 from src.resultwriter.modelwriter import writer_instances
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
-def model_free_train_loop(agent: AgentInterface, env: gym.Env):
+def model_free_train_loop(agent: Agent, env: gym.Env):
     observation, _ = env.reset()
     agent.receive_state(observation)
     episode_return = 0
@@ -20,7 +20,7 @@ def model_free_train_loop(agent: AgentInterface, env: gym.Env):
             return
 
 
-def interact(agent: AgentInterface, enviroment: WorldModelInterface|gym.Env, update: bool = True):
+def interact(agent: Agent, enviroment: WorldModelInterface|gym.Env, update: bool = True):
     action = agent.select_action()
     observation, reward, terminated, truncated, _ = enviroment.step(action)
     agent.receive_reward(reward)

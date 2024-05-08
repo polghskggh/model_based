@@ -1,17 +1,14 @@
 import jax
 import jax.numpy as jnp
 import jax.random as jr
-import numpy as np
 
-from src.agent.agentinterface import AgentInterface
 from src.agent.agentstrategy.agentstrategyfactory import agent_strategy_factory
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment.shape import Shape
 from src.pod.hyperparameters import hyperparameters
-from src.pod.replaybuffer import ReplayBuffer
 
 
-class Agent(AgentInterface):
+class Agent:
     def __init__(self, agent_type: str):
         super().__init__()
         self._old_state: jax.Array = jnp.array(Shape.shape[0], float)
