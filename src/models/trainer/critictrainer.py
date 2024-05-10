@@ -34,7 +34,7 @@ class PPOCriticTrainer:
     @staticmethod
     def loss_fun(model, params, rewards, states):
         batch_loss = 0
-        for reward_b, state_b in rewards, states:
+        for reward_b, state_b in zip(rewards, states):
             batch_loss += mean_squared_error(model, params, reward_b, state_b)
 
         batch_loss /= len(rewards)

@@ -33,8 +33,8 @@ class PPOActorTrainer(Trainer):
     def ppo_grad(model, params: dict, states: jax.Array, advantage: jax.Array, action_index: jax.Array,
                  epsilon: float, rng: dict):
         policy = jit(model.apply)(params, states, rngs=rng)
-        print("bug here, shape missmatch: ", policy.shape, action_index.shape)
-        prob = jnp.take_along_axis(policy, jnp.expand_dims(action_index, 0), axis=1)
+        prob = jnp.take_along_axis(policy, jnp.expand_dims(action_index, 1), axis=1)
+        prob = jnp.squeeze(prob)
         old_prob = lax.stop_gradient(prob)
         loss = rlax.clipped_surrogate_pg_loss(prob / old_prob, advantage, epsilon)
         return jnp.mean(loss)
