@@ -32,7 +32,6 @@ class DeterministicSimple(WorldModelInterface):
         for index in range(0, data.size, self._batch_size):
             end_idx = min(index + self._batch_size, data.size)
             batch = data[index:end_idx]
-            print(batch[1].shape)
             teach_pixels = vmap(tile_image)(batch[3])
             teach_reward = batch[2].reshape(-1, 1)
             grads = self._model.train_step((teach_pixels, teach_reward), batch[0], batch[1])

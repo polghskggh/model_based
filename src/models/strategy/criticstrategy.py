@@ -23,7 +23,7 @@ class PPOCriticStrategy(ModelStrategy):
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32), )
 
     def batch_dims(self) -> tuple:
-        return (4, ), (1, )
+        return (4, ), (2, )
 
     def init_writer(self):
         writer_instances["critic"] = ModelWriter("critic", ["critic_loss"])

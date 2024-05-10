@@ -10,6 +10,7 @@ from src.models.actorcritic.actoratari import ActorAtari
 from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.pod.hyperparameters import hyperparameters
 from src.pod.montecarlostorage import MonteCarloStorage
+from src.utils.rebatch import rebatch
 
 
 class PPOStrategy(StrategyInterface):
@@ -18,19 +19,6 @@ class PPOStrategy(StrategyInterface):
         self._trajectory_storage = MonteCarloStorage()
         self._number_of_trajectories: int = hyperparameters['ppo']['number_of_trajectories']
         self._iteration: int = 0
-
-    def _batch_update(self, training_sample: list[jax.Array]):
-        states = training_sample[0]
-        action = training_sample[1]
-        rewards = training_sample[2]
-
-        advantage = self._critic.provide_feedback(states, rewards)
-
-        # remove end state
-        truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
-        actor_grads = self._actor.calculate_grads(truncated_states, advantage, action)
-        critic_grads = self._critic.calculate_grads(states, rewards)
-        return actor_grads, critic_grads
 
     def is_update_time(self):
         return self._iteration != 0 and self._iteration % self._number_of_trajectories == 0
@@ -46,12 +34,23 @@ class PPOStrategy(StrategyInterface):
         if not self.is_update_time():
             return
 
-        transitions = self._trajectory_storage.data()
+        states, actions, rewards = self._trajectory_storage.data()
 
-        actor_grads, critic_grads = self._batch_update(transitions)
+        rewards_to_go = self._critic.calculate_rewards_to_go(rewards, states)
+        advantage = self._critic.provide_feedback(states, rewards)
 
-        self._actor.update(actor_grads)
-        self._critic.update(critic_grads)
+        # remove end state
+        truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
+
+        batch_size = min(hyperparameters['ppo']['batch_size'], states.shape[0] + states.shape[1])
+        trunc_states, advantage, actions, rewards_to_go = rebatch(batch_size, truncated_states,
+                                                                  advantage, actions, rewards_to_go)
+
+        for trunc_state, adv, action, reward in zip(trunc_states, advantage, actions, rewards_to_go):
+            actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
+            critic_grads = self._critic.calculate_grads(trunc_state, reward)
+            self._actor.update(actor_grads)
+            self._critic.update(critic_grads)
 
         self._trajectory_storage.reset()
         self._iteration = 0

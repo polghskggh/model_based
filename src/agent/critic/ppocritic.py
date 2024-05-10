@@ -30,16 +30,8 @@ class PPOCritic(CriticInterface):
         if self._bootstrapped_values is None:
             self._bootstrapped_values = vmap(self._model.forward)(states)
 
-    def calculate_grads(self, states: jax.Array, reward: jax.Array) -> dict:
-        rewards_to_go = self.__batch_calculate_rewards_to_go(reward, states)
-        rewards_to_go = jnp.expand_dims(rewards_to_go, axis=-1)
-        states = lax.slice_in_dim(states, 0, -1, axis=1)
-        grads = self.__batch_train_step(rewards_to_go, states)
-        return grads
-
-    def __batch_train_step(self, rewards: jax.Array, states: jax.Array) -> dict:
-        grads = self._trainer.train_step(self._model.params, rewards, states)
-
+    def calculate_grads(self, states: jax.Array, rewards: jax.Array) -> dict:
+        grads = self._model.train_step(rewards.reshape(-1, 1), states)
         return grads
 
     def update(self, grads: dict):
@@ -47,9 +39,6 @@ class PPOCritic(CriticInterface):
         self._bootstrapped_values = None
 
     def provide_feedback(self, states: Array, rewards: Array) -> Array:
-        return self.__batch_calculate_advantage(states, rewards)
-
-    def __batch_calculate_advantage(self, states: jax.Array, rewards: jax.Array) -> jax.Array:
         self.__update_bootstrap_values(states)
         advantage_fun = jit(vmap(PPOCritic.calculate_advantage, in_axes=(0, 0, None, None)))
         return advantage_fun(rewards, self._bootstrapped_values, self._discount_factor, self._lambda)
@@ -63,22 +52,15 @@ class PPOCritic(CriticInterface):
         advantage = truncated_generalized_advantage_estimation(rewards, discounts, lambda_, values)
         return advantage
 
-    def __batch_calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array) -> jax.Array:
+    def calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array) -> jax.Array:
         self.__update_bootstrap_values(states)
-        return jit(vmap(self.__calculate_rewards_to_go, (0, 0)))(rewards, self._bootstrapped_values)
+        return jit(vmap(PPOCritic.__calculate_rewards_to_go, (0, 0, None)))(rewards, self._bootstrapped_values,
+                                                                            self._discount_factor)
 
     @staticmethod
-    def __calculate_advantage(rewards, values, discount_factor, lambda_par):
-        values = values.reshape(-1)
-        rewards = rewards.reshape(-1)
-
-        discounts = discount_factor * jnp.ones_like(rewards)
-        advantage = truncated_generalized_advantage_estimation(rewards, discounts, lambda_par, values)
-        return advantage
-
-    def __calculate_rewards_to_go(self, rewards: jax.Array, values: jax.Array) -> float:
+    def __calculate_rewards_to_go(rewards: jax.Array, values: jax.Array, discount_factor: float) -> float:
         values = values[1:].reshape(-1)  # remove the first value
         rewards = rewards.reshape(-1)
 
-        discount = self._discount_factor * jnp.ones_like(rewards)
+        discount = discount_factor * jnp.ones_like(rewards)
         return rlax.discounted_returns(rewards, discount, values)

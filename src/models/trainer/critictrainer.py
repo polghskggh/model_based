@@ -22,20 +22,8 @@ class PPOCriticTrainer:
         self._model = model
 
     def train_step(self, params, rewards, states):
-        batch_size = min(hyperparameters["ppo"]["batch_size"], states.shape[0] + states.shape[1])
-        rewards, states = rebatch(batch_size, rewards, states)
-
-        grad_fn = jax.value_and_grad(PPOCriticTrainer.loss_fun, 1)
+        grad_fn = jax.value_and_grad(mean_squared_error, 1)
         loss, grad = grad_fn(self._model, params, rewards, states)
 
         writer_instances["critic"].add_data(loss)
         return grad
-
-    @staticmethod
-    def loss_fun(model, params, rewards, states):
-        batch_loss = 0
-        for reward_b, state_b in zip(rewards, states):
-            batch_loss += mean_squared_error(model, params, reward_b, state_b)
-
-        batch_loss /= len(rewards)
-        return batch_loss

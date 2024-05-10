@@ -32,7 +32,7 @@ class DQNNetwork(CriticInterface):
 
         self._iteration += 1
         if self._iteration % self._target_update_period == 0:
-            self._target_model.params(self._model.params)
+            self._target_model.params = self._model.params
 
     def provide_feedback(self, state: Array, action: Array) -> Array:
         pass

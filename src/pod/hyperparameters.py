@@ -18,7 +18,7 @@ hyperparameters = {
         'update_every': 10,
     },
     'ppo': {
-        'batch_size': 50,
+        'batch_size': 2,
         'number_of_trajectories': 5,
         'discount_factor': 0.99,
         'lambda': 0.97,
@@ -36,5 +36,6 @@ hyperparameters = {
         'pixel_reward': 0.5,
     },
     'save_path': '/tmp/flax_ckpt',
-    'max_episode_length': 512,
+    # 'max_episode_length': 512,
+    'max_episode_length': 5,
 }
