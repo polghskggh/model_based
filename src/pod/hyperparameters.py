@@ -10,15 +10,15 @@ hyperparameters = {
         'frame_stack': 4,
     },
     'dqn': {
-        'batch_size': 10,
+        'batch_size': 100,
         'batches_per_update': 5,
         'discount_factor': 0.95,
         'target_update_period': 10,
-        'start_steps': 10,
-        'update_every': 10,
+        'start_steps': 100,
+        'update_every': 50,
     },
     'ppo': {
-        'batch_size': 2,
+        'batch_size': 200,
         'number_of_trajectories': 5,
         'discount_factor': 0.99,
         'lambda': 0.97,
@@ -36,6 +36,6 @@ hyperparameters = {
         'pixel_reward': 0.5,
     },
     'save_path': '/tmp/flax_ckpt',
-    # 'max_episode_length': 512,
-    'max_episode_length': 5,
+    'max_episode_length': 512,
+    # 'max_episode_length': 5,
 }

@@ -9,7 +9,6 @@ from rlax import truncated_generalized_advantage_estimation
 from src.agent.critic import CriticInterface
 from src.enviroment import Shape
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.critictrainer import PPOCriticTrainer
 from src.pod.hyperparameters import hyperparameters
 import jax.numpy as jnp
 
@@ -22,7 +21,6 @@ class PPOCritic(CriticInterface):
         self._model: ModelWrapper = ModelWrapper(model, "ppocritic")
         self._action_dim: int = Shape()[1]
         self._bootstrapped_values = None
-        self._trainer = PPOCriticTrainer(self._model.model)
         self._discount_factor: float = hyperparameters["ppo"]["discount_factor"]
         self._lambda = hyperparameters["ppo"]["lambda"]
 
