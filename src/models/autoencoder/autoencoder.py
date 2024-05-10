@@ -33,7 +33,6 @@ class AutoEncoder(nn.Module):
     def __call__(self, image: Array, action: Array, latent: Array = None) -> Array:
         embedded_image = self.pixel_embedding(image)
         encoded, skip = self.encoder(embedded_image)
-
         encoded_action = one_hot(action, self.second_input)
         injected = self.action_injector(encoded, encoded_action)
 

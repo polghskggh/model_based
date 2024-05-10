@@ -10,7 +10,7 @@ from src.modelbased import model_based_train_loop
 from src.modelfree import model_free_train_loop
 from src.pod.hyperparameters import hyperparameters
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
-from src.worldmodel.deterministicsimple import DeterministicSimple
+from src.worldmodel.simple import SimpleWorldModel
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
@@ -32,7 +32,7 @@ def main():
 
 def run_n_episodes(episodes: int, agent: Agent, env: gym.Env):
     writer_instances["reward"] = ModelWriter("reward", ["reward", "return"])
-    world_model = DeterministicSimple(env)
+    world_model = SimpleWorldModel(True)
 
     for episode in range(episodes):
         run_experiment(agent, env, world_model)

@@ -12,11 +12,12 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: gym.Env):
     data = sample_batches(agent, env)
     world_model.update(data)
+    print("Model updated")
     update_agent(agent, world_model)
 
 
 def sample_batches(agent: Agent, env: gym.Env):
-    data_storage = TrajectoryStorage()
+    data_storage = TrajectoryStorage(hyperparameters["simple"]["batch_size"])
     episode_return = 0
     observation, _ = env.reset()
     agent.receive_state(observation)

@@ -46,6 +46,7 @@ class PPOStrategy(StrategyInterface):
         trunc_states, advantage, actions, rewards_to_go = rebatch(batch_size, truncated_states,
                                                                   advantage, actions, rewards_to_go)
 
+        print("no problem yet")
         for trunc_state, adv, action, reward in zip(trunc_states, advantage, actions, rewards_to_go):
             actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
             critic_grads = self._critic.calculate_grads(trunc_state, reward)
