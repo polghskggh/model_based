@@ -9,7 +9,7 @@ from src.models.modelwrapper import ModelWrapper
 from src.models.trainer.saetrainer import SAETrainer
 from src.pod.hyperparameters import hyperparameters
 from src.pod.trajectorystorage import TrajectoryStorage
-from src.utils.tiling import tile_image
+from src.utils.tiling import tile_image, reverse_tile_image
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
@@ -33,16 +33,17 @@ class SimpleWorldModel(WorldModelInterface):
             self._trainer = SAETrainer(self._model)
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
-        next_frames, rewards = self._model.forward(actions, self._frame_stack.frames)
-        self._frame_stack.add_frame(next_frames)
+        next_frames, rewards = self._model.forward(self._frame_stack.frames, actions)
+        next_frames = vmap(vmap(reverse_tile_image))(next_frames)
+        self._frame_stack.add_frames(next_frames)
         self._time_step += 1
-        truncated = self._time_step >= hyperparameters["simple"]["trajectory_length"]
+        truncated = self._time_step >= hyperparameters["simple"]["rollout_length"]
         return self._frame_stack.frames, rewards, False, truncated, {}
 
     def reset(self):
         self._frame_stack.reset()
         self._time_step = 0
-        return self._frame_stack.frames, 0, False, False, {}
+        return self._frame_stack.frames, {}
 
     def _deterministic_update(self, stack, actions, rewards, next_frame):
         teach_pixels = vmap(tile_image)(next_frame)
@@ -60,7 +61,6 @@ class SimpleWorldModel(WorldModelInterface):
             else:
                 self._stochastic_update(stack, actions, rewards, next_frame)
 
-        print("Im confused")
         self._frame_stack = FrameStack(data)
 
     def save(self):

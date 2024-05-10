@@ -20,7 +20,7 @@ def model_free_train_loop(agent: Agent, env: gym.Env):
             return
 
 
-def interact(agent: Agent, enviroment: WorldModelInterface|gym.Env, update: bool = True):
+def interact(agent: Agent, enviroment: WorldModelInterface | gym.Env, update: bool = True):
     action = agent.select_action()
     observation, reward, terminated, truncated, _ = enviroment.step(action)
     agent.receive_reward(reward)

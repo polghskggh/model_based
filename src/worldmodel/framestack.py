@@ -12,7 +12,7 @@ from src.pod.trajectorystorage import TrajectoryStorage
 class FrameStack:
     def __init__(self, data: TrajectoryStorage):
         self.size = hyperparameters["frame_stack"]
-        self._initial_states = data.sample_stack(hyperparameters["simple"]["parallel_agents"])
+        self._initial_states = data.sample_states(hyperparameters["simple"]["parallel_agents"])
         self._lazy_frames = None
         self._frames = None
         self.reset()
@@ -34,8 +34,8 @@ class FrameStack:
         if self._frames is not None:
             return self._frames
 
-        # TODO: Shape is wrong (channels 1) || (channels 12)
         frames = jnp.array(self._lazy_frames, dtype=jnp.float32)
-        new_shape = (frames.shape[0], ) + frames.shape[2:4] + (frames.shape[1] * frames.shape[4],)
-        self._frames = frames.transpose(0, 2, 3, 1, 4).reshape(new_shape)
+        new_shape = (frames.shape[1],) + frames.shape[2:4] + (frames.shape[0] * frames.shape[4],)
+        self._frames = frames.transpose(1, 2, 3, 0, 4).reshape(new_shape)
+
         return self._frames

@@ -25,6 +25,7 @@ hyperparameters = {
         'discount_factor': 0.99,
         'lambda': 0.97,
         'clip_threshold': 0.2,
+        'trajectory_length': 512
     },
     'rng': {
         'dropout': 0,

@@ -59,8 +59,8 @@ class ModelWrapper:
 
         :param grads: the gradients to apply
         """
-        opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
-        self._params = optax.apply_updates(self._params, opt_grads)
+        #opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
+        self._params = optax.apply_updates(self._params, grads)
 
     @property
     def model(self):

@@ -42,5 +42,12 @@ def sample_batches(agent: Agent, env: gym.Env):
 
 
 def update_agent(agent: Agent, env: WorldModelInterface):
+    hyperparameters["ppo"]["trajectory_length"] = hyperparameters["simple"]["rollout_length"]
+
+    observation, _ = env.reset()
+    agent.receive_state(observation)
+
     for time_step in range(hyperparameters["max_episode_length"]):
         interact(agent, env, update=True)
+
+    hyperparameters["ppo"]["trajectory_length"] = hyperparameters["max_episode_length"]

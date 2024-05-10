@@ -6,7 +6,6 @@ from src.pod.hyperparameters import hyperparameters
 
 class MonteCarloStorage:
     def __init__(self):
-        self.trajectory_length = hyperparameters["max_episode_length"]
         self.num_of_trajectories = 0
         self.states = [[]]
         self.actions = [[]]
@@ -19,7 +18,7 @@ class MonteCarloStorage:
         self.rewards[self.num_of_trajectories].append(reward)
 
     def pad(self):
-        while len(self.rewards[self.num_of_trajectories]) < self.trajectory_length:
+        while len(self.rewards[self.num_of_trajectories]) < hyperparameters["ppo"]["trajectory_length"]:
             self.rewards[self.num_of_trajectories].append(0)
             self.actions[self.num_of_trajectories].append(0)
             self.states[self.num_of_trajectories].append(self.states[self.num_of_trajectories][-1])

@@ -20,6 +20,7 @@ class TrajectoryStorage:
         # flush data into file
 
     # add new data
+    # TODO: input shape (2, 105, 80, 12) (2, ) (2, 1) (2, 105, 80, 12), deal with batch transitions
     def add_transition(self, frame_stack, action, reward, next_frame):
         self.frame_stack.append(frame_stack)
         self.actions.append(action)
@@ -52,5 +53,5 @@ class TrajectoryStorage:
     def data(self):
         return self.frame_stack, self.actions, self.rewards, self.next_frames
 
-    def sample_stack(self, n: int) -> list[jax.Array]:
-        return random.sample(self.frame_stack, n)
+    def sample_states(self, n: int) -> list[jax.Array]:
+        return random.sample(self.next_frames, n)

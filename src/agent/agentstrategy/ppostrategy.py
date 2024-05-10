@@ -46,7 +46,6 @@ class PPOStrategy(StrategyInterface):
         trunc_states, advantage, actions, rewards_to_go = rebatch(batch_size, truncated_states,
                                                                   advantage, actions, rewards_to_go)
 
-        print("no problem yet")
         for trunc_state, adv, action, reward in zip(trunc_states, advantage, actions, rewards_to_go):
             actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
             critic_grads = self._critic.calculate_grads(trunc_state, reward)
@@ -57,7 +56,7 @@ class PPOStrategy(StrategyInterface):
         self._iteration = 0
 
     def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
-        probability_distribution = self._actor.calculate_actions(state)[0]
+        probability_distribution = jnp.squeeze(self._actor.calculate_actions(state))
         return probability_distribution
 
     def save(self):

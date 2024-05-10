@@ -1,6 +1,7 @@
 import jax
 import jax.numpy as jnp
 import jax.random as jr
+from jax import vmap
 
 from src.agent.agentstrategy.agentstrategyfactory import agent_strategy_factory
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
@@ -26,7 +27,11 @@ class Agent:
 
     def select_action(self) -> jax.Array:
         followed_policy = self._strategy.action_policy(self._new_state)
-        self._selected_action = self.__sample_from_distribution(followed_policy)
+        sample_fun = self.__sample_from_distribution
+        if len(followed_policy.shape) > 1:
+            sample_fun = vmap(sample_fun)
+
+        self._selected_action = sample_fun(followed_policy)
         return self._selected_action
 
     def receive_reward(self, reward: float):
