@@ -21,7 +21,7 @@ def sample_batches(agent: Agent, env: gym.Env):
     observation, _ = env.reset()
     agent.receive_state(observation)
 
-    for _ in range(hyperparameters["max_episode_length"]):
+    for _ in range(hyperparameters["simple"]["data_size"]):
         _, done = interact(agent, env, False)
 
         stack, action, reward, next_stack = agent.last_transition()
@@ -34,7 +34,8 @@ def sample_batches(agent: Agent, env: gym.Env):
         if done:
             writer_instances["reward"].add_data(episode_return, "return")
             episode_return = 0
-            env.reset()
+            observation, _ = env.reset()
+            agent.receive_state(observation)
 
     return data_storage
 

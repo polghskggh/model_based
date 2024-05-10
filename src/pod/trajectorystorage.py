@@ -36,14 +36,5 @@ class TrajectoryStorage:
         self.index += 1
         self.reset()
 
-    def __getitem__(self, item):
-        return (jnp.array(self.frame_stack[item]), jnp.array(self.actions[item]),
-                jnp.array(self.rewards[item]), jnp.array(self.next_frames[item]))
-
-    def episodic_data(self):
-        trajectory_length = hyperparameters["ppo"]["trajectory_length"]
-        episodes = self.size // trajectory_length
-        return (jnp.array(self.frame_stack).reshape(episodes, trajectory_length, *Shape()[0]),
-                jnp.array(self.actions).reshape(episodes, trajectory_length, 1),
-                jnp.array(self.rewards).reshape(episodes, trajectory_length, 1),
-                jnp.array(self.next_frames).reshape(episodes, trajectory_length, *Shape()[0]))
+    def data(self):
+        return self.frame_stack, self.actions, self.rewards, self.next_frames

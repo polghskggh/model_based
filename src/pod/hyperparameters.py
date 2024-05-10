@@ -1,13 +1,14 @@
 hyperparameters = {
-    'world': {
+    'simple': {
         'deterministic_lr': 0.0001,
         'stochastic_lr': 0.0001,
         'lstm_lr': 0.0001,
         'kl_loss_weight': 2,
         'batch_size': 32,
         'data_size': 1000,
-        'rollout_length': 10,
-        'frame_stack': 4,
+        'rollout_length': 50,
+        'kl_loss': 0.8,
+        'pixel_reward': 0.5,
     },
     'dqn': {
         'batch_size': 100,
@@ -31,10 +32,7 @@ hyperparameters = {
         'params': 0,
         'action': 0,
     },
-    'mixing_coefficients': {
-        'kl_loss': 0.8,
-        'pixel_reward': 0.5,
-    },
+    'frame_stack': 4,
     'save_path': '/tmp/flax_ckpt',
     'max_episode_length': 512,
     # 'max_episode_length': 5,

@@ -1,6 +1,7 @@
 from ctypes import Array
 
 from jax import random as jr
+import jax.numpy as jnp
 
 from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
@@ -16,17 +17,17 @@ from src.utils.tiling import tile_image
 class SAETrainer(Trainer):
     def __init__(self, model):
         super().__init__()
-        self._batch_size = 32
+        self._batch_size = hyperparameters["simple"]["batch_size"]
 
         self._model = model
         self._autoencoder = ModelWrapper(AutoEncoder(*Shape()), "autoencoder_with_latent",
-                                         learning_rate=hyperparameters["world"]["deterministic_lr"])
+                                         learning_rate=hyperparameters["simple"]["deterministic_lr"])
 
         third_input = (Shape()[0][0], Shape()[0][1], 3)
         self._stochastic_ae = ModelWrapper(TrainStochasticAutoencoder(*Shape(), third_input), "trainer_stochastic",
-                                           learning_rate=hyperparameters["world"]["stochastic_lr"])
+                                           learning_rate=hyperparameters["simple"]["stochastic_lr"])
         self._bit_predictor = ModelWrapper(BitPredictor(model.bits), "bit_predictor",
-                                           learning_rate=hyperparameters["world"]["bit_predictor_lr"])
+                                           learning_rate=hyperparameters["simple"]["bit_predictor_lr"])
 
         self._inference = ModelWrapper(ConvolutionalInference(*Shape(), third_input, False), "inference",
                                        learning_rate=0)
@@ -45,7 +46,7 @@ class SAETrainer(Trainer):
         return params
 
     def _train_autoencoder(self, params: dict, stack: Array, actions: Array, reconstructed: Array):
-        latent = jr.normal(jr.PRNGKey(1), (self._batch_size, 128))
+        latent = jnp.where(jr.normal(jr.PRNGKey(1), (self._batch_size, 128)) >= 0, 1, 0)
         return self._ae_trainer.train_step(params, reconstructed, stack, actions, latent)
 
     def _train_inference_autoencoder(self, params: dict, stack: Array, actions: Array,

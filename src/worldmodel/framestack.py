@@ -12,7 +12,7 @@ class FrameStack:
     def __init__(self, env: gym.Env):
         env_stack, _, = env.reset()
         self.initial_state = lax.slice_in_dim(env_stack, 0, 3, axis=-1)
-        self.size = hyperparameters["world"]["frame_stack"]
+        self.size = hyperparameters["frame_stack"]
         self._lazy_frames = None
         self._frames = None
         self.reset()
