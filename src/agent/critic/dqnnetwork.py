@@ -12,11 +12,11 @@ class DQNNetwork(CriticInterface):
 
     def __init__(self, model: nn.Module):
         super().__init__()
-        self._model: ModelWrapper = ModelWrapper(model, "critic")
-        self._target_model: ModelWrapper = ModelWrapper(model, "critic")
+        self._model: ModelWrapper = ModelWrapper(model, "dqncritic")
+        self._target_model: ModelWrapper = ModelWrapper(model, "dqncritic")
 
-        self._discount_factor: float = hyperparameters["ddpg"]["discount_factor"]
-        self._target_update_period = hyperparameters["ddpg"]["target_update_period"]
+        self._discount_factor: float = hyperparameters["dqn"]["discount_factor"]
+        self._target_update_period = hyperparameters["dqn"]["target_update_period"]
         self._iteration = 0
 
     def calculate_grads(self, state: Array[float], action: Array[float], reward: float,

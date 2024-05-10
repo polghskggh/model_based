@@ -15,8 +15,8 @@ from src.pod.replaybuffer import ReplayBuffer
 class DQNStrategy(StrategyInterface):
 
     def __init__(self):
-        self._replay_buffer = ReplayBuffer(*Shape())
-        self._batches_per_update: int = hyperparameters["ddpg"]['batches_per_update']
+        self._replay_buffer = ReplayBuffer(Shape()[0])
+        self._batches_per_update: int = hyperparameters["dqn"]['batches_per_update']
         self._q_network = DQNNetwork(AtariNN(*Shape(), 1))
         self._action_space = Shape()[1]
 
@@ -27,6 +27,8 @@ class DQNStrategy(StrategyInterface):
         self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
 
     def _batch_update(self, training_sample: list[jax.Array]):
+
+        print(training_sample[0].shape, training_sample[1].shape, training_sample[2].shape, training_sample[3].shape)
         best_actions = self.action_policy(training_sample[2])
 
         grads = self._q_network.calculate_grads(
@@ -59,6 +61,7 @@ class DQNStrategy(StrategyInterface):
         batch_size = state.shape[0] if is_batch else 1
         for action in range(self._action_space):
             actions = jnp.zeros(batch_size) + action
+            print(state.shape, actions.shape)
             values = self._q_network._target_model.forward(state, one_hot(actions, self._action_space))
 
         selected_actions = one_hot(jnp.argmax(values, axis=-1), self._action_space)
