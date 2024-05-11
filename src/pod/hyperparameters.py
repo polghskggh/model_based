@@ -21,12 +21,12 @@ hyperparameters = {
         'update_every': 50,
     },
     'ppo': {
-        'batch_size': 3,
-        'number_of_trajectories': 2,
+        'batch_size': 300,
+        'number_of_trajectories': 5,
         'discount_factor': 0.99,
         'lambda': 0.97,
         'clip_threshold': 0.2,
-        'trajectory_length': 2
+        'trajectory_length': 512
     },
     'rng': {
         'dropout': 0,
