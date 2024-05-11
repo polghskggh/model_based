@@ -38,20 +38,20 @@ class PPOStrategy(StrategyInterface):
             return
 
         states, actions, rewards = self._trajectory_storage.data()
-
         rewards_to_go = self._critic.calculate_rewards_to_go(rewards, states)
         advantage = self._critic.provide_feedback(states, rewards)
 
         # remove end state
         truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
-
         batch_size = min(hyperparameters['ppo']['batch_size'], states.shape[0] + states.shape[1])
+
         trunc_states, advantage, actions, rewards_to_go = rebatch(batch_size, truncated_states,
                                                                   advantage, actions, rewards_to_go)
 
         for trunc_state, adv, action, reward in zip(trunc_states, advantage, actions, rewards_to_go):
             actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
             critic_grads = self._critic.calculate_grads(trunc_state, reward)
+
             self._actor.update(actor_grads)
             self._critic.update(critic_grads)
 

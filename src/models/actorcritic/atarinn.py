@@ -29,7 +29,7 @@ class StateValueAtariNN(nn.Module):
     output_dimensions: int
 
     def setup(self):
-        bottleneck = 1000
+        bottleneck = 100
         self.cnn = CNNAtari(bottleneck)
         self.mlp = MLPAtari(bottleneck, self.output_dimensions)
 

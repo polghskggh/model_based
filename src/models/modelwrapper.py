@@ -36,7 +36,6 @@ class ModelWrapper:
         in_dim, out_dim = self._strategy.batch_dims()
         x = self.batch(x, in_dim)
         y = self.batch(y, out_dim)
-
         grad_fun = value_and_grad(self._loss_fun, 1)
         loss, grads = grad_fun(self._model, self._params, y, *x, rngs=self._rngs)
         self.model_writer.add_data(loss)
@@ -59,7 +58,7 @@ class ModelWrapper:
 
         :param grads: the gradients to apply
         """
-        #opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
+        opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, grads)
 
     @property

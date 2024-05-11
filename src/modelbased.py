@@ -50,7 +50,6 @@ def update_agent(agent: Agent, env: WorldModelInterface):
 
     for time_step in range(hyperparameters["simple"]["rollout_length"] * hyperparameters["simple"]["agent_updates"]):
         reward, done = interact(agent, env, update=True)
-        print("reward: ", reward)
         if done:
             observation, _ = env.reset()
             agent.receive_state(observation)

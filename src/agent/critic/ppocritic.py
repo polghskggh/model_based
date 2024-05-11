@@ -5,6 +5,7 @@ import rlax
 from flax import linen as nn
 from jax import vmap, jit, lax
 from rlax import truncated_generalized_advantage_estimation
+from jax.flatten_util import ravel_pytree
 
 from src.agent.critic import CriticInterface
 from src.enviroment import Shape
@@ -28,8 +29,8 @@ class PPOCritic(CriticInterface):
         if self._bootstrapped_values is None:
             self._bootstrapped_values = vmap(self._model.forward)(states)
 
-    def calculate_grads(self, states: jax.Array, rewards: jax.Array) -> dict:
-        grads = self._model.train_step(rewards.reshape(-1, 1), states)
+    def calculate_grads(self, states: jax.Array, returns: jax.Array) -> dict:
+        grads = self._model.train_step(returns.reshape(-1, 1), states)
         return grads
 
     def update(self, grads: dict):
@@ -59,6 +60,5 @@ class PPOCritic(CriticInterface):
     def __calculate_rewards_to_go(rewards: jax.Array, values: jax.Array, discount_factor: float) -> float:
         values = values[1:].reshape(-1)  # remove the first value
         rewards = rewards.reshape(-1)
-
         discount = discount_factor * jnp.ones_like(rewards)
         return rlax.discounted_returns(rewards, discount, values)
