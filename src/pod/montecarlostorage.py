@@ -10,7 +10,6 @@ class MonteCarloStorage:
         self.num_of_trajectories = 0
         self.states, self.actions, self.rewards = None, None, None
         self.reset()
-        print(self.rewards)
 
     # add new data
     def add_transition(self, state, action, reward):
@@ -20,7 +19,6 @@ class MonteCarloStorage:
             self.rewards[self.num_of_trajectories].append(reward)
         else:
             for i in range(self.batch_size):
-                print(state[i].shape, action[i].shape, reward[i].shape)
                 self.states[self.num_of_trajectories + i].append(state[i])
                 self.actions[self.num_of_trajectories + i].append(action[i])
                 self.rewards[self.num_of_trajectories + i].append(reward[i])

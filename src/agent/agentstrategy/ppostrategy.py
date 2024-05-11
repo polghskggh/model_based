@@ -40,9 +40,7 @@ class PPOStrategy(StrategyInterface):
         states, actions, rewards = self._trajectory_storage.data()
 
         rewards_to_go = self._critic.calculate_rewards_to_go(rewards, states)
-        print("rewards_to_go:", rewards_to_go)
         advantage = self._critic.provide_feedback(states, rewards)
-        print("actions:", actions, "advantage:", advantage)
 
         # remove end state
         truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
@@ -66,7 +64,6 @@ class PPOStrategy(StrategyInterface):
 
     def select_action(self, state: jnp.ndarray) -> int:
         policy = self.action_policy(state)
-        print("policy:", policy)
         sample_fun = self.__sample_from_distribution
         if len(policy.shape) > 1:
             sample_fun = vmap(sample_fun)
