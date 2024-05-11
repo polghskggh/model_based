@@ -1,19 +1,16 @@
 from ctypes import Array
 
 import jax
+import jax.numpy as jnp
 import rlax
 from flax import linen as nn
-from jax import vmap, jit, lax
+from jax import vmap, jit
 from rlax import truncated_generalized_advantage_estimation
-from jax.flatten_util import ravel_pytree
 
 from src.agent.critic import CriticInterface
 from src.enviroment import Shape
 from src.models.modelwrapper import ModelWrapper
 from src.pod.hyperparameters import hyperparameters
-import jax.numpy as jnp
-
-from src.utils.rebatch import rebatch
 
 
 class PPOCritic(CriticInterface):

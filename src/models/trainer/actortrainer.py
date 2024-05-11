@@ -33,4 +33,4 @@ class PPOActorTrainer(Trainer):
         prob = jnp.squeeze(prob)
         old_prob = lax.stop_gradient(prob)
         loss = rlax.clipped_surrogate_pg_loss(prob / old_prob, advantage, epsilon)
-        return -loss
+        return loss

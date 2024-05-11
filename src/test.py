@@ -104,14 +104,14 @@ def test_stochastic_autoencoder():
     env.close()
 
 
-def test_PPO():
+def test_ppo():
     agent = Agent("ppo")
     state = jnp.ones((105, 80, 12), dtype=jnp.float32)
     agent.receive_state(state)
     for e in range(100):
         action = agent.select_action()
         if action == 0:
-            agent.receive_reward(0.0)
+            agent.receive_reward(1.0)
         else:
             agent.receive_reward(0.0)
         agent.receive_state(state)
@@ -121,7 +121,7 @@ def test_PPO():
 
 def test():
     make_env()
-    test_PPO()
+    test_ppo()
     #test_stochastic_autoencoder()
 
 

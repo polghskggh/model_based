@@ -1,4 +1,5 @@
 hyperparameters = {
+    'max_episode_length': 512,
     'simple': {
         'deterministic_lr': 0.0001,
         'stochastic_lr': 0.0001,
@@ -26,7 +27,7 @@ hyperparameters = {
         'discount_factor': 0.99,
         'lambda': 0.97,
         'clip_threshold': 0.2,
-        'trajectory_length': 512
+        'trajectory_length': 512,
     },
     'rng': {
         'dropout': 0,
@@ -37,6 +38,6 @@ hyperparameters = {
     },
     'frame_stack': 4,
     'save_path': '/tmp/flax_ckpt',
-    'max_episode_length': 512,
+
     # 'max_episode_length': 5,
 }
