@@ -48,6 +48,9 @@ class Agent:
         self._key, subkey = jr.split(self._key)
         return jr.choice(subkey, Shape()[1], p=distribution)
 
+    def run_parallel(self, parallel_agents: int):
+        self._strategy.run_parallel(parallel_agents)
+
     def save(self):
         self._strategy.save()
 

@@ -6,10 +6,11 @@ hyperparameters = {
         'kl_loss_weight': 2,
         'batch_size': 5,
         'data_size': 10,
-        'rollout_length': 50,
+        'rollout_length': 3,
         'kl_loss': 0.8,
         'pixel_reward': 0.5,
         'parallel_agents': 2,
+        'agent_updates': 4
     },
     'dqn': {
         'batch_size': 100,

@@ -17,11 +17,11 @@ class PPOStrategy(StrategyInterface):
     def __init__(self):
         self._actor, self._critic = PPOActor(ActorAtari(*Shape())), PPOCritic(StateValueAtariNN(Shape()[0], 1))
         self._trajectory_storage = MonteCarloStorage()
-        self._number_of_trajectories: int = hyperparameters['ppo']['number_of_trajectories']
         self._iteration: int = 0
+        self._workers = 1
 
     def is_update_time(self):
-        return self._iteration != 0 and self._iteration % self._number_of_trajectories == 0
+        return self._iteration != 0 and self._iteration % hyperparameters["ppo"]["number_of_trajectories"] == 0
 
     def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
         self._trajectory_storage.add_transition(old_state, selected_action, reward)
@@ -58,6 +58,10 @@ class PPOStrategy(StrategyInterface):
     def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
         probability_distribution = jnp.squeeze(self._actor.calculate_actions(state))
         return probability_distribution
+
+    def run_parallel(self, n_workers: int):
+        self._trajectory_storage = MonteCarloStorage(n_workers)
+
 
     def save(self):
         self._actor.save()
