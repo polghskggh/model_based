@@ -106,15 +106,20 @@ def test_stochastic_autoencoder():
 
 def test_PPO():
     agent = Agent("ppo")
-    state = jnp.zeros((1, 105, 80, 12))
+    state = jnp.zeros((1, 105, 80, 12), dtype=jnp.float32)
     advantage = jnp.zeros((1, 1))
     agent.receive_state(state)
-    action = agent.select_action()
-    agent.receive_reward(0)
-    agent.receive_state(state)
-    agent.receive_term(True)
-    for _ in range(10):
-        print("updating")
+    for e in range(100):
+        action = agent.select_action()
+        print("action:", action)
+        if action == 0:
+            agent.receive_reward(1.0)
+        elif action == 1:
+            agent.receive_reward(-1.0)
+        else:
+            agent.receive_reward(0.0)
+        agent.receive_state(state)
+        agent.receive_term(e % 2 == 1)
         agent.update_policy()
 
 

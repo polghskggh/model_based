@@ -1,6 +1,8 @@
 import jax
 import jax.numpy as jnp
-from jax import lax
+import jax.random as jr
+from jax import lax, vmap
+from flax.linen import softmax
 
 from src.agent.actor.ppoactor import PPOActor
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
@@ -16,6 +18,7 @@ from src.utils.rebatch import rebatch
 class PPOStrategy(StrategyInterface):
     def __init__(self):
         self._actor, self._critic = PPOActor(ActorAtari(*Shape())), PPOCritic(StateValueAtariNN(Shape()[0], 1))
+        self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
         self._trajectory_storage = MonteCarloStorage()
         self._iteration: int = 0
         self._workers = 1
@@ -37,7 +40,9 @@ class PPOStrategy(StrategyInterface):
         states, actions, rewards = self._trajectory_storage.data()
 
         rewards_to_go = self._critic.calculate_rewards_to_go(rewards, states)
+        print("rewards_to_go:", rewards_to_go)
         advantage = self._critic.provide_feedback(states, rewards)
+        print("actions:", actions, "advantage:", advantage)
 
         # remove end state
         truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
@@ -56,12 +61,20 @@ class PPOStrategy(StrategyInterface):
         self._iteration = 0
 
     def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
-        probability_distribution = jnp.squeeze(self._actor.calculate_actions(state))
+        probability_distribution = jnp.squeeze(self._actor.policy(state))
         return probability_distribution
+
+    def select_action(self, state: jnp.ndarray) -> int:
+        policy = self.action_policy(state)
+        print("policy:", policy)
+        sample_fun = self.__sample_from_distribution
+        if len(policy.shape) > 1:
+            sample_fun = vmap(sample_fun)
+
+        return sample_fun(policy)
 
     def run_parallel(self, n_workers: int):
         self._trajectory_storage = MonteCarloStorage(n_workers)
-
 
     def save(self):
         self._actor.save()
@@ -70,3 +83,7 @@ class PPOStrategy(StrategyInterface):
     def load(self):
         self._actor.load()
         self._critic.load()
+
+    def __sample_from_distribution(self, distribution: jax.Array) -> int:
+        self._key, subkey = jr.split(self._key)
+        return int(jr.choice(subkey, distribution.shape[0], p=distribution))
