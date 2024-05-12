@@ -1,6 +1,7 @@
 import flax.linen as nn
 import jax.numpy as jnp
 
+from src.models.autoencoder.decoder import Decoder
 from src.utils.activationfuns import activation_function_dict
 
 
@@ -13,20 +14,17 @@ class ObservationModel(nn.Module):
 
     def setup(self):
         self.activation_fun = activation_function_dict[self.activation_function]
-        self.dense_layer = nn.Dense(self.belief_size + self.state_size, self.embedding_size)
         self.layers = 4
         self.features = 256
+        self.decoder = Decoder(self.features, (2, 2), 2, self.layers, True)
 
     def __call__(self, belief, state):
-        hidden = self.dense_layer(jnp.append(belief, state, axis=1))  # No nonlinearity here
+        hidden = jnp.append(belief, state, axis=1)
+        hidden = nn.Dense(self.belief_size + self.state_size, self.embedding_size)(hidden)
         hidden = hidden.reshape(-1, self.embedding_size, 1, 1)
 
-        for idx in range(6):
-            features = self.scaled_features(idx)
-            hidden = nn.ConvTranspose(hidden, features=features, kernel_size=(3, 3), strides=(2, 2))
-            hidden = self.activation_fun(hidden)
-
-        return hidden
+        reconstructed = self.decoder(hidden, None)
+        return reconstructed
 
     def scaled_features(self, layer_id: int):
         if layer_id < 4:

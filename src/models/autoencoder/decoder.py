@@ -16,16 +16,20 @@ class Decoder(nn.Module):
         self.shape_list = [(4, 3), (7, 5), (14, 10), (27, 20), (53, 40), (105, 80)]
 
     @nn.compact
-    def __call__(self, x: Array, skip: list[Array]) -> Array:
-        skip.reverse()
+    def __call__(self, x: Array, skip: list[Array] | None) -> Array:
+        if skip is not None:
+            skip.reverse()
+
         for layer_id in range(self.layers):
             features = self.scaled_features(layer_id) # first 2 layers more features
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
             x = nn.LayerNorm()(x)
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)
-            x = self.scale_image(x, layer_id)
-            x = nn.relu(x)
-            x = nn.LayerNorm()(x + skip[layer_id])
+
+            if skip is not None:
+                x = self.scale_image(x, layer_id)
+                x = nn.relu(x)
+                x = nn.LayerNorm()(x + skip[layer_id])
         return x
 
     def scaled_features(self, layer_id: int):
