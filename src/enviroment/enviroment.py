@@ -13,7 +13,7 @@ def make_env() -> gym.Env:
     Create the Breakout environment with the necessary wrappers
     :return: Breakout environment
     """
-    env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="human")
+    env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
     env = ResizeObservation(env, shape=(105, 80))
     env = FrameStack(env, num_stack=4)
     env = TimeLimit(env, max_episode_steps=hyperparameters["max_episode_length"])
