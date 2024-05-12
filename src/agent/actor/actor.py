@@ -1,6 +1,8 @@
 import flax.linen as nn
 from jax import random as jr
 import jax
+import jax.random as random
+from flax import linen as nn
 
 from src.models.modelwrapper import ModelWrapper
 from src.trainer.actortrainer import PPOActorTrainer, DreamerActorTrainer
@@ -14,7 +16,7 @@ class Actor:
         self._new_states = None
         self.key = jr.PRNGKey(0)
 
-    def calculate_actions(self, states: jax.Array) -> jax.Array:
+    def policy(self, states: jax.Array) -> jax.Array:
         return self._model.forward(states)
 
     def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array) -> dict:

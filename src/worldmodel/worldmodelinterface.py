@@ -2,7 +2,6 @@ from abc import abstractmethod
 
 import jax
 
-from src.pod.replaybuffer import ReplayBuffer
 from src.pod.trajectorystorage import TrajectoryStorage
 
 
@@ -12,7 +11,7 @@ class WorldModelInterface:
         pass
 
     @abstractmethod
-    def reset(self) -> (jax.Array, float, bool, bool, dict):
+    def reset(self) -> (jax.Array, dict):
         pass
 
     @abstractmethod

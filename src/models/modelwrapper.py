@@ -36,7 +36,6 @@ class ModelWrapper:
         in_dim, out_dim = self._strategy.batch_dims()
         x = self.batch(x, in_dim)
         y = self.batch(y, out_dim)
-
         grad_fun = value_and_grad(self._loss_fun, 1)
         loss, grads = grad_fun(self._model, self._params, y, *x, rngs=self._rngs)
         self.model_writer.add_data(loss)
@@ -61,16 +60,6 @@ class ModelWrapper:
         """
         opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
         self._params = optax.apply_updates(self._params, opt_grads)
-
-    def update_polyak(self, rho: float, other_model):
-        """
-        Update the parameters of the model using Polyak averaging
-
-        :param rho: the averaging factor
-        :param other_model: the model to average with
-        :return: None
-        """
-        self._params = optax.incremental_update(self._params, other_model._params, rho)
 
     @property
     def model(self):
@@ -157,7 +146,8 @@ class ModelWrapper:
 
         :return: the string representation of the model architecture
         """
-        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)))
+        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)),
+                                    console_kwargs={"width": 120})
 
     @staticmethod
     def make_rng_keys():

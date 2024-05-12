@@ -15,8 +15,8 @@ from src.pod.replaybuffer import ReplayBuffer
 class DQNStrategy(StrategyInterface):
 
     def __init__(self):
-        self._replay_buffer = ReplayBuffer(*Shape())
-        self._batches_per_update: int = hyperparameters["ddpg"]['batches_per_update']
+        self._replay_buffer = ReplayBuffer(Shape()[0])
+        self._batches_per_update: int = hyperparameters["dqn"]['batches_per_update']
         self._q_network = DQNNetwork(AtariNN(*Shape(), 1))
         self._action_space = Shape()[1]
 
@@ -27,11 +27,11 @@ class DQNStrategy(StrategyInterface):
         self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
 
     def _batch_update(self, training_sample: list[jax.Array]):
-        best_actions = self.action_policy(training_sample[2])
+        best_actions = self.action_policy(training_sample[3])
 
         grads = self._q_network.calculate_grads(
-            training_sample[0], training_sample[1], training_sample[3],
-            training_sample[2], best_actions)
+            training_sample[0], one_hot(training_sample[1], self._action_space), training_sample[2],
+            training_sample[3], best_actions)
 
         self._q_network.update(grads)
 
@@ -57,13 +57,15 @@ class DQNStrategy(StrategyInterface):
         is_batch: bool = len(state.shape) > 3
 
         batch_size = state.shape[0] if is_batch else 1
+        values = jnp.zeros((self._action_space, batch_size))
         for action in range(self._action_space):
             actions = jnp.zeros(batch_size) + action
-            values = self._q_network._target_model.forward(state, one_hot(actions, self._action_space))
+            target_qs = self._q_network._target_model.forward(state, one_hot(actions, self._action_space))
+            values.at[action].add(jnp.squeeze(target_qs))
 
-        selected_actions = one_hot(jnp.argmax(values, axis=-1), self._action_space)
+        selected_actions = one_hot(jnp.argmax(values, axis=0), self._action_space)
 
-        return selected_actions if is_batch else selected_actions[0]
+        return jnp.squeeze(selected_actions)
 
     def __random_policy(self):
         self._key, subkey = jr.split(self._key)

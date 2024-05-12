@@ -1,5 +1,7 @@
+import jax
 from flax import linen as nn
 from jax import Array
+import jax.numpy as jnp
 
 
 # encoder

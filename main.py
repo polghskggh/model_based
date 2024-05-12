@@ -4,12 +4,14 @@ import shutil
 import gymnasium as gym
 
 from src.agent.agent import Agent
-from src.agent.agentinterface import AgentInterface
-from src.modelfree import model_free_train_loop
 from src.enviroment import make_env
 from src.gpu import check_gpu
+from src.modelbased import model_based_train_loop
+from src.modelfree import model_free_train_loop
 from src.pod.hyperparameters import hyperparameters
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
+from src.worldmodel.simple import SimpleWorldModel
+from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
 def reset_checkpoints():
@@ -28,16 +30,20 @@ def main():
     env.close()
 
 
-def run_n_episodes(episodes: int, agent: AgentInterface, env: gym.Env):
+def run_n_episodes(episodes: int, agent: Agent, env: gym.Env):
     writer_instances["reward"] = ModelWriter("reward", ["reward", "return"])
+    #world_model = SimpleWorldModel(True)
+    world_model = None
+
     for episode in range(episodes):
-        run_experiment(agent, env)
+        run_experiment(agent, env, world_model)
         ModelWriter.save_all()                      # dynamically save gathered data
         ModelWriter.flush_all()
 
 
-def run_experiment(agent: AgentInterface, env: gym.Env):
+def run_experiment(agent: Agent, env: gym.Env, world_model: WorldModelInterface):
     model_free_train_loop(agent, env)
+    #model_based_train_loop(agent, world_model, env)
 
 
 if __name__ == '__main__':

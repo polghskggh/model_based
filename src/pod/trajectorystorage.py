@@ -1,20 +1,26 @@
-import jax.numpy as jnp
+import random
 
+import jax
+import jax.numpy as jnp
+import jax.random as jr
 from src.enviroment import Shape
 from src.pod.hyperparameters import hyperparameters
 
 
 class TrajectoryStorage:
-    def __init__(self):
+    def __init__(self, batch_size: int):
         self.frame_stack = []
         self.actions = []
         self.rewards = []
         self.next_frames = []
         self.size = 0
+        self.batch_size = batch_size
         self.index = 0
+        self._key = jr.PRNGKey(0)
         # flush data into file
 
     # add new data
+    # TODO: input shape (2, 105, 80, 12) (2, ) (2, 1) (2, 105, 80, 12), deal with batch transitions
     def add_transition(self, frame_stack, action, reward, next_frame):
         self.frame_stack.append(frame_stack)
         self.actions.append(action)
@@ -23,9 +29,9 @@ class TrajectoryStorage:
         self.size += 1
 
     def reset(self):
-        self.rewards = []
         self.frame_stack = []
         self.actions = []
+        self.rewards = []
         self.next_frames = []
         self.size = 0
 
@@ -36,13 +42,16 @@ class TrajectoryStorage:
         self.index += 1
         self.reset()
 
-    def __getitem__(self, item):
-        return self.frame_stack[item], self.actions[item], self.rewards[item], self.next_frames[item]
+    def batched_data(self):
+        for index in range(0, self.size, self.batch_size):
+            end_index = min(index + self.batch_size, self.size)
+            yield (jnp.array(self.frame_stack[index: end_index]),
+                   jnp.array(self.actions[index: end_index]),
+                   jnp.array(self.rewards[index: end_index]),
+                   jnp.array(self.next_frames[index: end_index]))
 
-    def episodic_data(self):
-        trajectory_length = hyperparameters["max_episode_length"]
-        episodes = self.size // trajectory_length
-        return (jnp.array(self.frame_stack).reshape(episodes, trajectory_length, *Shape()[0]),
-                jnp.array(self.actions).reshape(episodes, trajectory_length, 1),
-                jnp.array(self.rewards).reshape(episodes, trajectory_length, 1),
-                jnp.array(self.next_frames).reshape(episodes, trajectory_length, *Shape()[0]))
+    def data(self):
+        return self.frame_stack, self.actions, self.rewards, self.next_frames
+
+    def sample_states(self, n: int) -> list[jax.Array]:
+        return random.sample(self.next_frames, n)

@@ -3,6 +3,7 @@ import jax.numpy as jnp
 from gymnasium.wrappers import ResizeObservation
 from jax import vmap
 
+from src.agent.agent import Agent
 from src.enviroment import make_env, Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
@@ -103,8 +104,25 @@ def test_stochastic_autoencoder():
     env.close()
 
 
+def test_ppo():
+    agent = Agent("ppo")
+    state = jnp.ones((105, 80, 12), dtype=jnp.float32)
+    agent.receive_state(state)
+    for e in range(100):
+        action = agent.select_action()
+        if action == 0:
+            agent.receive_reward(1.0)
+        else:
+            agent.receive_reward(0.0)
+        agent.receive_state(state)
+        agent.receive_term(e % 2 == 1)
+        agent.update_policy()
+
+
 def test():
-    test_stochastic_autoencoder()
+    make_env()
+    test_ppo()
+    #test_stochastic_autoencoder()
 
 
 if __name__ == '__main__':

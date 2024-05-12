@@ -1,6 +1,8 @@
 import jax
 import jax.numpy as jnp
-from jax import lax
+import jax.random as jr
+from jax import lax, vmap
+from flax.linen import softmax
 
 from src.agent.actor.ppoactor import PPOActor
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
@@ -9,53 +11,68 @@ from src.enviroment.shape import Shape
 from src.models.actorcritic.actoratari import ActorAtari
 from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.pod.hyperparameters import hyperparameters
-from src.pod.trajectorystorage import TrajectoryStorage
+from src.pod.montecarlostorage import MonteCarloStorage
+from src.utils.rebatch import rebatch
 
 
 class PPOStrategy(StrategyInterface):
     def __init__(self):
-        self._batch_size: int = hyperparameters['ppo']['batch_size']
         self._actor, self._critic = PPOActor(ActorAtari(*Shape())), PPOCritic(StateValueAtariNN(Shape()[0], 1))
-        self._trajectory_storage = TrajectoryStorage()
-        self._number_of_trajectories: int = hyperparameters['ppo']['number_of_trajectories']
+        self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
+        self._trajectory_storage = MonteCarloStorage()
         self._iteration: int = 0
+        self._workers = 1
 
-    def _batch_update(self, training_sample: list[jax.Array]):
-        final_state = training_sample[3]
-        final_state = lax.slice_in_dim(final_state, -1, None, axis=1)
-
-        extended_states = jnp.append(training_sample[0], final_state, axis=1)
-
-        action = training_sample[1]
-        rewards = training_sample[2]
-
-        advantage = self._critic.provide_feedback(extended_states, rewards)
-        states = training_sample[0]
-        actor_grads = self._actor.calculate_grads(states, advantage, action)
-        critic_grads = self._critic.calculate_grads(extended_states, rewards)
-        return actor_grads, critic_grads
+    def is_update_time(self):
+        return self._iteration != 0 and self._iteration % hyperparameters["ppo"]["number_of_trajectories"] == 0
 
     def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
+        self._trajectory_storage.add_transition(old_state, selected_action, reward)
+
         if done:
             self._iteration += 1
+            self._trajectory_storage.end_episode(new_state)
 
-        self._trajectory_storage.add_transition(old_state, selected_action, reward, new_state)
-
-        if self._iteration == 0 or self._iteration % self._number_of_trajectories != 0:
+        # Only update every number_of_trajectories
+        if not self.is_update_time():
             return
 
-        transitions = self._trajectory_storage.episodic_data()
+        states, actions, rewards = self._trajectory_storage.data()
+        rewards_to_go = self._critic.calculate_rewards_to_go(rewards, states)
+        advantage = self._critic.provide_feedback(states, rewards)
 
-        actor_grads, critic_grads = self._batch_update(transitions)
+        # remove end state
+        truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
+        batch_size = min(hyperparameters['ppo']['batch_size'], states.shape[0] + states.shape[1])
 
-        self._actor.update(actor_grads)
-        self._critic.update(critic_grads)
+        trunc_states, advantage, actions, rewards_to_go = rebatch(batch_size, truncated_states,
+                                                                  advantage, actions, rewards_to_go)
+
+        for trunc_state, adv, action, reward in zip(trunc_states, advantage, actions, rewards_to_go):
+            actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
+            critic_grads = self._critic.calculate_grads(trunc_state, reward)
+
+            self._actor.update(actor_grads)
+            self._critic.update(critic_grads)
+
         self._trajectory_storage.reset()
         self._iteration = 0
 
     def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
-        probability_distribution = self._actor.calculate_actions(state)[0]
+        probability_distribution = jnp.squeeze(self._actor.policy(state))
+        print(probability_distribution)
         return probability_distribution
+
+    def select_action(self, state: jnp.ndarray) -> int:
+        policy = self.action_policy(state)
+        sample_fun = self.__sample_from_distribution
+        if len(policy.shape) > 1:
+            sample_fun = vmap(sample_fun)
+
+        return sample_fun(policy)
+
+    def run_parallel(self, n_workers: int):
+        self._trajectory_storage = MonteCarloStorage(n_workers)
 
     def save(self):
         self._actor.save()
@@ -64,3 +81,7 @@ class PPOStrategy(StrategyInterface):
     def load(self):
         self._actor.load()
         self._critic.load()
+
+    def __sample_from_distribution(self, distribution: jax.Array) -> int:
+        self._key, subkey = jr.split(self._key)
+        return int(jr.choice(subkey, distribution.shape[0], p=distribution))

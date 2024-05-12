@@ -1,30 +1,33 @@
 hyperparameters = {
-    'world': {
+    'max_episode_length': 512,
+    'simple': {
         'deterministic_lr': 0.0001,
         'stochastic_lr': 0.0001,
         'lstm_lr': 0.0001,
         'kl_loss_weight': 2,
-        'batch_size': 32,
-        'data_size': 1000,
-        'rollout_length': 10,
-        'frame_stack': 4,
+        'batch_size': 5,
+        'data_size': 10,
+        'rollout_length': 3,
+        'kl_loss': 0.8,
+        'pixel_reward': 0.5,
+        'parallel_agents': 2,
+        'agent_updates': 4
     },
     'dqn': {
         'batch_size': 100,
         'batches_per_update': 5,
         'discount_factor': 0.95,
-        'polyak': 0.995,
-        'start_steps': 200,
+        'target_update_period': 10,
+        'start_steps': 100,
         'update_every': 50,
     },
     'ppo': {
-        'batch_size': 100,
-        'discount_factor': 0.95,
-        'lambda': 0.7,
-        'trajectory_length': 10,
-        'clip_threshold': 0.2,
-        'sequence_length': 1,
+        'batch_size': 300,
         'number_of_trajectories': 5,
+        'discount_factor': 0.99,
+        'lambda': 0.97,
+        'clip_threshold': 0.2,
+        'trajectory_length': 512,
     },
     'dreamer': {
         'belief_size': 200,
@@ -43,10 +46,8 @@ hyperparameters = {
         'params': 0,
         'action': 0,
     },
-    'mixing_coefficients': {
-        'kl_loss': 0.8,
-        'pixel_reward': 0.5,
-    },
+    'frame_stack': 4,
     'save_path': '/tmp/flax_ckpt',
-    'max_episode_length': 500,
+
+    # 'max_episode_length': 5,
 }

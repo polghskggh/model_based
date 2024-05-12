@@ -1,5 +1,6 @@
 import flax.linen as nn
 from jax import Array, vmap
+from rlax import one_hot
 
 from src.models.autoencoder.decoder import Decoder
 from src.models.autoencoder.encoder import Encoder
@@ -32,7 +33,8 @@ class AutoEncoder(nn.Module):
     def __call__(self, image: Array, action: Array, latent: Array = None) -> Array:
         embedded_image = self.pixel_embedding(image)
         encoded, skip = self.encoder(embedded_image)
-        injected = self.action_injector(encoded, action)
+        encoded_action = one_hot(action, self.second_input)
+        injected = self.action_injector(encoded, encoded_action)
 
         if latent is not None:
             injected = self.latent_injector(encoded, latent)

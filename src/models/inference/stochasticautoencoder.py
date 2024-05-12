@@ -1,5 +1,4 @@
-from ctypes import Array
-
+import jax
 import flax.linen as nn
 
 from src.models.autoencoder.autoencoder import AutoEncoder
@@ -16,7 +15,6 @@ class StochasticAutoencoder(nn.Module):
         self.bit_predictor = BitPredictor(self.bits)
 
     @nn.compact
-    def __call__(self, stack: Array, actions: Array):
-        bit_prediction = self.bit_predictor()
-        pixels = self.autoencoder(stack, actions, bit_prediction)
-        return pixels
+    def __call__(self, stack: jax.Array, actions: jax.Array):
+        bit_predictions = self.bit_predictor(actions.shape[0])
+        return self.autoencoder(stack, actions, bit_predictions)
