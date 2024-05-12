@@ -2,20 +2,20 @@ import jax
 import jax.random as random
 from flax import linen as nn
 
-from src.agent.actor.actorinterface import ActorInterface
 from src.models.modelwrapper import ModelWrapper
 from src.models.trainer.actortrainer import PPOActorTrainer
 
 
-class PPOActor(ActorInterface):
+class PPOActor:
     def __init__(self, model: nn.Module):
         super().__init__()
         self._model: ModelWrapper = ModelWrapper(model, "actor")
+        print(self._model)
         self._trainer = PPOActorTrainer(self._model.model)
         self._new_states = None
         self.key = random.PRNGKey(0)
 
-    def calculate_actions(self, states: jax.Array) -> jax.Array:
+    def policy(self, states: jax.Array) -> jax.Array:
         return self._model.forward(states)
 
     def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array) -> dict:

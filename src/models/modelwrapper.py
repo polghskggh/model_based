@@ -146,7 +146,8 @@ class ModelWrapper:
 
         :return: the string representation of the model architecture
         """
-        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)))
+        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)),
+                                    console_kwargs={"width": 120})
 
     @staticmethod
     def make_rng_keys():

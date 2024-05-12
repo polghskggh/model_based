@@ -32,7 +32,8 @@ def main():
 
 def run_n_episodes(episodes: int, agent: Agent, env: gym.Env):
     writer_instances["reward"] = ModelWriter("reward", ["reward", "return"])
-    world_model = SimpleWorldModel(True)
+    #world_model = SimpleWorldModel(True)
+    world_model = None
 
     for episode in range(episodes):
         run_experiment(agent, env, world_model)
@@ -41,8 +42,8 @@ def run_n_episodes(episodes: int, agent: Agent, env: gym.Env):
 
 
 def run_experiment(agent: Agent, env: gym.Env, world_model: WorldModelInterface):
-    model_based_train_loop(agent, world_model, env)
-    #model_free_train_loop(agent, env)
+    model_free_train_loop(agent, env)
+    #model_based_train_loop(agent, world_model, env)
 
 
 if __name__ == '__main__':

@@ -60,6 +60,7 @@ class PPOStrategy(StrategyInterface):
 
     def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
         probability_distribution = jnp.squeeze(self._actor.policy(state))
+        print(probability_distribution)
         return probability_distribution
 
     def select_action(self, state: jnp.ndarray) -> int:

@@ -1,5 +1,7 @@
+import jax
 from flax import linen as nn
 from jax import Array
+import jax.numpy as jnp
 
 from src.models.autoencoder.encoder import Encoder
 
@@ -7,6 +9,7 @@ from src.models.autoencoder.encoder import Encoder
 # A simple feed forward neural network
 class CNNAtari(nn.Module):
     output_dimensions: int
+    last: jax.Array = None
 
     def setup(self):
         features = 256

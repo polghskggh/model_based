@@ -1,4 +1,5 @@
 import flax.linen as nn
+import jax
 from jax import Array
 import jax.numpy as jnp
 
@@ -16,14 +17,9 @@ class ActorAtari(nn.Module):
     @nn.compact
     def __call__(self, x: Array):
         x = self.cnn(x)
-        print(x.shape)
         x = x.reshape(x.shape[0], -1)
-        print(jnp.max(x))
         x = nn.Dense(self.output_dimensions)(x)
         x = nn.softmax(x)
         return x
-
-    def mock_input(self) -> tuple:
-        return (jnp.ones(self.input_dimensions, dtype=jnp.float32),)
 
 
