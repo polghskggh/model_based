@@ -25,13 +25,13 @@ class PPOCritic(CriticInterface):
     def __update_bootstrap_values(self, states: jax.Array):
         if self._bootstrapped_values is None:
             self._bootstrapped_values = vmap(self._model.forward)(states)
-            print("boostrapped_values:", self._bootstrapped_values)
 
     def calculate_grads(self, states: jax.Array, returns: jax.Array) -> dict:
         grads = self._model.train_step(returns.reshape(-1, 1), states)
         return grads
 
     def update(self, grads: dict):
+        print("boostrapped_values:", self._bootstrapped_values)
         self._model.apply_grads(grads)
         self._bootstrapped_values = None
 
