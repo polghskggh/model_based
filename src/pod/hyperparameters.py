@@ -22,7 +22,7 @@ hyperparameters = {
         'update_every': 50,
     },
     'ppo': {
-        'batch_size': 300,
+        'batch_size': 200,
         'number_of_trajectories': 5,
         'discount_factor': 0.99,
         'lambda': 0.97,

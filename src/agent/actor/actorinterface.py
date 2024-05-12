@@ -1,16 +1,14 @@
 from abc import abstractmethod
 
+import jax
 import numpy as np
 
-from src.agent.actor.actorinterface import ActorInterface
+from src.models.modelwrapper import ModelWrapper
 
 
-class CriticInterface:
-    def __init__(self):
-        pass
-
+class ActorInterface:
     @abstractmethod
-    def provide_feedback(self, *args):
+    def calculate_actions(self, states: jax.Array) -> jax.Array:
         pass
 
     @abstractmethod
@@ -19,6 +17,10 @@ class CriticInterface:
 
     @abstractmethod
     def update(self, grads: dict):
+        pass
+
+    @abstractmethod
+    def model(self) -> ModelWrapper:
         pass
 
     @abstractmethod
