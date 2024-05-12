@@ -67,7 +67,7 @@ class PPOStrategy(StrategyInterface):
         sample_fun = self.__sample_from_distribution
         if len(policy.shape) > 1:
             sample_fun = vmap(sample_fun)
-
+        print("policy:", policy)
         return sample_fun(policy)
 
     def run_parallel(self, n_workers: int):

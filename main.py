@@ -25,7 +25,7 @@ def main():
     check_gpu()
     env = make_env()
     agent = Agent("ppo")
-    run_n_episodes(100, agent, env)
+    run_n_episodes(1000, agent, env)
     agent.save()
     env.close()
 
