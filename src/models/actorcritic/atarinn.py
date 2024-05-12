@@ -31,10 +31,9 @@ class StateValueAtariNN(nn.Module):
     def setup(self):
         bottleneck = 100
         self.cnn = CNNAtari(bottleneck)
-        self.mlp = MLPAtari(bottleneck, self.output_dimensions)
 
     @nn.compact
     def __call__(self, image: Array):
         cnn = self.cnn(image)
-        x = self.mlp(cnn)
+        x = nn.Dense(self.output_dimensions)(cnn)
         return x

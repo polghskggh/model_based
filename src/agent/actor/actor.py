@@ -1,16 +1,13 @@
-import flax.linen as nn
-from jax import random as jr
 import jax
-import jax.random as random
 from flax import linen as nn
+from jax import random as jr
 
 from src.models.modelwrapper import ModelWrapper
-from src.trainer.actortrainer import PPOActorTrainer, DreamerActorTrainer
+from src.trainer.actortrainer import PPOActorTrainer
 
 
 class Actor:
     def __init__(self, model: nn.Module):
-        super().__init__()
         self._model: ModelWrapper = ModelWrapper(model, "actor")
         self._trainer = PPOActorTrainer(self._model.model)
         self._new_states = None

@@ -9,7 +9,7 @@ import orbax.checkpoint
 
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.pod.hyperparameters import hyperparameters
-from src.utils.transformtobatch import transform_to_batch
+from src.utils.modelhelperfuns import transform_to_batch
 
 
 class ModelWrapper:

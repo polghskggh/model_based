@@ -1,3 +1,4 @@
+import jax.debug
 import jax.numpy as jnp
 import optax
 from jax import jit
@@ -8,7 +9,7 @@ from src.pod.hyperparameters import hyperparameters
 
 def mean_squared_error(model, params, teacher_outputs, *inputs, **kwargs):
     outputs = jit(model.apply)(params, *inputs, **kwargs)
-    return jnp.mean((teacher_outputs - outputs)**2)  # output is not batch format
+    return jnp.mean(optax.squared_error(outputs, teacher_outputs))  # output is not batch format
 
 
 def cross_entropy_loss(model, params, teacher_outputs, *inputs, **kwargs):

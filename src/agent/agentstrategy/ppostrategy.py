@@ -4,7 +4,7 @@ import jax.random as jr
 from jax import lax, vmap
 from flax.linen import softmax
 
-from src.agent.actor.ppoactor import PPOActor
+from src.agent.actor.actor import Actor
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.agent.critic.ppocritic import PPOCritic
 from src.enviroment.shape import Shape
@@ -17,7 +17,7 @@ from src.utils.rebatch import rebatch
 
 class PPOStrategy(StrategyInterface):
     def __init__(self):
-        self._actor, self._critic = PPOActor(ActorAtari(*Shape())), PPOCritic(StateValueAtariNN(Shape()[0], 1))
+        self._actor, self._critic = Actor(ActorAtari(*Shape())), PPOCritic(StateValueAtariNN(Shape()[0], 1))
         self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
         self._trajectory_storage = MonteCarloStorage()
         self._iteration: int = 0
@@ -38,19 +38,18 @@ class PPOStrategy(StrategyInterface):
             return
 
         states, actions, rewards = self._trajectory_storage.data()
-        rewards_to_go = self._critic.calculate_rewards_to_go(rewards, states)
+        returns = self._critic.calculate_rewards_to_go(rewards, states)
         advantage = self._critic.provide_feedback(states, rewards)
 
         # remove end state
         truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
-        batch_size = min(hyperparameters['ppo']['batch_size'], states.shape[0] + states.shape[1])
+        batch_size = min(hyperparameters['ppo']['batch_size'], truncated_states.shape[0] + truncated_states.shape[1])
+        trunc_states, advantage, actions, returns = rebatch(batch_size, truncated_states,
+                                                            advantage, actions, returns)
 
-        trunc_states, advantage, actions, rewards_to_go = rebatch(batch_size, truncated_states,
-                                                                  advantage, actions, rewards_to_go)
-
-        for trunc_state, adv, action, reward in zip(trunc_states, advantage, actions, rewards_to_go):
+        for trunc_state, adv, action, ret in zip(trunc_states, advantage, actions, returns):
             actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
-            critic_grads = self._critic.calculate_grads(trunc_state, reward)
+            critic_grads = self._critic.calculate_grads(trunc_state, ret)
 
             self._actor.update(actor_grads)
             self._critic.update(critic_grads)
@@ -60,7 +59,6 @@ class PPOStrategy(StrategyInterface):
 
     def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
         probability_distribution = jnp.squeeze(self._actor.policy(state))
-        print(probability_distribution)
         return probability_distribution
 
     def select_action(self, state: jnp.ndarray) -> int:

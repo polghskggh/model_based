@@ -9,7 +9,8 @@ from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
-from src.trainer import SAETrainer
+from src.pod.hyperparameters import hyperparameters
+from src.trainer.saetrainer import SAETrainer
 from src.utils.tiling import tile_image
 
 
@@ -105,17 +106,51 @@ def test_stochastic_autoencoder():
 
 
 def test_ppo():
+    hyperparameters["ppo"]["number_of_trajectories"] = 2
+    hyperparameters["ppo"]["trajectory_length"] = 3
     agent = Agent("ppo")
     state = jnp.ones((105, 80, 12), dtype=jnp.float32)
-    agent.receive_state(state)
+    state2 = jnp.zeros((105, 80, 12), dtype=jnp.float32) - 1
+    state3 = state2 - 1
     for e in range(100):
+        agent.receive_state(state)
         action = agent.select_action()
+
         if action == 0:
+            agent.receive_reward(1.0)
+        elif action == 1:
+            agent.receive_reward(-1.0)
+        else:
+            agent.receive_reward(0.0)
+
+        agent.receive_state(state2)
+        agent.receive_term(False)
+        agent.update_policy()
+
+        action = agent.select_action()
+
+        if action == 0:
+            agent.receive_reward(-1.0)
+        elif action == 2:
             agent.receive_reward(1.0)
         else:
             agent.receive_reward(0.0)
-        agent.receive_state(state)
-        agent.receive_term(e % 2 == 1)
+
+        agent.receive_state(state3)
+        agent.receive_term(False)
+        agent.update_policy()
+
+        action = agent.select_action()
+
+        if action == 0:
+            agent.receive_reward(-1.0)
+        elif action == 3:
+            agent.receive_reward(1.0)
+        else:
+            agent.receive_reward(0.0)
+
+        agent.receive_state(state3)
+        agent.receive_term(True)
         agent.update_policy()
 
 

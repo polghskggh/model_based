@@ -25,7 +25,6 @@ class PPOCritic(CriticInterface):
     def __update_bootstrap_values(self, states: jax.Array):
         if self._bootstrapped_values is None:
             self._bootstrapped_values = vmap(self._model.forward)(states)
-        print(self._bootstrapped_values)
 
     def calculate_grads(self, states: jax.Array, returns: jax.Array) -> dict:
         grads = self._model.train_step(returns.reshape(-1, 1), states)
@@ -56,7 +55,8 @@ class PPOCritic(CriticInterface):
 
     @staticmethod
     def __calculate_rewards_to_go(rewards: jax.Array, values: jax.Array, discount_factor: float) -> float:
-        values = values[1:].reshape(-1)  # remove the first value
+        values = values[1:].reshape(-1)           # skip the first value
         rewards = rewards.reshape(-1)
         discount = discount_factor * jnp.ones_like(rewards)
+        # TODO: these get very high result in short episodes. Therefore unstable. Try something different
         return rlax.discounted_returns(rewards, discount, values)

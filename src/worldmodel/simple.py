@@ -6,9 +6,9 @@ from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.saetrainer import SAETrainer
 from src.pod.hyperparameters import hyperparameters
 from src.pod.trajectorystorage import TrajectoryStorage
+from src.trainer.saetrainer import SAETrainer
 from src.utils.tiling import tile_image, reverse_tile_image
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface

@@ -4,13 +4,13 @@ from jax import value_and_grad, vmap
 
 from src.models.lossfuns import mean_squared_error
 from src.models.modelwrapper import ModelWrapper
-from src.models.trainer.trainer import Trainer
 
 import jax.numpy as jnp
 
 from rlax import truncated_generalized_advantage_estimation
 
 from src.pod.hyperparameters import hyperparameters
+from src.trainer.trainer import Trainer
 
 
 class DDPGCriticTrainer(Trainer):
