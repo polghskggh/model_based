@@ -12,6 +12,7 @@ from src.models.actorcritic.actoratari import ActorAtari
 from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.pod.hyperparameters import hyperparameters
 from src.pod.montecarlostorage import MonteCarloStorage
+from src.utils.modelhelperfuns import sum_dicts
 from src.utils.rebatch import rebatch
 
 
@@ -47,12 +48,19 @@ class PPOStrategy(StrategyInterface):
         trunc_states, advantage, actions, returns = rebatch(batch_size, truncated_states,
                                                             advantage, actions, returns)
 
-        for trunc_state, adv, action, ret in zip(trunc_states, advantage, actions, returns):
-            actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
-            critic_grads = self._critic.calculate_grads(trunc_state, ret)
+        batches = len(trunc_states)
 
-            self._actor.update(actor_grads)
-            self._critic.update(critic_grads)
+        actor_grads = self._actor.calculate_grads(trunc_states[0], advantage[0], actions[0])
+        critic_grads = self._critic.calculate_grads(trunc_states[0], returns[0])
+
+        for idx in range(1, batches):
+            actor_grads = sum_dicts(actor_grads,
+                                    self._actor.calculate_grads(trunc_states[idx], advantage[idx], actions[idx]))
+            critic_grads = sum_dicts(critic_grads,
+                                     self._critic.calculate_grads(trunc_states[idx], returns[idx]))
+
+        self._actor.update(jax.tree_util.tree_map(lambda x: x / batch_size, actor_grads))
+        self._critic.update(jax.tree_util.tree_map(lambda x: x / batch_size, critic_grads))
 
         self._trajectory_storage.reset()
         self._iteration = 0

@@ -56,8 +56,10 @@ class PPOCritic(CriticInterface):
 
     @staticmethod
     def __calculate_rewards_to_go(rewards: jax.Array, values: jax.Array, discount_factor: float) -> float:
-        values = values[1:].reshape(-1)           # skip the first value
+        values = values[-1]          # skip the first value
         rewards = rewards.reshape(-1)
         discount = discount_factor * jnp.ones_like(rewards)
-        # TODO: these get very high result in short episodes. Therefore unstable. Try something different
-        return rlax.discounted_returns(rewards, discount, values)
+        return rlax.discounted_returns(discount, rewards, values)
+
+
+

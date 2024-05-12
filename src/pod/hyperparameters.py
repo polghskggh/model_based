@@ -1,5 +1,5 @@
 hyperparameters = {
-    'max_episode_length': 512,
+    'max_episode_length': 100,
     'simple': {
         'deterministic_lr': 0.0001,
         'stochastic_lr': 0.0001,
@@ -23,7 +23,7 @@ hyperparameters = {
     },
     'ppo': {
         'batch_size': 300,
-        'number_of_trajectories': 5,
+        'number_of_trajectories': 10,
         'discount_factor': 0.99,
         'lambda': 0.97,
         'clip_threshold': 0.2,
