@@ -2,6 +2,7 @@ import gymnasium as gym
 import jax.numpy as jnp
 from gymnasium.wrappers import ResizeObservation
 from jax import vmap
+import jax.random as jr
 
 from src.agent.agent import Agent
 from src.enviroment import make_env, Shape
@@ -110,8 +111,12 @@ def test_ppo():
     hyperparameters["ppo"]["trajectory_length"] = 3
     agent = Agent("ppo")
     state = jnp.ones((105, 80, 12), dtype=jnp.float32)
-    state2 = jnp.zeros((105, 80, 12), dtype=jnp.float32) - 1
-    state3 = state2 - 1
+
+    key = jr.PRNGKey(0)  # Random seed is explicit in JAX
+    key, s1 = jr.split(key)
+    state2 = jr.uniform(s1, shape=(105, 80, 12))
+    state3 = jr.uniform(key, shape=(105, 80, 12))
+
     for e in range(100):
         agent.receive_state(state)
         action = agent.select_action()

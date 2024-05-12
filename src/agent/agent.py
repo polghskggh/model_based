@@ -27,6 +27,7 @@ class Agent:
 
     def select_action(self) -> jax.Array:
         followed_policy = self._strategy.action_policy(self._new_state)
+        print("followed:", followed_policy)
         sample_fun = self.__sample_from_distribution
         if len(followed_policy.shape) > 1:
             sample_fun = vmap(sample_fun)

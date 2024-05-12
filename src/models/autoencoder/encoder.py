@@ -20,7 +20,7 @@ class Encoder(nn.Module):
             skip.append(x)
             features = self.scaled_features(layer_id)
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
-            #x = nn.LayerNorm()(x)
+            x = nn.LayerNorm()(x)
             x = nn.Conv(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = nn.relu(x)
         return x, skip
