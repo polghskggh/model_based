@@ -10,7 +10,6 @@ from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.strategy.modelstrategyfactory import model_strategy_factory
 from src.models.trainer.saetrainer import SAETrainer
-from src.pod.hyperparameters import hyperparameters
 from src.utils.tiling import tile_image
 
 
@@ -106,9 +105,6 @@ def test_stochastic_autoencoder():
 
 
 def test_ppo():
-    hyperparameters['ppo']['trajectory_length'] = 2
-    hyperparameters['ppo']['batch_size'] = 2
-    hyperparameters['ppo']['number_of_trajectories'] = 2
     agent = Agent("ppo")
     state = jnp.ones((105, 80, 12), dtype=jnp.float32)
     agent.receive_state(state)
@@ -116,8 +112,6 @@ def test_ppo():
         action = agent.select_action()
         if action == 0:
             agent.receive_reward(1.0)
-        elif action == 1:
-            agent.receive_reward(-1.0)
         else:
             agent.receive_reward(0.0)
         agent.receive_state(state)
