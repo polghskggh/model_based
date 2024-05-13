@@ -31,7 +31,6 @@ class PPOCritic(CriticInterface):
         return grads
 
     def update(self, grads: dict):
-        print("boostrapped_values:", self._bootstrapped_values)
         self._model.apply_grads(grads)
         self._bootstrapped_values = None
 

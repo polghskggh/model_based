@@ -40,27 +40,21 @@ class PPOStrategy(StrategyInterface):
 
         states, actions, rewards = self._trajectory_storage.data()
         returns = self._critic.calculate_rewards_to_go(rewards, states)
-        advantage = self._critic.provide_feedback(states, rewards)
+        advantages = self._critic.provide_feedback(states, rewards)
 
         # remove end state
         truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
         batch_size = min(hyperparameters['ppo']['batch_size'], truncated_states.shape[0] + truncated_states.shape[1])
-        trunc_states, advantage, actions, returns = rebatch(batch_size, truncated_states,
-                                                            advantage, actions, returns)
 
-        batches = len(trunc_states)
+        trunc_states, advantages, actions, returns = rebatch(batch_size, truncated_states,
+                                                             advantages, actions, returns)
 
-        actor_grads = self._actor.calculate_grads(trunc_states[0], advantage[0], actions[0])
-        critic_grads = self._critic.calculate_grads(trunc_states[0], returns[0])
+        for trunc_state, advantage, action, ret in zip(trunc_states, advantages, actions, returns):
+            actor_grads = self._actor.calculate_grads(trunc_state, advantage, action)
+            critic_grads = self._critic.calculate_grads(trunc_state, ret)
 
-        for idx in range(1, batches):
-            actor_grads = sum_dicts(actor_grads,
-                                    self._actor.calculate_grads(trunc_states[idx], advantage[idx], actions[idx]))
-            critic_grads = sum_dicts(critic_grads,
-                                     self._critic.calculate_grads(trunc_states[idx], returns[idx]))
-
-        self._actor.update(jax.tree_util.tree_map(lambda x: x / batch_size, actor_grads))
-        self._critic.update(jax.tree_util.tree_map(lambda x: x / batch_size, critic_grads))
+            self._actor.update(actor_grads)
+            self._critic.update(critic_grads)
 
         self._trajectory_storage.reset()
         self._iteration = 0

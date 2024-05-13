@@ -45,6 +45,13 @@ def run_experiment(agent: Agent, env: gym.Env, world_model: WorldModelInterface)
     model_free_train_loop(agent, env)
     #model_based_train_loop(agent, world_model, env)
 
+def pc_params():
+    hyperparameters["max_episode_length"] = 30
+    hyperparameters["ppo"]["number_of_trajectories"] = 1
+    hyperparameters["ppo"]["trajectory_length"] = 30
+    hyperparameters["ppo"]["batch_size"] = 30
+
 
 if __name__ == '__main__':
+    #pc_params()
     main()
