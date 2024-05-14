@@ -154,8 +154,22 @@ def test_ppo():
         agent.update_policy()
 
 
+def test_mario_env():
+    env = make_env("mario")
+    state, _ = env.reset()
+    agent = Agent("ppo")
+    for _ in range(10):
+        agent.receive_state(state)
+        action = agent.select_action()
+        state, reward, done, _, _ = env.step(action)
+        print("reward:", reward)
+        if done:
+            state, _ = env.reset()
+
+
 def test():
     make_env()
+    #test_mario_env()
     test_ppo()
     #test_stochastic_autoencoder()
 

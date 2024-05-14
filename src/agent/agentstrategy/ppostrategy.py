@@ -22,12 +22,13 @@ class PPOStrategy(StrategyInterface):
         self._trajectory_storage = MonteCarloStorage()
         self._iteration: int = 0
         self._workers = 1
+        self._last_policy = None
 
     def is_update_time(self):
         return self._iteration != 0 and self._iteration % hyperparameters["ppo"]["number_of_trajectories"] == 0
 
     def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
-        self._trajectory_storage.add_transition(old_state, selected_action, reward)
+        self._trajectory_storage.add_transition(old_state, selected_action, reward, self._last_policy)
 
         if done:
             self._iteration += 1
@@ -37,18 +38,18 @@ class PPOStrategy(StrategyInterface):
         if not self.is_update_time():
             return
 
-        states, actions, rewards = self._trajectory_storage.data()
+        states, actions, rewards, old_policy = self._trajectory_storage.data()
         returns = self._critic.calculate_rewards_to_go(rewards, states)
         advantage = self._critic.provide_feedback(states, rewards)
 
         # remove end state
         truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
         batch_size = min(hyperparameters['ppo']['batch_size'], truncated_states.shape[0] + truncated_states.shape[1])
-        trunc_states, advantage, actions, returns = rebatch(batch_size, truncated_states,
-                                                            advantage, actions, returns)
+        trunc_states, advantage, actions, returns, old_policy = rebatch(batch_size, truncated_states,
+                                                            advantage, actions, returns, old_policy)
 
-        for trunc_state, adv, action, ret in zip(trunc_states, advantage, actions, returns):
-            actor_grads = self._actor.calculate_grads(trunc_state, adv, action)
+        for trunc_state, adv, action, ret, old_p in zip(trunc_states, advantage, actions, returns, old_policy):
+            actor_grads = self._actor.calculate_grads(trunc_state, adv, action, old_p)
             critic_grads = self._critic.calculate_grads(trunc_state, ret)
 
             self._actor.update(actor_grads)
@@ -59,6 +60,7 @@ class PPOStrategy(StrategyInterface):
 
     def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
         probability_distribution = jnp.squeeze(self._actor.policy(state))
+        self._last_policy = probability_distribution
         return probability_distribution
 
     def select_action(self, state: jnp.ndarray) -> int:

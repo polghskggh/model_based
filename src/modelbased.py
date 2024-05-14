@@ -44,7 +44,6 @@ def sample_batches(agent: Agent, env: gym.Env):
 def update_agent(agent: Agent, env: WorldModelInterface):
     hyperparameters["ppo"]["trajectory_length"] = hyperparameters["simple"]["rollout_length"]
     agent.run_parallel(hyperparameters["simple"]["parallel_agents"])
-    hyperparameters["ppo"]["number_of_trajectories"] = 2
     observation, _ = env.reset()
     agent.receive_state(observation)
 
@@ -53,7 +52,6 @@ def update_agent(agent: Agent, env: WorldModelInterface):
         if done:
             observation, _ = env.reset()
             agent.receive_state(observation)
-
 
     agent.run_parallel(1)
     hyperparameters["ppo"]["trajectory_length"] = hyperparameters["max_episode_length"]

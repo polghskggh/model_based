@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Optional
 
 import gymnasium as gym
 
@@ -25,15 +26,15 @@ def main():
     check_gpu()
     env = make_env()
     agent = Agent("ppo")
+    # world_model = SimpleWorldModel(True)
+    # run_n_episodes(100, agent, env, world_model)
     run_n_episodes(100, agent, env)
     agent.save()
     env.close()
 
 
-def run_n_episodes(episodes: int, agent: Agent, env: gym.Env):
+def run_n_episodes(episodes: int, agent: Agent, env: gym.Env, world_model: Optional[WorldModelInterface] = None):
     writer_instances["reward"] = ModelWriter("reward", ["reward", "return"])
-    #world_model = SimpleWorldModel(True)
-    world_model = None
 
     for episode in range(episodes):
         run_experiment(agent, env, world_model)
@@ -41,9 +42,11 @@ def run_n_episodes(episodes: int, agent: Agent, env: gym.Env):
         ModelWriter.flush_all()
 
 
-def run_experiment(agent: Agent, env: gym.Env, world_model: WorldModelInterface):
-    model_free_train_loop(agent, env)
-    #model_based_train_loop(agent, world_model, env)
+def run_experiment(agent: Agent, env: gym.Env, world_model: Optional[WorldModelInterface] = None):
+    if world_model is None:
+        model_free_train_loop(agent, env)
+    else:
+        model_based_train_loop(agent, world_model, env)
 
 
 if __name__ == '__main__':

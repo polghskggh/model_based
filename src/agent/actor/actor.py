@@ -16,8 +16,8 @@ class Actor:
     def policy(self, states: jax.Array) -> jax.Array:
         return self._model.forward(states)
 
-    def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array) -> dict:
-        grads = self._trainer.train_step(self._model.params, states, advantage, action)
+    def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array, old_p: jax.Array) -> dict:
+        grads = self._trainer.train_step(self._model.params, states, advantage, action, old_p)
         return grads
 
     def update(self, grads: dict):
