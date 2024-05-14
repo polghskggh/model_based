@@ -1,6 +1,7 @@
 hyperparameters = {
     'max_episode_length': 512,
     'grayscale': False,
+    'dropout': False,
     'simple': {
         'deterministic_lr': 0.0001,
         'stochastic_lr': 0.0001,

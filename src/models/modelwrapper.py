@@ -22,7 +22,7 @@ class ModelWrapper:
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
         self.model_writer = self._strategy.init_writer()
-        self._train_model = train_model if train_model is not None else self._model
+        self._train_model = train_model if (train_model is not None and hyperparameters["dropout"]) else self._model
         self._version = 0
 
     # forward pass + backwards pass
