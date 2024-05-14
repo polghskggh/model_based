@@ -57,5 +57,5 @@ def pc_params():
 
 
 if __name__ == '__main__':
-    pc_params()
+    #pc_params()
     main()
