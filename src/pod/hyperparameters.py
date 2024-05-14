@@ -1,5 +1,5 @@
 hyperparameters = {
-    'max_episode_length': 512,
+    'max_episode_length': 1024,
     'grayscale': False,
     'dropout': False,
     'simple': {
