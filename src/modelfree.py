@@ -1,4 +1,5 @@
 import gymnasium as gym
+import jax.numpy as jnp
 
 from src.agent.agent import Agent
 from src.pod.hyperparameters import hyperparameters
@@ -8,7 +9,7 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 def model_free_train_loop(agent: Agent, env: gym.Env):
     observation, _ = env.reset()
-    agent.receive_state(observation)
+    agent.receive_state(jnp.array(observation, dtype=jnp.float32))
     episode_return = 0
 
     for _ in range(hyperparameters["max_episode_length"]):

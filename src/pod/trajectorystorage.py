@@ -45,10 +45,10 @@ class TrajectoryStorage:
     def batched_data(self):
         for index in range(0, self.size, self.batch_size):
             end_index = min(index + self.batch_size, self.size)
-            yield (jnp.array(self.frame_stack[index: end_index]),
-                   jnp.array(self.actions[index: end_index]),
-                   jnp.array(self.rewards[index: end_index]),
-                   jnp.array(self.next_frames[index: end_index]))
+            yield (jnp.array(self.frame_stack[index: end_index], dtype=jnp.float32),
+                   jnp.array(self.actions[index: end_index], dtype=jnp.float32),
+                   jnp.array(self.rewards[index: end_index], dtype=jnp.float32),
+                   jnp.array(self.next_frames[index: end_index], dtype=jnp.float32))
 
     def data(self):
         return self.frame_stack, self.actions, self.rewards, self.next_frames
