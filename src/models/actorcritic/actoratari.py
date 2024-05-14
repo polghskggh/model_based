@@ -1,8 +1,5 @@
 import flax.linen as nn
-import jax
 from jax import Array
-import jax.numpy as jnp
-
 
 from src.models.base.cnnatari import CNNAtari
 
