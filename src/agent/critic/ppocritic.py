@@ -9,14 +9,15 @@ from rlax import truncated_generalized_advantage_estimation
 
 from src.agent.critic import CriticInterface
 from src.enviroment import Shape
+from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.models.modelwrapper import ModelWrapper
 from src.pod.hyperparameters import hyperparameters
 
 
 class PPOCritic(CriticInterface):
-    def __init__(self, model: nn.Module):
-        super().__init__()
-        self._model: ModelWrapper = ModelWrapper(model, "ppocritic")
+    def __init__(self):
+        self._model: ModelWrapper = ModelWrapper(StateValueAtariNN(Shape()[0], 1, True), "ppocritic",
+                                                 train_model=StateValueAtariNN(Shape()[0], 1, False))
         self._action_dim: int = Shape()[1]
         self._bootstrapped_values = None
         self._discount_factor: float = hyperparameters["ppo"]["discount_factor"]

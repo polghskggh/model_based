@@ -26,7 +26,7 @@ hyperparameters = {
         'number_of_trajectories': 5,
         'discount_factor': 0.99,
         'lambda': 0.97,
-        'clip_threshold': 0.02,
+        'clip_threshold': 0.2,
         'trajectory_length': 512,
         'regularization': 0.3
     },

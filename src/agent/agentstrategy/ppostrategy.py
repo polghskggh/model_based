@@ -18,7 +18,8 @@ from src.utils.rebatch import rebatch
 
 class PPOStrategy(StrategyInterface):
     def __init__(self):
-        self._actor, self._critic = Actor(ActorAtari(*Shape())), PPOCritic(StateValueAtariNN(Shape()[0], 1))
+        self._actor, self._critic = Actor(), PPOCritic()
+
         self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
         self._trajectory_storage = MonteCarloStorage()
         self._iteration: int = 0

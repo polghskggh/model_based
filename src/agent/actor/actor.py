@@ -2,14 +2,18 @@ import jax
 from flax import linen as nn
 from jax import random as jr
 
+from src.enviroment import Shape
+from src.models.actorcritic.actoratari import ActorAtari
 from src.models.modelwrapper import ModelWrapper
 from src.trainer.actortrainer import PPOActorTrainer
 
 
 class Actor:
-    def __init__(self, model: nn.Module):
-        self._model: ModelWrapper = ModelWrapper(model, "actor")
-        self._trainer = PPOActorTrainer(self._model.model)
+    def __init__(self):
+        train_model = ActorAtari(*Shape(), False)
+        self._model: ModelWrapper = ModelWrapper(ActorAtari(*Shape(), True), "actor",
+                                                 train_model=train_model)
+        self._trainer = PPOActorTrainer(train_model)
         self._new_states = None
         self.key = jr.PRNGKey(0)
 

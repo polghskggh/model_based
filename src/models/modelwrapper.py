@@ -13,7 +13,7 @@ from src.utils.modelhelperfuns import transform_to_batch
 
 
 class ModelWrapper:
-    def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001):
+    def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001, train_model: nn.Module = None):
         self._strategy = model_strategy_factory(strategy)
         self._model = model
         self._rngs = ModelWrapper.make_rng_keys()
@@ -22,6 +22,7 @@ class ModelWrapper:
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
         self.model_writer = self._strategy.init_writer()
+        self._train_model = train_model if train_model is not None else self._model
         self._version = 0
 
     # forward pass + backwards pass
@@ -36,8 +37,9 @@ class ModelWrapper:
         in_dim, out_dim = self._strategy.batch_dims()
         x = self.batch(x, in_dim)
         y = self.batch(y, out_dim)
+
         grad_fun = value_and_grad(self._loss_fun, 1)
-        loss, grads = grad_fun(self._model, self._params, y, *x, rngs=self._rngs)
+        loss, grads = grad_fun(self._train_model, self._params, y, *x, rngs=self._rngs)
         self.model_writer.add_data(loss)
         return grads
 

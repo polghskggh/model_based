@@ -2,9 +2,6 @@ from abc import abstractmethod
 
 
 class CriticInterface:
-    def __init__(self):
-        pass
-
     @abstractmethod
     def provide_feedback(self, *args):
         pass

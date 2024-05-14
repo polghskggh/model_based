@@ -10,13 +10,14 @@ from src.models.autoencoder.encoder import Encoder
 class CNNAtari(nn.Module):
     output_dimensions: int
     last: jax.Array = None
+    deterministic: bool = True
 
     def setup(self):
         features = 256
         kernel = (4, 4)
         strides = (2, 2)
         layers = 6
-        self.encoder = Encoder(features, kernel, strides, layers, True)
+        self.encoder = Encoder(features, kernel, strides, layers, self.deterministic)
 
     @nn.compact
     def __call__(self, x: Array) -> Array:
