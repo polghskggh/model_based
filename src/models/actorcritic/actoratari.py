@@ -17,7 +17,6 @@ class ActorAtari(nn.Module):
         x = self.cnn(x)
         x = x.reshape(x.shape[0], -1)
         x = nn.Dense(self.output_dimensions)(x)
-        x = nn.softmax(x)
         return x
 
     def deterministic(self, deterministic: bool):

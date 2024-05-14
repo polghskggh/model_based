@@ -8,30 +8,30 @@ class MonteCarloStorage:
     def __init__(self, batch_size: int = 1):
         self.batch_size = batch_size
         self.num_of_trajectories = 0
-        self.states, self.actions, self.rewards = None, None, None
-        self.old_policy = None
+        self.states, self.actions, self.rewards, self.dones = None, None, None, None
         self.reset()
 
     # add new data
-    def add_transition(self, state, action, reward, old_policy):
+    def add_transition(self, state, action, reward, done):
         if self.batch_size == 1:
             self.states[self.num_of_trajectories].append(state)
             self.actions[self.num_of_trajectories].append(action)
             self.rewards[self.num_of_trajectories].append(reward)
-            self.old_policy[self.num_of_trajectories].append(old_policy)
+            self.dones[self.num_of_trajectories].append(done)
         else:
             for i in range(self.batch_size):
                 self.states[self.num_of_trajectories + i].append(state[i])
                 self.actions[self.num_of_trajectories + i].append(action[i])
                 self.rewards[self.num_of_trajectories + i].append(reward[i])
+                self.dones[self.num_of_trajectories + i].append(done[i])
 
     def pad(self):
         while len(self.rewards[self.num_of_trajectories]) < hyperparameters["ppo"]["trajectory_length"]:
             for i in range(self.batch_size):
                 self.rewards[self.num_of_trajectories + i].append(0)
                 self.actions[self.num_of_trajectories + i].append(0)
-                self.old_policy[self.num_of_trajectories + i].append(self.old_policy[self.num_of_trajectories + i][-1])
                 self.states[self.num_of_trajectories + i].append(self.states[self.num_of_trajectories + i][-1])
+                self.dones[self.num_of_trajectories + i].append(True)
 
     def end_episode(self, final_state):
         if self.batch_size == 1:
@@ -44,7 +44,7 @@ class MonteCarloStorage:
         self.states.extend([] for _ in range(self.batch_size))
         self.actions.extend([] for _ in range(self.batch_size))
         self.rewards.extend([] for _ in range(self.batch_size))
-        self.old_policy.extend([] for _ in range(self.batch_size))
+        self.dones.extend([] for _ in range(self.batch_size))
         self.num_of_trajectories += self.batch_size
 
     def reset(self):
@@ -52,11 +52,11 @@ class MonteCarloStorage:
         self.states = [[] for _ in range(self.batch_size)]
         self.actions = [[] for _ in range(self.batch_size)]
         self.rewards = [[] for _ in range(self.batch_size)]
-        self.old_policy = [[] for _ in range(self.batch_size)]
+        self.dones = [[] for _ in range(self.batch_size)]
 
     def __getitem__(self, item):
         return self.states[item], self.actions[item], self.rewards[item]
 
     def data(self):
         return (jnp.array(self.states[:-self.batch_size]), jnp.array(self.actions[:-self.batch_size]),
-                jnp.array(self.rewards[:-self.batch_size]), jnp.array(self.old_policy[:-self.batch_size]))
+                jnp.array(self.rewards[:-self.batch_size]), jnp.array(self.dones[:-self.batch_size]))

@@ -35,31 +35,31 @@ class PPOCritic(CriticInterface):
         self._model.apply_grads(grads)
         self._bootstrapped_values = None
 
-    def provide_feedback(self, states: Array, rewards: Array) -> Array:
+    def provide_feedback(self, states: Array, rewards: Array, dones: jax.Array) -> Array:
         self.__update_bootstrap_values(states)
-        advantage_fun = jit(vmap(PPOCritic.calculate_advantage, in_axes=(0, 0, None, None)))
-        return advantage_fun(rewards, self._bootstrapped_values, self._discount_factor, self._lambda)
+        advantage_fun = jit(vmap(PPOCritic.calculate_advantage, in_axes=(0, 0, 0, None)))
+        discounts = jnp.where(dones, 0, self._discount_factor)
+        return advantage_fun(rewards, self._bootstrapped_values, discounts, self._lambda)
 
     @staticmethod
-    def calculate_advantage(rewards, values, discount_factor, lambda_):
+    def calculate_advantage(rewards, values, discounts, lambda_):
         values = values.reshape(-1)
         rewards = rewards.reshape(-1)
 
-        discounts = discount_factor * jnp.ones_like(rewards)
         advantage = truncated_generalized_advantage_estimation(rewards, discounts, lambda_, values)
         return advantage
 
-    def calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array) -> jax.Array:
+    def calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array, dones: jax.Array) -> jax.Array:
         self.__update_bootstrap_values(states)
-        return jit(vmap(PPOCritic.__calculate_rewards_to_go, (0, 0, None)))(rewards, self._bootstrapped_values,
-                                                                            self._discount_factor)
+        discounts = jnp.where(dones, 0, self._discount_factor)
+        return jit(vmap(PPOCritic.__calculate_rewards_to_go, (0, 0, 0)))(rewards, self._bootstrapped_values,
+                                                                         discounts)
 
     @staticmethod
-    def __calculate_rewards_to_go(rewards: jax.Array, values: jax.Array, discount_factor: float) -> float:
+    def __calculate_rewards_to_go(rewards: jax.Array, values: jax.Array, discounts: jax.Array) -> float:
         values = values[1:].reshape(-1)          # skip the first value
         rewards = rewards.reshape(-1)
-        discount = discount_factor * jnp.ones_like(rewards)
-        return rlax.discounted_returns(discount, rewards, jnp.zeros_like(rewards))
+        return rlax.discounted_returns(rewards, discounts, values)
 
 
 

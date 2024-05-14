@@ -48,6 +48,7 @@ def run_experiment(agent: Agent, env: gym.Env, world_model: Optional[WorldModelI
     else:
         model_based_train_loop(agent, world_model, env)
 
+
 def pc_params():
     hyperparameters["max_episode_length"] = 30
     hyperparameters["ppo"]["number_of_trajectories"] = 1
@@ -56,5 +57,5 @@ def pc_params():
 
 
 if __name__ == '__main__':
-    #pc_params()
+    pc_params()
     main()
