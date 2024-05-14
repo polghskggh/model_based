@@ -20,7 +20,7 @@ class ObservationModel(nn.Module):
 
     def __call__(self, belief, state):
         hidden = jnp.append(belief, state, axis=1)
-        hidden = nn.Dense(self.belief_size + self.state_size, self.embedding_size)(hidden)
+        hidden = nn.Dense(features=self.embedding_size)(hidden)
         hidden = hidden.reshape(-1, self.embedding_size, 1, 1)
 
         reconstructed = self.decoder(hidden, None)

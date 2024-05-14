@@ -20,7 +20,7 @@ class ConvolutionalInference(nn.Module):
         self.pixel_embedding = nn.Dense(features=self.features // 2, name="embedding_top")
         self.kernel = (8, 8)
         self.strides = (4, 4)
-        self.layers = 6
+        self.layers = 2
         self.discretizer = Discretizer(self.train)
         self.deterministic = not self.train
         self.activation_fun = activation_function_dict[self.activation_function_name]
@@ -56,8 +56,6 @@ class ConvolutionalInference(nn.Module):
         distribution = distrax.MultivariateNormalDiag(mean, std)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(jnp.zeros_like(mean), jnp.ones_like(std)))
         return discrete, kl_loss
-
-
 
     @staticmethod
     def merge(inputs, dims, axis):

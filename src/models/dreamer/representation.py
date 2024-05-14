@@ -4,6 +4,7 @@ import flax.linen as nn
 import jax
 import jax.numpy as jnp
 
+from src.models.autoencoder.encoder import Encoder
 from src.models.dreamer.transition import TransitionModel
 from src.models.dreamer.variationalencoder import VariationalEncoder
 from src.utils.activationfuns import activation_function_dict
@@ -25,7 +26,7 @@ class RepresentationModel(nn.Module):
         self.activation_fun = activation_function_dict[self.activation_function]
         self.rnn = nn.GRUCell(self.belief_size, self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
-
+        #self.encoder = Encoder()
         self.transition_model = TransitionModel(self.belief_size, self.state_size, self.action_size,
                                                 self.hidden_size, self.embedding_size)
 

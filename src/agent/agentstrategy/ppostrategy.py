@@ -49,7 +49,6 @@ class PPOStrategy(StrategyInterface):
         batch_size = min(hyperparameters['ppo']['batch_size'], truncated_states.shape[0] + truncated_states.shape[1])
         trunc_states, advantage, actions, returns, old_policy = rebatch(batch_size, truncated_states,
                                                             advantages, actions, returns, old_policy)
-
         for trunc_state, adv, action, ret, old_p in zip(trunc_states, advantage, actions, returns, old_policy):
             actor_grads = self._actor.calculate_grads(trunc_state, adv, action, old_p)
             critic_grads = self._critic.calculate_grads(trunc_state, ret)

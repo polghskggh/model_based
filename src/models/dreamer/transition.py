@@ -22,7 +22,6 @@ class TransitionModel(nn.Module):
     def setup(self):
         super().__init__()
         self.activation_fun = activation_function_dict[self.activation_function]
-
         self.rnn = nn.GRUCell(self.belief_size, self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
 
@@ -37,7 +36,9 @@ class TransitionModel(nn.Module):
     # ps: -X-
     # b : -x--X--X--X--X--X-
     # s : -x--X--X--X--X--X-
-    # @jit.script_method
+    # @jit.script_metho
+    # d
+
     def update_belief(self, state, belief, action):
         # Compute belief (deterministic hidden state)
         state_action = jnp.append(state, action)

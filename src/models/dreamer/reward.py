@@ -17,13 +17,13 @@ class RewardModel(nn.Module):
     def __call__(self, belief, state):
         x = jnp.append(belief, state, axis=1)
 
-        hidden = nn.Dense(self.belief_size + self.state_size, self.hidden_size)(x)
+        hidden = nn.Dense(features=self.hidden_size)(x)
         hidden = self.activation_fun(hidden)
 
-        hidden = nn.Dense(self.hidden_size, self.hidden_size)(hidden)
+        hidden = nn.Dense(features=self.hidden_size)(hidden)
         hidden = self.activation_fun(hidden)
 
-        output = nn.Dense(self.hidden_size, 1)(hidden)
+        output = nn.Dense(features=1)(hidden)
         reward = jnp.squeeze(output, axis=-1)
         return reward
 

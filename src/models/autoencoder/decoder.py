@@ -25,10 +25,9 @@ class Decoder(nn.Module):
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
             x = nn.LayerNorm()(x)
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)
-
+            x = nn.relu(x)
             if skip is not None:
                 x = self.scale_image(x, layer_id)
-                x = nn.relu(x)
                 x = nn.LayerNorm()(x + skip[layer_id])
         return x
 
