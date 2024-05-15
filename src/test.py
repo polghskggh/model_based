@@ -1,9 +1,13 @@
+
 import gymnasium as gym
 import jax.numpy as jnp
+import stable_baselines3.ppo
 from gymnasium.wrappers import ResizeObservation
 from jax import vmap
 import jax.random as jr
+from stable_baselines3 import PPO
 
+from stable_baselines3.common.logger import Logger
 from src.agent.agent import Agent
 from src.enviroment import make_env, Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
@@ -107,6 +111,7 @@ def test_stochastic_autoencoder():
 
 
 def test_ppo():
+    make_env()
     hyperparameters["ppo"]["number_of_trajectories"] = 2
     hyperparameters["ppo"]["trajectory_length"] = 3
     agent = Agent("ppo")
@@ -173,8 +178,17 @@ def test_mario_env():
             state, _ = env.reset()
 
 
+def test_baseline():
+    policy = stable_baselines3.ppo.CnnPolicy
+    env = make_env()
+    ppo = PPO(policy=policy, env=env)
+    logger = Logger("temp", ["stdout"])
+    ppo.set_logger(logger)
+    ppo.learn(total_timesteps=25000)
+
+
 def test():
-    make_env()
+    #test_baseline()
     #test_mario_env()
     test_ppo()
     #test_stochastic_autoencoder()

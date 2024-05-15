@@ -37,8 +37,9 @@ class PPOActorTrainer(Trainer):
         loss = rlax.clipped_surrogate_pg_loss(ratio, advantage, epsilon)
         PPOActorTrainer.debug(prob, action_index, advantage)
         regularization = jnp.ones_like(advantage) * regularization
-        loss -= rlax.entropy_loss(policy, regularization)
-        return loss
+        entropy_loss = rlax.entropy_loss(policy, regularization)
+        jax.debug.print("entropy: {entropy}", entropy=entropy_loss)
+        return loss + entropy_loss
 
     @staticmethod
     def debug(prob, action_index, advantage):

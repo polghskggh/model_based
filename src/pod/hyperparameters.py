@@ -30,7 +30,7 @@ hyperparameters = {
         'lambda': 0.97,
         'clip_threshold': 0.2,
         'trajectory_length': 1024,
-        'regularization': 0.1
+        'regularization': 0.3
     },
     'dreamer': {
         'belief_size': 200,
