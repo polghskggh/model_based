@@ -25,7 +25,7 @@ def main():
     reset_checkpoints()
     check_gpu()
     env = make_env()
-    agent = Agent("ppo")
+    agent = Agent("dqn")
     # world_model = SimpleWorldModel(True)
     # run_n_episodes(100, agent, env, world_model)
     run_n_episodes(100, agent, env)
@@ -50,12 +50,12 @@ def run_experiment(agent: Agent, env: gym.Env, world_model: Optional[WorldModelI
 
 
 def pc_params():
-    hyperparameters["max_episode_length"] = 30
+    hyperparameters["max_episode_length"] = 60
     hyperparameters["ppo"]["number_of_trajectories"] = 1
-    hyperparameters["ppo"]["trajectory_length"] = 30
+    hyperparameters["ppo"]["trajectory_length"] = 60
     hyperparameters["ppo"]["batch_size"] = 30
 
 
 if __name__ == '__main__':
-    #pc_params()
+    pc_params()
     main()

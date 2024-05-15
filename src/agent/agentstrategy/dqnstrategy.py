@@ -25,6 +25,7 @@ class DQNStrategy(StrategyInterface):
         self._update_every: int = hyperparameters["dqn"]["update_every"]
         self._iteration: int = 0
         self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
+        self._epsilon: float = hyperparameters["dqn"]["epsilon"]
 
     def _batch_update(self, training_sample: list[jax.Array]):
         best_actions = self.action_policy(training_sample[3])
@@ -35,7 +36,7 @@ class DQNStrategy(StrategyInterface):
 
         self._q_network.update(grads)
 
-    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
+    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool, trunc: bool):
         self._replay_buffer.add_transition(old_state, selected_action, reward, new_state)
 
         # explore at start
@@ -57,15 +58,20 @@ class DQNStrategy(StrategyInterface):
         is_batch: bool = len(state.shape) > 3
 
         batch_size = state.shape[0] if is_batch else 1
-        values = jnp.zeros((self._action_space, batch_size))
+
+        self._key, key = jr.split(self._key)
+        probs = jr.uniform(key, (batch_size, ))
+        selected_actions = jnp.where(probs > self._epsilon, self.__random_policy(), self._greedy_action())
+
+        return jnp.squeeze(selected_actions)
+
+    def _greedy_action(self):
+        values = jnp.zeros(self._action_space)
         for action in range(self._action_space):
-            actions = jnp.zeros(batch_size) + action
             target_qs = self._q_network._target_model.forward(state, one_hot(actions, self._action_space))
             values.at[action].add(jnp.squeeze(target_qs))
 
-        selected_actions = one_hot(jnp.argmax(values, axis=0), self._action_space)
-
-        return jnp.squeeze(selected_actions)
+        selected_actions = one_hot(jnp.argmax(values, axis=0), self._action_space)\
 
     def __random_policy(self):
         self._key, subkey = jr.split(self._key)

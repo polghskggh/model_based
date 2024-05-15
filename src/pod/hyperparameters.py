@@ -22,6 +22,7 @@ hyperparameters = {
         'target_update_period': 10,
         'start_steps': 100,
         'update_every': 50,
+        'epsilon': 0.2
     },
     'ppo': {
         'batch_size': 300,
