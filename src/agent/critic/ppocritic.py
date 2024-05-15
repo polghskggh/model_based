@@ -7,14 +7,13 @@ from flax import linen as nn
 from jax import vmap, jit
 from rlax import truncated_generalized_advantage_estimation
 
-from src.agent.critic import CriticInterface
 from src.enviroment import Shape
 from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.models.modelwrapper import ModelWrapper
 from src.pod.hyperparameters import hyperparameters
 
 
-class PPOCritic(CriticInterface):
+class PPOCritic:
     def __init__(self):
         self._model: ModelWrapper = ModelWrapper(StateValueAtariNN(Shape()[0], 1, True), "ppocritic",
                                                  train_model=StateValueAtariNN(Shape()[0], 1, False))

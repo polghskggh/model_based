@@ -61,12 +61,8 @@ class PPOStrategy(StrategyInterface):
         self._trajectory_storage.reset()
         self._iteration = 0
 
-    def action_policy(self, state: jnp.ndarray) -> jnp.ndarray:
-        probability_distribution = jnp.squeeze(self._actor.policy(state))
-        return probability_distribution
-
     def select_action(self, state: jnp.ndarray) -> int:
-        policy = self.action_policy(state)
+        policy = jnp.squeeze(self._actor.policy(state))
         sample_fun = self.__sample_from_distribution
         if len(policy.shape) > 1:
             sample_fun = vmap(sample_fun)

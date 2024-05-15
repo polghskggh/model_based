@@ -107,12 +107,7 @@ def test_stochastic_autoencoder():
     env.close()
 
 
-def test_ppo():
-    make_env()
-    hyperparameters["ppo"]["number_of_trajectories"] = 2
-    hyperparameters["ppo"]["trajectory_length"] = 3
-    agent = Agent("ppo")
-
+def toy_env(agent: Agent):
     key = jr.PRNGKey(0)  # Random seed is explicit in JAX
     key, s1 = jr.split(key)
     key, s2 = jr.split(key)
@@ -120,7 +115,7 @@ def test_ppo():
     state2 = jr.uniform(s1, shape=(105, 80, 12))
     state3 = jr.uniform(key, shape=(105, 80, 12))
 
-    for e in range(100):
+    for e in range(1000):
         agent.receive_state(state)
         action = agent.select_action()
 
@@ -162,6 +157,20 @@ def test_ppo():
         agent.update_policy()
 
 
+def test_ppo():
+    make_env()
+    hyperparameters["ppo"]["number_of_trajectories"] = 2
+    hyperparameters["ppo"]["trajectory_length"] = 3
+    agent = Agent("ppo")
+    toy_env(agent)
+
+def test_dqn():
+    make_env()
+    hyperparameters["dqn"]["batch_size"] = 2
+    agent = Agent("dqn")
+    toy_env(agent)
+
+
 def test_mario_env():
     env = make_env("mario")
     state, _ = env.reset()
@@ -187,7 +196,8 @@ def test_baseline():
 def test():
     #test_baseline()
     #test_mario_env()
-    test_ppo()
+    #test_ppo()
+    test_dqn()
     #test_stochastic_autoencoder()
 
 

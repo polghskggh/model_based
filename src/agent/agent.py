@@ -28,13 +28,7 @@ class Agent:
                               self._new_state, self._term, self._trunc)
 
     def select_action(self) -> jax.Array:
-        followed_policy = self._strategy.action_policy(self._new_state)
-        print("followed:", followed_policy)
-        sample_fun = self.__sample_from_distribution
-        if len(followed_policy.shape) > 1:
-            sample_fun = vmap(sample_fun)
-
-        self._selected_action = sample_fun(followed_policy)
+        self._selected_action = self._strategy.select_action(self._new_state)
         return self._selected_action
 
     def receive_reward(self, reward: float):

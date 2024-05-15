@@ -13,9 +13,10 @@ class AtariNN(nn.Module):
     deterministic: bool = True
 
     def setup(self):
-        bottleneck = 1000
+        bottleneck = 100
         self.cnn = CNNAtari(bottleneck)
         self.mlp = MLPAtari(bottleneck + self.second_input, self.output_dimensions)
+
 
     @nn.compact
     def __call__(self, image: Array, action: Array):
