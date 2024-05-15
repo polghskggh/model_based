@@ -2,6 +2,7 @@ hyperparameters = {
     'max_episode_length': 1024,
     'grayscale': False,
     'dropout': True,
+    'max_grad_norm': 0.5,
     'simple': {
         'deterministic_lr': 0.0001,
         'stochastic_lr': 0.0001,
@@ -31,7 +32,8 @@ hyperparameters = {
         'lambda': 0.95,
         'clip_threshold': 0.2,
         'trajectory_length': 1024,
-        'regularization': 0.3
+        'regularization': 0.3,
+        'actor_lr': 1e-4,
     },
     'dreamer': {
         'belief_size': 200,
