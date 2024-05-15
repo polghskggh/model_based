@@ -1,5 +1,5 @@
 hyperparameters = {
-    'max_episode_length': 1024,
+    'max_episode_length': 2048,
     'grayscale': False,
     'dropout': True,
     'simple': {
@@ -25,11 +25,11 @@ hyperparameters = {
     },
     'ppo': {
         'batch_size': 300,
-        'number_of_trajectories': 5,
+        'number_of_trajectories': 10,
         'discount_factor': 0.99,
-        'lambda': 0.97,
+        'lambda': 0.95,
         'clip_threshold': 0.2,
-        'trajectory_length': 1024,
+        'trajectory_length': 2048,
         'regularization': 0.3
     },
     'dreamer': {

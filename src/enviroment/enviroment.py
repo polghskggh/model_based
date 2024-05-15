@@ -29,7 +29,7 @@ def make_breakout() -> gym.Env:
     """
     Create the Breakout environment
     """
-    env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="human")
+    env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
     env = ResizeObservation(env, shape=(105, 80))
     env = optional_grayscale(env)
     env = FrameStack(env, num_stack=4)
