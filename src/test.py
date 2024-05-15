@@ -1,13 +1,10 @@
 
 import gymnasium as gym
 import jax.numpy as jnp
-import stable_baselines3.ppo
 from gymnasium.wrappers import ResizeObservation
 from jax import vmap
 import jax.random as jr
-from stable_baselines3 import PPO
 
-from stable_baselines3.common.logger import Logger
 from src.agent.agent import Agent
 from src.enviroment import make_env, Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
@@ -179,13 +176,13 @@ def test_mario_env():
 
 
 def test_baseline():
-    policy = stable_baselines3.ppo.CnnPolicy
-    env = make_env()
-    ppo = PPO(policy=policy, env=env)
-    logger = Logger("temp", ["stdout"])
-    ppo.set_logger(logger)
-    ppo.learn(total_timesteps=25000)
-
+    # policy = stable_baselines3.ppo.CnnPolicy
+    # env = make_env()
+    # ppo = PPO(policy=policy, env=env)
+    # logger = Logger("temp", ["stdout"])
+    # ppo.set_logger(logger)
+    # ppo.learn(total_timesteps=25000)
+    pass
 
 def test():
     #test_baseline()
