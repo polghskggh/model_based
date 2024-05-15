@@ -1,5 +1,5 @@
 hyperparameters = {
-    'max_episode_length': 2048,
+    'max_episode_length': 1024,
     'grayscale': False,
     'dropout': True,
     'simple': {
@@ -30,7 +30,7 @@ hyperparameters = {
         'discount_factor': 0.99,
         'lambda': 0.95,
         'clip_threshold': 0.2,
-        'trajectory_length': 2048,
+        'trajectory_length': 1024,
         'regularization': 0.3
     },
     'dreamer': {
