@@ -12,8 +12,8 @@ from src.pod.hyperparameters import hyperparameters
 class Agent:
     def __init__(self, agent_type: str):
         super().__init__()
-        self._old_state: jax.Array = jnp.array(Shape.shape[0], float)
-        self._new_state: jax.Array = jnp.array(Shape.shape[0], float)
+        self._old_state: jax.Array = None
+        self._new_state: jax.Array = None
 
         self._selected_action: int = 0
         self._reward: float = 0

@@ -112,9 +112,8 @@ def toy_env(agent: Agent):
     key, s1 = jr.split(key)
     key, s2 = jr.split(key)
     state = jr.uniform(s2, shape=(105, 80, 12), dtype=jnp.float32)
-    state2 = jr.uniform(s1, shape=(105, 80, 12))
-    state3 = jr.uniform(key, shape=(105, 80, 12))
-
+    state2 = jr.uniform(s1, shape=(105, 80, 12), dtype=jnp.float32)
+    state3 = jr.uniform(key, shape=(105, 80, 12), dtype=jnp.float32)
     for e in range(1000):
         agent.receive_state(state)
         action = agent.select_action()
@@ -159,10 +158,12 @@ def toy_env(agent: Agent):
 
 def test_ppo():
     make_env()
-    hyperparameters["ppo"]["number_of_trajectories"] = 2
+    hyperparameters["ppo"]["number_of_trajectories"] = 4
     hyperparameters["ppo"]["trajectory_length"] = 3
+    hyperparameters["ppo"]["batch_size"] = 2
     agent = Agent("ppo")
     toy_env(agent)
+
 
 def test_dqn():
     make_env()
@@ -196,8 +197,8 @@ def test_baseline():
 def test():
     #test_baseline()
     #test_mario_env()
-    #test_ppo()
-    test_dqn()
+    test_ppo()
+    #test_dqn()
     #test_stochastic_autoencoder()
 
 
