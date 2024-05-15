@@ -23,13 +23,14 @@ class PPOActorStrategy(ModelStrategy):
         return writer_instances["actor"]
 
     def init_optim(self, learning_rate: float):
-        tx = optax.chain(
+        return optax.chain(
             optax.clip_by_global_norm(hyperparameters["max_grad_norm"]),
             optax.inject_hyperparams(optax.adamw)(
                 learning_rate=PPOActorStrategy.linear_schedule,
                 eps=1e-5
             )
         )
+
 
     @staticmethod
     def linear_schedule(count):
