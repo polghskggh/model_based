@@ -1,10 +1,10 @@
 import jax.numpy as jnp
 
 from src.models.lossfuns import cross_entropy_loss, cross_entropy_with_kl_loss
-from src.models.strategy.modelstrategy import ModelStrategy
+from src.models.initalizer.modelstrategy import ModelStrategy
 
 
-class StochasticAETrainerStrategy(ModelStrategy):
+class StochasticAETrainerInitializer(ModelStrategy):
     def __init__(self):
         super().__init__()
 
@@ -20,7 +20,7 @@ class StochasticAETrainerStrategy(ModelStrategy):
         return cross_entropy_with_kl_loss
 
 
-class StochasticAEStratgy(ModelStrategy):
+class StochasticInitializer(ModelStrategy):
     def __init__(self):
         super().__init__()
 
@@ -35,7 +35,7 @@ class StochasticAEStratgy(ModelStrategy):
         return cross_entropy_loss
 
 
-class InferenceStrategy(ModelStrategy):
+class InferenceInitializer(ModelStrategy):
     def __init__(self):
         super().__init__()
 
@@ -48,7 +48,7 @@ class InferenceStrategy(ModelStrategy):
         return (4, 2, 4), (2, )
 
 
-class BitPredictorStrategy(ModelStrategy):
+class BitPredictorInitializer(ModelStrategy):
     def __init__(self):
         super().__init__()
 
@@ -59,7 +59,7 @@ class BitPredictorStrategy(ModelStrategy):
         return None, None
 
 
-class LatentAutoEncoderStrategy(ModelStrategy):
+class LatentAEInitializer(ModelStrategy):
     def __init__(self):
         super().__init__()
 

@@ -10,7 +10,7 @@ from src.enviroment import make_env, Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
-from src.models.strategy.modelstrategyfactory import model_strategy_factory
+from src.models.initalizer.modelstrategyfactory import model_initializer_factory
 from src.pod.hyperparameters import hyperparameters
 from src.trainer.saetrainer import SAETrainer
 from src.utils.tiling import tile_image
@@ -38,7 +38,7 @@ def setup(stochastic: bool = False):
 
     next_frame, _ = env.reset()
     autoencoder = gen_autoencoder(stochastic)
-    stack, action = model_strategy_factory("autoencoder").init_params(autoencoder.model)
+    stack, action = model_initializer_factory("autoencoder").init_params(autoencoder.model)
     return env, autoencoder, stack, action, next_frame
 
 

@@ -3,9 +3,7 @@ from jax import lax
 
 from src.agent.agent import Agent
 from src.modelfree import interact
-from src.pod.hyperparameters import hyperparameters
 from src.pod.trajectorystorage import TrajectoryStorage
-from src.resultwriter.modelwriter import writer_instances
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 

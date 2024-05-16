@@ -7,14 +7,14 @@ from jax import random as random, jit
 from jax import value_and_grad
 import orbax.checkpoint
 
-from src.models.strategy.modelstrategyfactory import model_strategy_factory
-from src.pod.hyperparameters import hyperparameters
+from src.models.initalizer.modelstrategyfactory import model_initializer_factory
+from src.singletons.hyperparameters import Args
 from src.utils.modelhelperfuns import transform_to_batch
 
 
 class ModelWrapper:
     def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001, train_model: nn.Module = None):
-        self._strategy = model_strategy_factory(strategy)
+        self._strategy = model_initializer_factory(strategy)
         self._model = model
         self._rngs = ModelWrapper.make_rng_keys()
         self._params = model.init(self._rngs, *self.batch_input(*self._strategy.init_params(model)))
@@ -22,7 +22,7 @@ class ModelWrapper:
         self._optimizer = self._strategy.init_optim(learning_rate)
         self._opt_state = self._optimizer.init(self._params)
         self.model_writer = self._strategy.init_writer()
-        self._train_model = train_model if (train_model is not None and hyperparameters["dropout"]) else self._model
+        self._train_model = train_model if (train_model is not None and Args().args.dropout) else self._model
         self._version = 0
 
     # forward pass + backwards pass

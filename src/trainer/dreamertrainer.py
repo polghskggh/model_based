@@ -3,16 +3,16 @@ import optax
 from jax import value_and_grad
 
 from src.models.lossfuns import mean_squared_error
-from src.pod.hyperparameters import hyperparameters
+from src.singletons.hyperparameters import Args
 from src.trainer.trainer import Trainer
 import jax.numpy as jnp
 
 
 class DreamerTrainer(Trainer):
     def __init__(self, representation_model, observation_model, reward_model):
-        self.batch_size = hyperparameters["dreamer"]["batch_size"]
-        self.belief_size = hyperparameters["dreamer"]["belief_size"]
-        self.state_size = hyperparameters["dreamer"]["state_size"]
+        self.batch_size = Args().args.batch_size
+        self.belief_size = Args().args.belief_size
+        self.state_size = Args().args.state_size
 
         self.models = {"representation": representation_model,
                        "observation": observation_model,
@@ -48,5 +48,5 @@ class DreamerTrainer(Trainer):
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
 
-        alpha, beta, gamma = hyperparameters["dreamer"]["loss_weights"]
+        alpha, beta, gamma = Args().args.loss_weights
         return alpha * observation_loss, beta * reward_loss, gamma * kl_loss

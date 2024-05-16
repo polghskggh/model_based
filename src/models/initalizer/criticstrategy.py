@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from flax import linen as nn
 
-from src.models.strategy.modelstrategy import ModelStrategy
+from src.models.initalizer.modelstrategy import ModelStrategy
 from src.resultwriter.modelwriter import writer_instances, ModelWriter
 
 
@@ -18,7 +18,7 @@ class DQNCriticStrategy(ModelStrategy):
         return writer_instances["critic"]
 
 
-class PPOCriticStrategy(ModelStrategy):
+class CriticInitializer(ModelStrategy):
     def init_params(self, model: nn.Module) -> tuple:
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32), )
 

@@ -7,8 +7,8 @@ def agent_strategy_factory(strategy_name: str) -> StrategyInterface:
     """
     Factory method for creating agent strategies
 
-    :param strategy_name: name of the strategy
-    :return: a new instance of the strategy
+    :param strategy_name: name of the initalizer
+    :return: a new instance of the initalizer
     """
     match strategy_name:
         case "dqn":
@@ -16,4 +16,4 @@ def agent_strategy_factory(strategy_name: str) -> StrategyInterface:
         case "ppo":
             return PPOStrategy()
         case _:
-            raise ValueError(f"Unknown strategy: {strategy_name}")
+            raise ValueError(f"Unknown initalizer: {strategy_name}")

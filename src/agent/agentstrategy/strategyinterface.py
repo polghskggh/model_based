@@ -4,8 +4,7 @@ import jax.numpy as jnp
 
 class StrategyInterface:
     @abstractmethod
-    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray,
-               term: bool, trunc: bool):
+    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
         pass
 
     @abstractmethod

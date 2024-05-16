@@ -1,8 +1,8 @@
 from src.enviroment import Shape
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
-from src.trainer import SAETrainer
 from src.pod.trajectorystorage import TrajectoryStorage
+from src.trainer.saetrainer import SAETrainer
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 

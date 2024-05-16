@@ -2,13 +2,11 @@ import jax.numpy as jnp
 import optax
 from flax import linen as nn
 
-from src.models.strategy.modelstrategy import ModelStrategy
-from src.pod.hyperparameters import hyperparameters
-from src.resultwriter import ModelWriter
-from src.resultwriter.modelwriter import writer_instances
+from src.models.initalizer.modelstrategy import ModelStrategy
+from src.singletons.hyperparameters import Args
 
 
-class PPOActorStrategy(ModelStrategy):
+class ActorInitializer(ModelStrategy):
     def __init__(self):
         super().__init__()
 
@@ -18,15 +16,11 @@ class PPOActorStrategy(ModelStrategy):
     def batch_dims(self) -> tuple:
         return (4, ), (2,)
 
-    def init_writer(self) -> ModelWriter:
-        writer_instances["actor"] = ModelWriter("actor", ["actor_loss"])
-        return writer_instances["actor"]
-
     def init_optim(self, learning_rate: float):
         return optax.chain(
-            optax.clip_by_global_norm(hyperparameters["max_grad_norm"]),
+            optax.clip_by_global_norm(Args().args.max_grad_norm["max_grad_norm"]),
             optax.inject_hyperparams(optax.adamw)(
-                learning_rate=PPOActorStrategy.linear_schedule,
+                learning_rate=ActorInitializer.linear_schedule,
                 eps=1e-5
             )
         )

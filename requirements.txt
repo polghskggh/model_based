@@ -16,3 +16,7 @@ distrax~=0.1.5
 gym~=0.26.2
 orbax~=0.1.9
 gym-super-mario-bros~=7.4.0
+tensorboardX~=2.6.2.2
+tqdm~=4.66.2
+termcolor~=2.4.0
+singleton_decorator

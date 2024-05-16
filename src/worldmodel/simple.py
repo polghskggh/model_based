@@ -6,8 +6,8 @@ from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
-from src.pod.hyperparameters import hyperparameters
 from src.pod.trajectorystorage import TrajectoryStorage
+from src.singletons.hyperparameters import Args
 from src.trainer.saetrainer import SAETrainer
 from src.utils.tiling import tile_image, reverse_tile_image
 from src.worldmodel.framestack import FrameStack
@@ -17,9 +17,10 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 class SimpleWorldModel(WorldModelInterface):
     def __init__(self, deterministic: bool = False):
         self._deterministic = deterministic
-        self._batch_size = hyperparameters["simple"]["batch_size"]
+        self._batch_size = Args().args.batch_size
         self._action_space = Shape()[1]
-        self._parallel_agents = hyperparameters["simple"]["parallel_agents"]
+        self._parallel_agents = Args().args.parallel_agents["simple"]["parallel_agents"]
+        self._rollout_length = Args().args.parallel_agents["simple"]["rollout_length"]
 
         if self._deterministic:
             self._model: ModelWrapper = ModelWrapper(AutoEncoder(*Shape()), "autoencoder")
@@ -37,7 +38,7 @@ class SimpleWorldModel(WorldModelInterface):
         next_frames = vmap(vmap(reverse_tile_image))(next_frames)
         self._frame_stack.add_frames(next_frames)
         self._time_step += 1
-        truncated = self._time_step >= hyperparameters["simple"]["rollout_length"]
+        truncated = self._time_step >= self._rollout_length
         return self._frame_stack.frames, rewards, False, truncated, {}
 
     def reset(self):

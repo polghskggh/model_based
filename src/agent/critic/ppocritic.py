@@ -10,7 +10,7 @@ from rlax import truncated_generalized_advantage_estimation
 from src.enviroment import Shape
 from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.models.modelwrapper import ModelWrapper
-from src.pod.hyperparameters import hyperparameters
+from src.singletons.hyperparameters import Args
 
 
 class PPOCritic:
@@ -18,13 +18,8 @@ class PPOCritic:
         self._model: ModelWrapper = ModelWrapper(StateValueAtariNN(Shape()[0], 1, True), "ppocritic",
                                                  train_model=StateValueAtariNN(Shape()[0], 1, False))
         self._action_dim: int = Shape()[1]
-        self._bootstrapped_values = None
-        self._discount_factor: float = hyperparameters["ppo"]["discount_factor"]
-        self._lambda = hyperparameters["ppo"]["lambda"]
-
-    def __update_bootstrap_values(self, states: jax.Array):
-        if self._bootstrapped_values is None:
-            self._bootstrapped_values = vmap(self._model.forward)(states)
+        self._discount_factor: float = Args().args.discount_factor
+        self._lambda = Args().args.gae_lambda
 
     def calculate_grads(self, states: jax.Array, returns: jax.Array) -> dict:
         grads = self._model.train_step(returns.reshape(-1, 1), states)
@@ -32,33 +27,24 @@ class PPOCritic:
 
     def update(self, grads: dict):
         self._model.apply_grads(grads)
-        self._bootstrapped_values = None
 
-    def provide_feedback(self, states: Array, rewards: Array, dones: jax.Array) -> Array:
-        self.__update_bootstrap_values(states)
-        advantage_fun = jit(vmap(PPOCritic.calculate_advantage, in_axes=(0, 0, 0, None)))
+    def provide_feedback(self, states: Array, rewards: Array, dones: jax.Array) -> tuple[jax.Array, jax.Array]:
+        values = vmap(self._model.forward)(states)
+        advantage_fun = vmap(PPOCritic.calculate_advantage, in_axes=(0, 0, 0, None))
         discounts = jnp.where(dones, 0, self._discount_factor)
-        return advantage_fun(rewards, self._bootstrapped_values, discounts, self._lambda)
+        advantage = advantage_fun(rewards, values, discounts, self._lambda)
+        return advantage, advantage + values
 
     @staticmethod
+    @jit
     def calculate_advantage(rewards, values, discounts, lambda_):
-        values = values.reshape(-1)
-        rewards = rewards.reshape(-1)
-
+        values = values.squeeze()
+        rewards = rewards.squeeze()
         advantage = truncated_generalized_advantage_estimation(rewards, discounts, lambda_, values)
         return advantage
 
-    def calculate_rewards_to_go(self, rewards: jax.Array, states: jax.Array, dones: jax.Array) -> jax.Array:
-        self.__update_bootstrap_values(states)
-        discounts = jnp.where(dones, 0, self._discount_factor)
-        return jit(vmap(PPOCritic.__calculate_rewards_to_go, (0, 0, 0)))(rewards, self._bootstrapped_values,
-                                                                         discounts)
+    def save(self):
+        pass
 
-    @staticmethod
-    def __calculate_rewards_to_go(rewards: jax.Array, values: jax.Array, discounts: jax.Array) -> float:
-        values = values[1:].reshape(-1)          # skip the first value
-        rewards = rewards.reshape(-1)
-        return rlax.discounted_returns(rewards, discounts, values)
-
-
-
+    def load(self):
+        pass
