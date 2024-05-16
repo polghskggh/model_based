@@ -4,7 +4,6 @@ import flax.linen as nn
 
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.convolutionalinference import ConvolutionalInference
-from src.pod.hyperparameters import hyperparameters
 
 
 class TrainStochasticAutoencoder(nn.Module):

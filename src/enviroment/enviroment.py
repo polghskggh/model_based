@@ -13,7 +13,7 @@ from src.singletons.hyperparameters import Args
 
 
 def make_envs(num_envs: int = 1, env_name: str = "breakout"):
-    envs = gym.vector.SyncVectorEnv(*[make_env(env_name) for _ in range(Args().args.num_agents)])
+    envs = gym.vector.SyncVectorEnv([lambda: make_env(env_name) for _ in range(Args().args.num_agents)])
     return envs
 
 

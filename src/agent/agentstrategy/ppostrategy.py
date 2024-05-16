@@ -35,7 +35,7 @@ class PPOStrategy(StrategyInterface):
         advantages, returns = self._critic.provide_feedback(states, rewards, dones)
 
         # remove end state
-        truncated_states = lax.slice_in_dim(states, start_index=0, limit_index=states.shape[1] - 1, axis=1)
+        truncated_states = states[:-1]
         batch_size = min(Args().args.batch_size, truncated_states.shape[0] + truncated_states.shape[1])
         trunc_states, advantage, actions, returns, old_log_odds = rebatch(batch_size, truncated_states,
                                                                           advantages, actions, returns, old_log_odds)

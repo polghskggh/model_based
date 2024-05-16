@@ -1,18 +1,15 @@
 from collections import deque
 
-import gymnasium as gym
 import jax.numpy as jnp
-import numpy as np
-from jax import lax
 
-from src.pod.hyperparameters import hyperparameters
 from src.pod.trajectorystorage import TrajectoryStorage
+from src.singletons.hyperparameters import Args
 
 
 class FrameStack:
     def __init__(self, data: TrajectoryStorage):
-        self.size = hyperparameters["frame_stack"]
-        self._initial_states = data.sample_states(hyperparameters["simple"]["parallel_agents"])
+        self.size = Args().args.frame_stack
+        self._initial_states = data.sample_states(Args().args.parallel_envs)
         self._lazy_frames = None
         self._frames = None
         self.reset()

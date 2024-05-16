@@ -9,7 +9,7 @@ from src.models.modelwrapper import ModelWrapper
 from src.pod.trajectorystorage import TrajectoryStorage
 from src.singletons.hyperparameters import Args
 from src.trainer.saetrainer import SAETrainer
-from src.utils.tiling import tile_image, reverse_tile_image
+from src.utils.rl import tile_image, reverse_tile_image
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 

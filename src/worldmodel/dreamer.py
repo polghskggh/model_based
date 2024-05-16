@@ -6,8 +6,8 @@ from src.models.dreamer.representation import RepresentationModel
 from src.models.dreamer.reward import RewardModel
 from src.models.dreamer.transition import TransitionModel
 from src.models.modelwrapper import ModelWrapper
-from src.pod.hyperparameters import hyperparameters
 from src.pod.trajectorystorage import TrajectoryStorage
+from src.singletons.hyperparameters import Args
 from src.trainer.dreamertrainer import DreamerTrainer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 import jax.numpy as jnp
@@ -15,11 +15,11 @@ import jax.numpy as jnp
 
 class Dreamer(WorldModelInterface):
     def __init__(self):
-        self.batch_size = hyperparameters["dreamer"]["batch_size"]
-        self.belief_size = hyperparameters["dreamer"]["belief_size"]
-        self.state_size = hyperparameters["dreamer"]["state_size"]
-        self.embedding_size = hyperparameters["dreamer"]["embedding_size"]
-        self.hidden_size = hyperparameters["dreamer"]["hidden_size"]
+        self.batch_size = Args().args.batch_size
+        self.belief_size = Args().args.belief_size
+        self.state_size = Args().args.state_size
+        self.embedding_size = Args().args.embedding_size
+        self.hidden_size = Args().args.hidden_size
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]
 

@@ -10,28 +10,24 @@ from src.models.inference.bitpredictior import BitPredictor
 from src.models.inference.convolutionalinference import ConvolutionalInference
 from src.models.inference.trainsae import TrainStochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
+from src.singletons.hyperparameters import Args
 from src.trainer.trainer import Trainer
-from src.pod.hyperparameters import hyperparameters
-from src.utils.tiling import tile_image
+from src.utils.rl import tile_image
 
 
 class SAETrainer(Trainer):
     def __init__(self, model):
         super().__init__()
-        self._batch_size = hyperparameters["simple"]["batch_size"]
+        self._batch_size = Args().args.batch_size
 
         self._model = model
-        self._autoencoder = ModelWrapper(AutoEncoder(*Shape()), "autoencoder_with_latent",
-                                         learning_rate=hyperparameters["simple"]["deterministic_lr"])
+        self._autoencoder = ModelWrapper(AutoEncoder(*Shape()), "autoencoder_with_latent")
 
         third_input = (Shape()[0][0], Shape()[0][1], 3)
-        self._stochastic_ae = ModelWrapper(TrainStochasticAutoencoder(*Shape(), third_input), "trainer_stochastic",
-                                           learning_rate=hyperparameters["simple"]["stochastic_lr"])
-        self._bit_predictor = ModelWrapper(BitPredictor(model.bits), "bit_predictor",
-                                           learning_rate=hyperparameters["simple"]["bit_predictor_lr"])
+        self._stochastic_ae = ModelWrapper(TrainStochasticAutoencoder(*Shape(), third_input), "trainer_stochastic")
+        self._bit_predictor = ModelWrapper(BitPredictor(model.bits), "bit_predictor")
 
-        self._inference = ModelWrapper(ConvolutionalInference(*Shape(), third_input, False), "inference",
-                                       learning_rate=0)
+        self._inference = ModelWrapper(ConvolutionalInference(*Shape(), third_input, False), "inference")
 
         self._ae_trainer = ParamCopyingTrainer(self._autoencoder, "autoencoder")
         self._sae_trainer = ParamCopyingTrainer(self._stochastic_ae, "autoencoder", "autoencoder")

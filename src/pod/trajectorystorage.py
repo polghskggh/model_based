@@ -18,7 +18,6 @@ class TrajectoryStorage:
         # flush data into file
 
     # add new data
-    # TODO: input shape (2, 105, 80, 12) (2, ) (2, 1) (2, 105, 80, 12), deal with batch transitions
     def add_transition(self, frame_stack, action, reward, next_frame):
         self.frame_stack.append(frame_stack)
         self.actions.append(action)

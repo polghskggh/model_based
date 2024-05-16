@@ -3,7 +3,6 @@ from typing import Optional, List
 import flax.linen as nn
 
 from src.models.dreamer.variationalencoder import VariationalEncoder
-from src.pod.hyperparameters import hyperparameters
 from src.utils.activationfuns import activation_function_dict
 import jax
 import jax.numpy as jnp

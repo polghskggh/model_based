@@ -16,4 +16,5 @@ class Key:
 
         keys = jr.split(self.initial_key, number_of_keys + 1)
         self.initial_key = keys[0]
-        return keys[1:]
+        idx = 1 if number_of_keys == 1 else slice(1, None)
+        return keys[idx]

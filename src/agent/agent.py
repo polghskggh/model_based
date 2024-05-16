@@ -18,7 +18,7 @@ class Agent:
         self._selected_action: int = 0
         self._reward: float = 0
         self._done = False
-
+        print(Args().args.algorithm, Args().args.num_agents)
         self._strategy: StrategyInterface = agent_strategy_factory(Args().args.algorithm)
 
     def update_policy(self):

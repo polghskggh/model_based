@@ -1,5 +1,6 @@
 from ctypes import Array
 
+import chex
 import jax
 import jax.numpy as jnp
 import rlax
@@ -11,6 +12,7 @@ from src.enviroment import Shape
 from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
+from src.utils.rl import generalized_advantage_estimation
 
 
 class PPOCritic:
@@ -22,18 +24,41 @@ class PPOCritic:
         self._lambda = Args().args.gae_lambda
 
     def calculate_grads(self, states: jax.Array, returns: jax.Array) -> dict:
+        """
+        Calculate the gradients for the critic model
+
+        :param states: The inputs to the model
+        :param returns: The teacher output
+        :return:
+        """
         grads = self._model.train_step(returns.reshape(-1, 1), states)
         return grads
 
     def update(self, grads: dict):
+        """
+        Update the critic model with the given gradients
+
+        :param grads: The gradients to update the model with
+        """
         self._model.apply_grads(grads)
 
     def provide_feedback(self, states: Array, rewards: Array, dones: jax.Array) -> tuple[jax.Array, jax.Array]:
-        values = vmap(self._model.forward)(states)
-        advantage_fun = vmap(PPOCritic.calculate_advantage, in_axes=(0, 0, 0, None))
+        """
+        Calculate the advantage and returns for the given states, rewards, and dones
+
+        :param states: states in the format (time, batch, height, width, channels)
+        :param rewards: rewards in the format (time, batch)
+        :param dones: dones in the format (time, batch)
+
+        :return: The lambda advantage and returns
+        """
+        chex.assert_rank(states, 5)
+        chex.assert_rank([rewards, dones], 2)
+
+        values = vmap(self._model.forward)(states).squeeze()
         discounts = jnp.where(dones, 0, self._discount_factor)
-        advantage = advantage_fun(rewards, values, discounts, self._lambda)
-        return advantage, advantage + values
+        advantage, returns = generalized_advantage_estimation(values, rewards, discounts, self._lambda)
+        return advantage, returns
 
     @staticmethod
     @jit
@@ -44,7 +69,7 @@ class PPOCritic:
         return advantage
 
     def save(self):
-        pass
+        self._model.save()
 
     def load(self):
-        pass
+        self._model.load("ppocritic")

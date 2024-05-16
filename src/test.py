@@ -11,9 +11,9 @@ from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.models.initalizer.modelstrategyfactory import model_initializer_factory
-from src.pod.hyperparameters import hyperparameters
+from src.singletons.hyperparameters import Args
 from src.trainer.saetrainer import SAETrainer
-from src.utils.tiling import tile_image
+from src.utils.rl import tile_image
 
 
 def gen_autoencoder(stochastic: bool):
@@ -158,24 +158,24 @@ def toy_env(agent: Agent):
 
 def test_ppo():
     make_env()
-    hyperparameters["ppo"]["number_of_trajectories"] = 4
-    hyperparameters["ppo"]["trajectory_length"] = 3
-    hyperparameters["ppo"]["batch_size"] = 2
-    agent = Agent("ppo")
+    Args().args.batch_size = number_of_trajectories = 4
+    Args().args.trajectory_length = 3
+    Args().args.batch_size = 2
+    agent = Agent()
     toy_env(agent)
 
 
 def test_dqn():
     make_env()
-    hyperparameters["dqn"]["batch_size"] = 2
-    agent = Agent("dqn")
+    Args().args.batch_size = 2
+    agent = Agent()
     toy_env(agent)
 
 
 def test_mario_env():
     env = make_env("mario")
     state, _ = env.reset()
-    agent = Agent("ppo")
+    agent = Agent()
     for _ in range(10):
         agent.receive_state(state)
         action = agent.select_action()

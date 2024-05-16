@@ -7,7 +7,9 @@ from src.utils.modelhelperfuns import sample_normal
 
 class VariationalEncoder(nn.Module):
     hidden_size: int
-    min_std_dev: float = Args().args.min_std_dev
+
+    def setup(self) -> None:
+        self.min_std_dev: float = Args().args.min_std_dev
 
     def __call__(self, data):
         hidden = nn.Dense(self.hidden_size)(data)

@@ -28,7 +28,7 @@ class ModelWrapper:
         params = model.init(self._rngs, *self.batch_input(*self._initializer.init_params(model)))
 
         optimizer = self._initializer.init_optim()
-        self._train_state = TrainState(jit(model.apply), params, tx=optimizer)
+        self.state = TrainState.create(apply_fn=jit(model.apply), params=params, tx=optimizer)
 
         self._loss_fun = self._initializer.loss_fun()
         # As we have separated actor and critic we don't use apply_fn
@@ -52,10 +52,10 @@ class ModelWrapper:
 
         grad_fun = value_and_grad(self._loss_fun, 1)
 
-        loss, grads = grad_fun(self._train_state, self._train_state.params, y, *x, rngs=self._rngs)
+        loss, grads = grad_fun(self.state, self.state.params, y, *x, rngs=self._rngs)
         self._model_writer.add_scalar(f"losses/{self._name}_loss", loss, int(StepTracker()))
         self._model_writer.add_scalar("charts/learning_rate",
-                                      self._train_state.opt_state[1].hyperparams["learning_rate"].item(),
+                                      self.state.opt_state[1].hyperparams["learning_rate"].item(),
                                       int(StepTracker()))
         return grads
 
@@ -68,7 +68,7 @@ class ModelWrapper:
         :return: the output of the model
         """
         x = self.batch_input(*x)
-        return self._train_state.apply_fn(self._train_state.params, *x, rngs=self._rngs)
+        return self.state.apply_fn(self.state.params, *x, rngs=self._rngs)
 
     def apply_grads(self, grads: dict):
         """
@@ -76,7 +76,7 @@ class ModelWrapper:
 
         :param grads: the gradients to apply
         """
-        self._train_state = self._train_state.apply_gradients(grads=grads)
+        self.state = self.state.apply_gradients(grads=grads)
 
     @property
     def model(self):
@@ -94,7 +94,7 @@ class ModelWrapper:
 
         :return: the parameters of the model
         """
-        return self._train_state.params
+        return self.state.params
 
     @params.setter
     def params(self, params):
@@ -103,7 +103,7 @@ class ModelWrapper:
 
         :param params: the parameters to set
         """
-        self._train_state.params = params
+        self.state.params = params
 
     def batch_input(self, *data):
         """
@@ -136,7 +136,7 @@ class ModelWrapper:
         """
         Save the model to a checkpoint
         """
-        ckpt = {'model': self._train_state, 'config': vars(Args().args)}
+        ckpt = {'model': self.state, 'config': vars(Args().args)}
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         save_args = ArrayHandler()
         checkpoint_dir = f'./model/{self._name}/{save_name()}'
@@ -152,7 +152,7 @@ class ModelWrapper:
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         checkpoint_dir = f'./model/{self._name}/{path}'
         absolute_checkpoint_dir = os.path.abspath(checkpoint_dir)
-        self._train_state, Args().args = orbax_checkpointer.restore(absolute_checkpoint_dir)
+        self.state, Args().args = orbax_checkpointer.restore(absolute_checkpoint_dir)
 
     def __str__(self):
         """

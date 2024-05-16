@@ -14,7 +14,7 @@ class Writer:
     @property
     def writer(self):
         if self._writer is None:
-            self._writer = Writer.__init_writer()
+            self._writer = self.__init_writer()
         return self._writer
 
     @staticmethod

@@ -36,9 +36,10 @@ def interact(agent: Agent, environment: WorldModelInterface | gym.Env, update: b
     observation, reward, terminated, truncated, infos = environment.step(action)
     agent.receive_reward(reward)
     agent.receive_state(observation)
-    agent.receive_done(terminated or truncated)
+    dones = terminated | truncated
+    agent.receive_done(dones)
 
     if update:
         agent.update_policy()
 
-    return reward, terminated or truncated, infos
+    return reward, dones, infos
