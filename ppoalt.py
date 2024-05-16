@@ -102,6 +102,11 @@ class Storage:
     rewards: jnp.array
 
 
+def store(storage: Storage, step: slice | int, **kwargs):
+    replace = {key: getattr(storage, key).at[:, step].set(value) for key, value in kwargs.items()}
+    return storage.replace(**replace)
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--total-timesteps', type=int, default=10000000, help='total timesteps of the experiment')
@@ -168,38 +173,12 @@ def linear_schedule(count):
 
 
 @jit
-def get_action_and_value(agent_state: AgentState, next_obs: ndarray, key: random.PRNGKey):
-    hidden = agent_state.network_fn(agent_state.params.network_params, next_obs)
-    action_logits = agent_state.actor_fn(agent_state.params.actor_params, hidden)
-    value = agent_state.critic_fn(agent_state.params.critic_params, hidden)
-
-    # Sample discrete actions from Normal distribution
-    probs = distrax.Categorical(action_logits)
-    key, subkey = random.split(key)
-    action = probs.sample(seed=subkey)
-    logprob = probs.log_prob(action)
-    return action, logprob, value, key
-
-
-# @jit
-def get_action_and_value2(agent_state: AgentState, params: AgentParams, obs: ndarray, action: ndarray):
+def get_action_and_value(agent_state: AgentState, params: AgentParams, obs: ndarray):
     hidden = agent_state.network_fn(params.network_params, obs)
     action_logits = agent_state.actor_fn(params.actor_params, hidden)
     value = agent_state.critic_fn(params.critic_params, hidden)
-
-    probs = tfp.Categorical(action_logits)
-    return probs.log_prob(action), probs.entropy(), value.squeeze()
-
-
-def store(storage, step, **kwargs):
-    for batch_idx in storage:
-
-    def store_timestep(**kwargs):
-        replace = {key: getattr(storage, key).at[step].set(value) for key, value in kwargs.items()}
-        return storage.replace(**replace)
-
-    return vmap(store_timestep)
-
+    probs = distrax.Categorical(action_logits)
+    return probs, jnp.squeeze(value)
 
 
 def rollout(
@@ -213,12 +192,18 @@ def rollout(
 ):
     for step in range(0, args.num_steps):
         global_step += 1 * args.num_envs
-        storage, action, key = get_action_and_value(agent_state, next_obs, key)
-        storage = store(storage, step, obs=next_obs, dones=next_done, action=action, logprobs=logprob, vales=value)
+        policy, value = get_action_and_value(agent_state, agent_state.params, next_obs)
+        
+        key, subkey = random.split(key)
+        action = policy.sample(seed=subkey)
+        logprob = policy.log_prob(action)
+        
+        storage = store(storage, step, obs=next_obs, dones=next_done, actions=action, logprobs=logprob, values=value)
 
         next_obs, reward, terminated, truncated, infos = envs.step(device_get(action))
         next_done = terminated | truncated
-        storage = storage.replace(rewards=storage.rewards.at[step].set(reward))
+
+        storage = store(storage, step, rewards=reward)
 
         # Only print when at least 1 env is done
         if "final_info" not in infos:
@@ -230,6 +215,7 @@ def rollout(
                 continue
             writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
             writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
+
     return next_obs, next_done, storage, key, global_step
 
 
@@ -241,20 +227,17 @@ def compute_gae(
         storage: Storage
 ):
     # Reset advantages values
-    storage = storage.replace(advantages=storage.advantages.at[:].set(0.0))
 
     hidden = agent_state.network_fn(agent_state.params.network_params, next_obs)
     next_value = agent_state.critic_fn(agent_state.params.critic_params, hidden).squeeze()
     # Compute advantage using generalized advantage estimate
 
     discounts = jnp.where(storage.dones, 0, args.gamma)
-    print(storage.rewards.shape, storage.dones.shape, storage.values.shape)
-    advantages = rlax.truncated_generalized_advantage_estimation(storage.rewards, discounts, storage.values,
-                                                                 args.gae_lambda)
+    adv_fun = vmap(rlax.truncated_generalized_advantage_estimation, in_axes=(0, 0, None, 0))
+    values_long = jnp.append(storage.values, jnp.expand_dims(next_value, axis=1), axis=1)
 
-    storage = storage.replace(advantages=advantages)
-    # Save returns as advantages + values
-    storage = storage.replace(returns=storage.advantages + storage.values)
+    advantages = adv_fun(storage.rewards, discounts, args.gae_lambda, values_long)
+    storage = store(storage, slice(args.num_steps), returns=advantages + storage.values, advantages=advantages)
     return storage
 
 
@@ -269,7 +252,11 @@ def ppo_loss(
         ret: ndarray,
         val: ndarray,
 ):
-    newlogprob, entropy, newvalue = get_action_and_value2(agent_state, params, obs, act)
+    policy, newvalue = get_action_and_value(agent_state, params, obs)
+
+    newlogprob = policy.log_prob(act)
+    entropy = policy.entropy()
+
     logratio = newlogprob - logp
     ratio = jnp.exp(logratio)
 
@@ -280,9 +267,7 @@ def ppo_loss(
     adv = (adv - adv.mean()) / (adv.std() + 1e-8)
 
     # Policy loss
-    pg_loss1 = -adv * ratio
-    pg_loss2 = -adv * jnp.clip(ratio, 1 - args.clip_coef, 1 + args.clip_coef)
-    pg_loss = jnp.maximum(pg_loss1, pg_loss2).mean()
+    pg_loss = rlax.clipped_surrogate_pg_loss(ratio, adv, args.clip_coef)
 
     # Value loss
     v_loss_unclipped = (newvalue - ret) ** 2
@@ -425,11 +410,11 @@ if __name__ == '__main__':
         obs=jnp.zeros((args.num_envs, args.num_steps) + envs.single_observation_space.shape),
         actions=jnp.zeros((args.num_envs, args.num_steps) + envs.single_action_space.shape),
         logprobs=jnp.zeros((args.num_envs, args.num_steps)),
-        dones=jnp.zeros((args.num_steps, args.num_envs)),
-        values=jnp.zeros((args.num_steps, args.num_envs)),
-        advantages=jnp.zeros((args.num_steps, args.num_envs)),
-        returns=jnp.zeros((args.num_steps, args.num_envs)),
-        rewards=jnp.zeros((args.num_steps, args.num_envs)),
+        dones=jnp.zeros((args.num_envs, args.num_steps)),
+        values=jnp.zeros((args.num_envs, args.num_steps)),
+        advantages=jnp.zeros((args.num_envs, args.num_steps)),
+        returns=jnp.zeros((args.num_envs, args.num_steps)),
+        rewards=jnp.zeros((args.num_envs, args.num_steps)),
     )
     global_step = 0
     start_time = time.time()
@@ -464,4 +449,4 @@ if __name__ == '__main__':
         save_args = orbax_utils.save_args_from_target(ckpt)
         checkpoint_dir = './model'
         absolute_checkpoint_dir = os.path.abspath(checkpoint_dir)
-        orbax_checkpointer.save(absolute_checkpoint_dir, ckpt, save_args=save_args)
+        #orbax_checkpointer.save(absolute_checkpoint_dir, ckpt, save_args=save_args)
