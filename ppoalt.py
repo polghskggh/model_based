@@ -267,7 +267,9 @@ def ppo_loss(
     adv = (adv - adv.mean()) / (adv.std() + 1e-8)
 
     # Policy loss
-    pg_loss = rlax.clipped_surrogate_pg_loss(ratio, adv, args.clip_coef)
+    pg_loss1 = -adv * ratio
+    pg_loss2 = -adv * jnp.clip(ratio, 1 - args.clip_coef, 1 + args.clip_coef)
+    pg_loss = jnp.maximum(pg_loss1, pg_loss2).mean()
 
     # Value loss
     v_loss_unclipped = (newvalue - ret) ** 2
