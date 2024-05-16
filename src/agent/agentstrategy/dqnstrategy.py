@@ -7,28 +7,28 @@ from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment.shape import Shape
 from src.models.actorcritic.atarinn import AtariNN
 from src.models.modelwrapper import ModelWrapper
-from src.pod.hyperparameters import hyperparameters
 from src.pod.replaybuffer import ReplayBuffer
+from src.singletons.hyperparameters import Args
+from src.singletons.rng import Key
 
 
 class DQNStrategy(StrategyInterface):
-
     def __init__(self):
         self._replay_buffer = ReplayBuffer(Shape()[0])
-        self._batches_per_update: int = hyperparameters["dqn"]['batches_per_update']
+        self._batches_per_update: int = Args().args.batches_per_update
         self._q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, True), "dqncritic")
         self._target_q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, False), "dqncritic")
 
         self._action_space = Shape()[1]
-        self._discount_factor: float = hyperparameters["dqn"]["discount_factor"]
+        self._discount_factor: float = Args().args.discount_factor
 
-        self._batch_size: int = hyperparameters["dqn"]['batch_size']
-        self._start_steps: int = hyperparameters["dqn"]["start_steps"]
-        self._update_every: int = hyperparameters["dqn"]["update_every"]
+        self._batch_size: int = Args().args.batch_size
+        self._start_steps: int = Args().args.start_steps
+        self._update_every: int = Args().args.update_every
         self._iteration: int = 0
-        self._key = jr.PRNGKey(hyperparameters["rng"]["action"])
-        self._epsilon: float = hyperparameters["dqn"]["epsilon"]
-        self._target_update_period = hyperparameters["dqn"]["target_update_period"]
+        self._key = jr.PRNGKey(Key().key(1))
+        self._epsilon: float = Args().args.epsilon
+        self._target_update_period = Args().args.target_update_period
 
     def _batch_update(self, training_sample: list[jax.Array]):
         states, actions, rewards, next_states = training_sample
@@ -94,8 +94,8 @@ class DQNStrategy(StrategyInterface):
         return action
 
     def save(self):
-        self._q_network.save("dqnnetwork")
-        self._target_q_network.save("dqn_target_network")
+        self._q_network.save()
+        self._target_q_network.save()
 
     def load(self):
         self._q_network.load("dqnnetwork")

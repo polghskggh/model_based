@@ -1,6 +1,5 @@
-from src.models.initalizer.actorstrategy import ActorInitializer
+from src.models.initalizer.modelfreeinitializers import ActorInitializer, CriticInitializer, DQNInitializer
 from src.models.initalizer.autoencoderinitializer import AutoEncoderInitializer
-from src.models.initalizer.criticstrategy import DQNCriticStrategy, CriticInitializer
 from src.models.initalizer.modelstrategy import ModelStrategy
 from src.models.initalizer.trainerstrategy import InferenceInitializer, BitPredictorInitializer, StochasticInitializer, \
     StochasticAETrainerInitializer, LatentAEInitializer
@@ -11,7 +10,7 @@ def model_initializer_factory(strategy_type: str) -> ModelStrategy:
         case "actor":
             return ActorInitializer()
         case "dqncritic":
-            return DQNCriticStrategy()
+            return DQNInitializer()
         case "ppocritic":
             return CriticInitializer()
         case "autoencoder":

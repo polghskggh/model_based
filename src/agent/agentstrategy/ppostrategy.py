@@ -1,19 +1,13 @@
 import jax
 import jax.numpy as jnp
-import jax.random as jr
-from jax import lax, vmap
-from flax.linen import softmax
+from jax import lax
 
 from src.agent.actor.actor import Actor
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.agent.critic.ppocritic import PPOCritic
-from src.enviroment.shape import Shape
-from src.models.actorcritic.actoratari import ActorAtari
-from src.models.actorcritic.atarinn import StateValueAtariNN
 from src.pod.montecarlostorage import MonteCarloStorage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
-from src.utils.modelhelperfuns import sum_dicts
 from src.utils.rebatch import rebatch
 
 

@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 
 from src.enviroment import Shape
-from src.pod.hyperparameters import hyperparameters
+from src.singletons.hyperparameters import Args
 
 
 class MonteCarloStorage:
@@ -26,9 +26,10 @@ class MonteCarloStorage:
                 self.actions[self.num_of_trajectories + i].append(action[i])
                 self.rewards[self.num_of_trajectories + i].append(reward[i])
                 self.dones[self.num_of_trajectories + i].append(done[i])
+                self.old_log_odds[self.num_of_trajectories].append(old_log_odds[i])
 
     def pad(self):
-        while len(self.rewards[self.num_of_trajectories]) < hyperparameters["ppo"]["trajectory_length"]:
+        while len(self.rewards[self.num_of_trajectories]) < Args().args.max_trajectory_length:
             for i in range(self.batch_size):
                 self.rewards[self.num_of_trajectories + i].append(0)
                 self.actions[self.num_of_trajectories + i].append(0)

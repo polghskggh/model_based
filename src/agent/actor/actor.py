@@ -9,6 +9,8 @@ from src.enviroment import Shape
 from src.models.actorcritic.actoratari import ActorAtari
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
+from src.singletons.step_traceker import StepTracker
+from src.singletons.writer import Writer
 
 
 class Actor:
@@ -22,6 +24,7 @@ class Actor:
         self._clip_threshold = Args().args.clip_threshold
         self._regularization = Args().args.regularization
         self._rng = ModelWrapper.make_rng_keys()
+        self._writer = Writer().writer
 
     def policy(self, states: jax.Array) -> distrax.Categorical:
         logits = self._model.forward(states)
@@ -29,9 +32,13 @@ class Actor:
         return prob
 
     def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array, old_log_odds: jax.Array):
-        grad_fun = value_and_grad(Actor.ppo_grad, 1)
+        grad_fun = value_and_grad(Actor.ppo_grad, 1, has_aux=True)
         loss, grads = grad_fun(self._train_model, self._model.params, states, advantage, action, old_log_odds,
                                self._clip_threshold, self._regularization, self._rng)
+
+        for key, value in loss[1].items():
+            self._writer.add_scalar(f"losses/{key}", value, int(StepTracker()))
+
         return grads
 
     @staticmethod
@@ -51,8 +58,7 @@ class Actor:
 
         regularization = jnp.ones_like(advantage) * regularization
         entropy_loss = rlax.entropy_loss(policy, regularization)
-
-        return loss + entropy_loss
+        return loss + entropy_loss, {"policy_loss": loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl}
 
     def update(self, grads: dict):
         self._model.apply_grads(grads)
@@ -62,7 +68,7 @@ class Actor:
         return self._model
 
     def save(self):
-        self._model.save("actor")
+        self._model.save()
 
     def load(self):
         self._model.load("actor")

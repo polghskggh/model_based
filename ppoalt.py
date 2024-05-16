@@ -449,6 +449,5 @@ if __name__ == '__main__':
         ckpt = {'model': agent_state, 'config': vars(args)}
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
         save_args = orbax_utils.save_args_from_target(ckpt)
-        checkpoint_dir = './model'
-        absolute_checkpoint_dir = os.path.abspath(checkpoint_dir)
+
         #orbax_checkpointer.save(absolute_checkpoint_dir, ckpt, save_args=save_args)

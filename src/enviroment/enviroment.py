@@ -9,10 +9,14 @@ from nes_py.wrappers import JoypadSpace
 
 from src.enviroment.observationwrappers import ReshapeObservation, FrameSkip
 from src.enviroment.shape import Shape
-from src.pod.hyperparameters import hyperparameters
+from src.singletons.hyperparameters import Args
 
 
-# TODO: Dreamer -> grayscale and stack 1 frame
+def make_envs(num_envs: int = 1, env_name: str = "breakout"):
+    envs = gym.vector.SyncVectorEnv(*[make_env(env_name) for _ in range(Args().args.num_agents)])
+    return envs
+
+
 def make_env(env_name: str = "breakout") -> gym.Env:
     """
     Create the Breakout environment with the necessary wrappers
@@ -33,7 +37,7 @@ def make_breakout() -> gym.Env:
     env = ResizeObservation(env, shape=(105, 80))
     env = optional_grayscale(env)
     env = FrameStack(env, num_stack=4)
-    env = TimeLimit(env, max_episode_steps=hyperparameters["max_episode_length"])
+    env = TimeLimit(env, max_episode_steps=Args().args.trajectory_length)
     env = ReshapeObservation(env)
     Shape.initialize(env)
     return env
@@ -52,6 +56,6 @@ def make_mario() -> gym.Env:
 
 
 def optional_grayscale(env):
-    if hyperparameters["grayscale"]:
+    if Args().args.grayscale:
         env = GrayScaleObservation(env, True)
     return env

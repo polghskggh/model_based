@@ -1,29 +1,41 @@
+import os
 from ctypes import Array
 
 import jax
 import optax
 from flax import linen as nn
+from flax.training import orbax_utils
+from flax.training.train_state import TrainState
 from jax import random as random, jit
 from jax import value_and_grad
 import orbax.checkpoint
+from orbax.checkpoint.type_handlers import ArrayHandler
 
 from src.models.initalizer.modelstrategyfactory import model_initializer_factory
 from src.singletons.hyperparameters import Args
+from src.singletons.rng import Key
+from src.singletons.step_traceker import StepTracker
+from src.singletons.writer import Writer
 from src.utils.modelhelperfuns import transform_to_batch
+from src.utils.save_name import save_name
 
 
 class ModelWrapper:
-    def __init__(self, model: nn.Module, strategy: str, learning_rate: float = 0.0001, train_model: nn.Module = None):
-        self._strategy = model_initializer_factory(strategy)
+    def __init__(self, model: nn.Module, strategy: str, train_model: nn.Module = None):
+        self._initializer = model_initializer_factory(strategy)
         self._model = model
         self._rngs = ModelWrapper.make_rng_keys()
-        self._params = model.init(self._rngs, *self.batch_input(*self._strategy.init_params(model)))
-        self._loss_fun = self._strategy.loss_fun()
-        self._optimizer = self._strategy.init_optim(learning_rate)
-        self._opt_state = self._optimizer.init(self._params)
-        self.model_writer = self._strategy.init_writer()
+        params = model.init(self._rngs, *self.batch_input(*self._initializer.init_params(model)))
+
+        optimizer = self._initializer.init_optim()
+        self._train_state = TrainState(jit(model.apply), params, tx=optimizer)
+
+        self._loss_fun = self._initializer.loss_fun()
+        # As we have separated actor and critic we don't use apply_fn
+
+        self._name = strategy
+        self._model_writer = Writer().writer
         self._train_model = train_model if (train_model is not None and Args().args.dropout) else self._model
-        self._version = 0
 
     # forward pass + backwards pass
     def train_step(self, y: jax.Array | tuple, *x: jax.Array) -> dict:
@@ -34,13 +46,17 @@ class ModelWrapper:
         :param x: the model input
         :return: the gradients of the model parameters
         """
-        in_dim, out_dim = self._strategy.batch_dims()
+        in_dim, out_dim = self._initializer.batch_dims()
         x = self.batch(x, in_dim)
         y = self.batch(y, out_dim)
 
         grad_fun = value_and_grad(self._loss_fun, 1)
-        loss, grads = grad_fun(self._train_model, self._params, y, *x, rngs=self._rngs)
-        self.model_writer.add_data(loss)
+
+        loss, grads = grad_fun(self._train_state, self._train_state.params, y, *x, rngs=self._rngs)
+        self._model_writer.add_scalar(f"losses/{self._name}_loss", loss, int(StepTracker()))
+        self._model_writer.add_scalar("charts/learning_rate",
+                                      self._train_state.opt_state[1].hyperparams["learning_rate"].item(),
+                                      int(StepTracker()))
         return grads
 
     # forward pass
@@ -52,7 +68,7 @@ class ModelWrapper:
         :return: the output of the model
         """
         x = self.batch_input(*x)
-        return jit(self._model.apply)(self._params, *x, rngs=self._rngs)
+        return self._train_state.apply_fn(self._train_state.params, *x, rngs=self._rngs)
 
     def apply_grads(self, grads: dict):
         """
@@ -60,8 +76,7 @@ class ModelWrapper:
 
         :param grads: the gradients to apply
         """
-        opt_grads, self._opt_state = self._optimizer.update(grads, self._opt_state, self._params)
-        self._params = optax.apply_updates(self._params, opt_grads)
+        self._train_state = self._train_state.apply_gradients(grads=grads)
 
     @property
     def model(self):
@@ -79,7 +94,7 @@ class ModelWrapper:
 
         :return: the parameters of the model
         """
-        return self._params
+        return self._train_state.params
 
     @params.setter
     def params(self, params):
@@ -88,7 +103,7 @@ class ModelWrapper:
 
         :param params: the parameters to set
         """
-        self._params = params
+        self._train_state.params = params
 
     def batch_input(self, *data):
         """
@@ -97,7 +112,7 @@ class ModelWrapper:
         :param data: the input to the model
         :return: batched input
         """
-        in_dim, _ = self._strategy.batch_dims()
+        in_dim, _ = self._initializer.batch_dims()
         return self.batch(data, in_dim)
 
     @staticmethod
@@ -117,17 +132,16 @@ class ModelWrapper:
 
         return tuple(transform_to_batch(datum, dim) for datum, dim in zip(data, dims))
 
-    def save(self, path: str):
+    def save(self):
         """
         Save the model to a checkpoint
-
-        :param path: the path to save the model
         """
-        checkpoint = {"params": self._params, "opt_state": self._opt_state, "rngs": self._rngs}
+        ckpt = {'model': self._train_state, 'config': vars(Args().args)}
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
-        path = hyperparameters["save_path"] + "/" + path + str(self._version)
-        orbax_checkpointer.save(path, checkpoint)
-        self._version += 1
+        save_args = ArrayHandler()
+        checkpoint_dir = f'./model/{self._name}/{save_name()}'
+        absolute_checkpoint_dir = os.path.abspath(checkpoint_dir)
+        orbax_checkpointer.save(absolute_checkpoint_dir, ckpt, save_args=save_args)
 
     def load(self, path: str):
         """
@@ -136,11 +150,9 @@ class ModelWrapper:
         :param path: the path to the checkpoint
         """
         orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
-        path = hyperparameters["save_path"] + path
-        checkpoint = orbax_checkpointer.restore(path)
-        self._params = checkpoint["params"]
-        self._opt_state = checkpoint["opt_state"]
-        self._rngs = checkpoint["rngs"]
+        checkpoint_dir = f'./model/{self._name}/{path}'
+        absolute_checkpoint_dir = os.path.abspath(checkpoint_dir)
+        self._train_state, Args().args = orbax_checkpointer.restore(absolute_checkpoint_dir)
 
     def __str__(self):
         """
@@ -148,12 +160,9 @@ class ModelWrapper:
 
         :return: the string representation of the model architecture
         """
-        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._strategy.init_params(self._model)),
+        return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._initializer.init_params(self._model)),
                                     console_kwargs={"width": 120})
 
     @staticmethod
     def make_rng_keys():
-        return {"dropout": random.PRNGKey(hyperparameters["rng"]["dropout"]),
-                "normal": random.PRNGKey(hyperparameters["rng"]["normal"]),
-                "carry": random.PRNGKey(hyperparameters["rng"]["carry"]),
-                "params": random.PRNGKey(hyperparameters["rng"]["params"])}
+        return {key: value for key, value in zip(["dropout", "normal", "carry", "params"], Key().key(4))}

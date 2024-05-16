@@ -4,6 +4,7 @@ from singleton_decorator import singleton
 from tensorboardX import SummaryWriter
 
 from src.singletons.hyperparameters import Args
+from src.utils.save_name import save_name
 
 
 @singleton
@@ -18,7 +19,5 @@ class Writer:
 
     @staticmethod
     def __init_writer():
-        args = Args()
-        run_name = f"{args.seed}_{time.asctime(time.localtime(time.time())).replace('  ', ' ').replace(' ', '_')}"
-        writer = SummaryWriter(f'runs/{args.env}/{args.algorihtm}/{args.env}/{run_name}')
+        writer = SummaryWriter(f'runs/{save_name()}')
         return writer

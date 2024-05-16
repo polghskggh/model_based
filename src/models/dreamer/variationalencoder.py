@@ -1,13 +1,13 @@
 import flax.linen as nn
 import jax.numpy as jnp
 
-from src.pod.hyperparameters import hyperparameters
+from src.singletons.hyperparameters import Args
 from src.utils.modelhelperfuns import sample_normal
 
 
 class VariationalEncoder(nn.Module):
     hidden_size: int
-    min_std_dev: float = hyperparameters['dreamer']['min_std_dev']
+    min_std_dev: float = Args().args.min_std_dev
 
     def __call__(self, data):
         hidden = nn.Dense(self.hidden_size)(data)

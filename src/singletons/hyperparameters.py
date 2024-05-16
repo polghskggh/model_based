@@ -114,13 +114,13 @@ class Args:
         parser = argparse.ArgumentParser(prog="Flax RL", description="Flax RL for Atari and Mario")
 
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
-        parser.add_argument('--num-episodes', type=int, default=1e5, help='number of episodes to train')
-        parser.add_argument('--num-agents', type=int, default=8, help='the number of parallel agents')
-        parser.add_argument('--trajectory-len', type=int, default=128, help='the length of trajectory')
-        parser.add_argument('--learning-rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
+        parser.add_argument('--num_episodes', type=int, default=1e5, help='number of episodes to train')
+        parser.add_argument('--num_agents', type=int, default=8, help='the number of parallel agents')
+        parser.add_argument('--trajectory_len', type=int, default=128, help='the length of trajectory')
+        parser.add_argument('--learning_rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
 
         parser.add_argument('--discount', type=float, default=0.99, help='the discount factor')
-        parser.add_argument('--max-grad-norm', type=float, default=0.5,
+        parser.add_argument('--max_grad_norm', type=float, default=0.5,
                             help='the maximum norm for the gradient clipping')
 
         parser.add_argument('--seed', type=int, default=1, help='seed for reproducible benchmarks')
