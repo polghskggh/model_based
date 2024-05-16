@@ -2,10 +2,12 @@ import argparse
 import dataclasses
 import os
 import string
+
+import distrax
 import gymnasium as gym
 import numpy as np
 import rlax
-from jax import Array
+from jax import Array, vmap
 import flax.linen as nn
 import jax.numpy as jnp
 import jax.random as random
@@ -166,28 +168,20 @@ def linear_schedule(count):
 
 
 @jit
-def get_action_and_value(agent_state: AgentState, next_obs: ndarray, next_done: ndarray, storage: Storage, step: int,
-                         key: random.PRNGKey):
+def get_action_and_value(agent_state: AgentState, next_obs: ndarray, key: random.PRNGKey):
     hidden = agent_state.network_fn(agent_state.params.network_params, next_obs)
     action_logits = agent_state.actor_fn(agent_state.params.actor_params, hidden)
     value = agent_state.critic_fn(agent_state.params.critic_params, hidden)
 
     # Sample discrete actions from Normal distribution
-    probs = tfp.Categorical(action_logits)
+    probs = distrax.Categorical(action_logits)
     key, subkey = random.split(key)
     action = probs.sample(seed=subkey)
     logprob = probs.log_prob(action)
-    storage = storage.replace(
-        obs=storage.obs.at[step].set(next_obs),
-        dones=storage.dones.at[step].set(next_done),
-        actions=storage.actions.at[step].set(action),
-        logprobs=storage.logprobs.at[step].set(logprob),
-        values=storage.values.at[step].set(value.squeeze()),
-    )
-    return storage, action, key
+    return action, logprob, value, key
 
 
-@jit
+# @jit
 def get_action_and_value2(agent_state: AgentState, params: AgentParams, obs: ndarray, action: ndarray):
     hidden = agent_state.network_fn(params.network_params, obs)
     action_logits = agent_state.actor_fn(params.actor_params, hidden)
@@ -195,6 +189,17 @@ def get_action_and_value2(agent_state: AgentState, params: AgentParams, obs: nda
 
     probs = tfp.Categorical(action_logits)
     return probs.log_prob(action), probs.entropy(), value.squeeze()
+
+
+def store(storage, step, **kwargs):
+    for batch_idx in storage:
+
+    def store_timestep(**kwargs):
+        replace = {key: getattr(storage, key).at[step].set(value) for key, value in kwargs.items()}
+        return storage.replace(**replace)
+
+    return vmap(store_timestep)
+
 
 
 def rollout(
@@ -208,7 +213,9 @@ def rollout(
 ):
     for step in range(0, args.num_steps):
         global_step += 1 * args.num_envs
-        storage, action, key = get_action_and_value(agent_state, next_obs, next_done, storage, step, key)
+        storage, action, key = get_action_and_value(agent_state, next_obs, key)
+        storage = store(storage, step, obs=next_obs, dones=next_done, action=action, logprobs=logprob, vales=value)
+
         next_obs, reward, terminated, truncated, infos = envs.step(device_get(action))
         next_done = terminated | truncated
         storage = storage.replace(rewards=storage.rewards.at[step].set(reward))
