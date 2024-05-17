@@ -79,7 +79,8 @@ def parse_ppo(parser):
 
 
 def parse_simple(parser):
-    parser.add_argument('--parallel_envs', type=int, default=16, help='SimPLe: parallel simple trajectories')
+    parser.add_argument('--sim_trajectory_length', type=int, default=50,
+                        help='Model_based: length of simulated trajectory')
     return parser
 
 
@@ -114,9 +115,11 @@ class Args:
         parser.add_argument('--algorithm', type=str, default='ppo',
                             help='the algorithm to use [simple, dreamer, dqn, ppo]')
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
-        parser.add_argument('--num_episodes', type=int, default=10000, help='number of episodes to train')
+        parser.add_argument('--num_episodes', type=int, default=1000, help='number of episodes to train')
         parser.add_argument('--batch_size', type=int, default=30, help='the batch size for training')
-        parser.add_argument('--num_agents', type=int, default=8, help='the number of parallel agents')
+        parser.add_argument('--num_envs', type=int, default=8, help='the number of parallel environments')
+        parser.add_argument('--num_agents', type=int, default=32,
+                            help='the number of parallel agents. Should equal num_envs, unless using model-based RL')
         parser.add_argument('--trajectory_length', type=int, default=512, help='the length of trajectory')
         parser.add_argument('--learning_rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
         parser.add_argument('--discount_factor', type=float, default=0.99, help='the discount factor')
@@ -131,6 +134,7 @@ class Args:
         parser.add_argument('--grayscale', type=bool, default=False, help='whether to use grayscale')
         parser.add_argument('--num_epochs', type=int, default=4,
                             help='number of epochs to train during each update')
+
         parse_dqn(parser)
         parse_ppo(parser)
         parse_simple(parser)

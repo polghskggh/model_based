@@ -1,13 +1,11 @@
 import jax
 from jax import vmap
-from rlax import one_hot
 
 from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import TransitionStorage
-from src.pod.trajectorystorage import TrajectoryStorage
 from src.singletons.hyperparameters import Args
 from src.trainer.saetrainer import SAETrainer
 from src.utils.rl import tile_image, reverse_tile_image
@@ -20,8 +18,7 @@ class SimpleWorldModel(WorldModelInterface):
         self._deterministic = deterministic
         self._batch_size = Args().args.batch_size
         self._action_space = Shape()[1]
-        self._parallel_agents = Args().args.parallel_agents["simple"]["parallel_agents"]
-        self._rollout_length = Args().args.parallel_agents["simple"]["rollout_length"]
+        self._rollout_length = Args().args.sim_trajectory_length
 
         if self._deterministic:
             self._model: ModelWrapper = ModelWrapper(AutoEncoder(*Shape()), "autoencoder")

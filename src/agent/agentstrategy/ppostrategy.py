@@ -14,7 +14,8 @@ class PPOStrategy(StrategyInterface):
     def __init__(self):
         self._actor, self._critic = Actor(), Critic()
 
-        self.batch_shape = (Args().args.trajectory_length, Args().args.num_agents)
+        self.batch_shape = (Args().args.trajectory_length,
+                            Args().args.num_agents)
 
         self._trajectory_storage = self._init_storage()
         self._iteration: int = 0
@@ -34,7 +35,7 @@ class PPOStrategy(StrategyInterface):
                                          log_probs=self.old_log_probs)
         self._iteration += 1
 
-        if self._iteration != self.batch_shape[0]:
+        if self._iteration != Args().args.trajectory_length:
             return
 
         self._trajectory_storage = store(self._trajectory_storage, self._iteration, observations=new_state)

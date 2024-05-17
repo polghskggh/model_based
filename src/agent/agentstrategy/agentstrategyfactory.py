@@ -13,7 +13,7 @@ def agent_strategy_factory(strategy_name: str) -> StrategyInterface:
     match strategy_name:
         case "dqn":
             return DQNStrategy()
-        case "ppo":
+        case "ppo" | "dreamer" | "simple":
             return PPOStrategy()
         case _:
-            raise ValueError(f"Unknown initalizer: {strategy_name}")
+            raise ValueError(f"Unknown initializer: {strategy_name}")

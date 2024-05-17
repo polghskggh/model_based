@@ -24,9 +24,8 @@ def sample_env(storage, agent, envs):
         reward, done, _ = interact(agent, envs, False)
         returns += reward
         observations, actions, rewards, next_observations = agent.last_transition()
-        # TODO: remove hardcoded 9
-        next_observations = lax.slice_in_dim(next_observations, 9, None, -1)
-        storage = store(storage, slice(step * args.num_agents, (step + 1) * args.num_agents), observations=observations,
+        next_observations = lax.slice_in_dim(next_observations, (Args().args.frame_stack - 1) * 3, None, -1)
+        storage = store(storage, slice(step * args.num_agents, (step + 1) * args.num_envs), observations=observations,
                         actions=actions, rewards=rewards, next_observation=next_observations)
 
     for ret in returns:
@@ -45,5 +44,9 @@ def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: 
 
     sample_env(storage, agent, env)
     world_model.update(storage)
+
+    temp = Args().args.trajectory_length
+    Args().args.trajectory_length = Args().args.sim_trajectory_length
     model_free_train_loop(agent, world_model)
+    Args().args.trajectory_length = temp
 
