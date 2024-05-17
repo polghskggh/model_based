@@ -1,6 +1,5 @@
 import jax.numpy as jnp
-
-from dataclasses import dataclass
+from flax.struct import dataclass
 
 
 @dataclass

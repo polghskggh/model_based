@@ -31,14 +31,14 @@ class PPOStrategy(StrategyInterface):
 
     def update(self, old_state: jax.Array, selected_action: jax.Array, reward: jax.Array,
                new_state: jax.Array, done: jax.Array):
-        self._trajectory_storage = store(self._trajectory_storage, self._iteration, states=old_state,
-                                         actions=selected_action, rewards=reward, dones=done, log_odds=self.old_log_odds)
+        self._trajectory_storage = store(self._trajectory_storage, self._iteration, observations=old_state,
+                                         actions=selected_action, rewards=reward, dones=done, logprobs=self.old_log_odds)
         self._iteration += 1
 
         if self._iteration != self.batch_shape[0]:
             return
 
-        self._trajectory_storage = store(self._trajectory_storage, self._iteration, states=new_state)
+        self._trajectory_storage = store(self._trajectory_storage, self._iteration, observations=new_state)
         observations = self._trajectory_storage.observations
         actions = self._trajectory_storage.actions
         dones = self._trajectory_storage.dones
