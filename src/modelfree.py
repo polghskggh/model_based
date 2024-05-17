@@ -28,7 +28,6 @@ def model_free_train_loop(agent: Agent, envs: gym.Env):
             writer.add_scalar("charts/episodic_return", ret, int(StepTracker()))
 
 
-
 def interact(agent: Agent, environment: WorldModelInterface | gym.Env, update: bool = True):
     action = agent.select_action()
     observation, reward, terminated, truncated, infos = environment.step(action)

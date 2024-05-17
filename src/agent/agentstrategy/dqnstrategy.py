@@ -37,8 +37,8 @@ class DQNStrategy(StrategyInterface):
         size = Args().args.storage_size
         action_shape = (size, )
         observation_shape = action_shape + Shape()[0]
-        return TransitionStorage(observations=observation_shape, actions=action_shape, rewards=action_shape,
-                                 next_observations=observation_shape)
+        return TransitionStorage(observations=jnp.zeros((observation_shape)), actions=jnp.zeros((action_shape)),
+                                 rewards=jnp.zeros((action_shape)), next_observations=jnp.zeros((observation_shape)))
 
     def store_flattened(self, old_state, selected_action, reward, new_state):
         start_idx = self._data_pos % self._storage_size
@@ -93,20 +93,12 @@ class DQNStrategy(StrategyInterface):
         self._target_q_network.params = self._q_network.params
 
     def select_action(self, states: jax.Array) -> jnp.ndarray:
-        is_batch: bool = len(states.shape) > 3
-        batch_size = states.shape[0] if is_batch else 1
-        key = Key().key(1)
+        batch_size = states.shape[0]
+        key = Key().key()
         probs = jr.uniform(key, (batch_size, ))
 
-        def epsilon_greedy(p, state):
-            return self._greedy_action(state) if p > self._epsilon else self._random_policy()
-
-        action_selection_fun = epsilon_greedy
-        if is_batch:
-            action_selection_fun = vmap(action_selection_fun, in_axes=(0, 0))
-
-        selected_actions = action_selection_fun(probs, states)
-        return jnp.squeeze(selected_actions)
+        actions = jnp.where(probs > self._epsilon, vmap(self._greedy_action)(states), self._random_policy(batch_size))
+        return jnp.squeeze(actions)
 
     def _greedy_action(self, state: jax.Array) -> jax.Array:
         actions = jnp.eye(self._action_space)
@@ -116,9 +108,9 @@ class DQNStrategy(StrategyInterface):
         selected_action = jnp.argmax(values, axis=0)
         return selected_action
 
-    def _random_policy(self) -> jax.Array:
-        self._key, subkey = jr.split(self._key)
-        action = jr.randint(subkey, (1, ), 0, Shape()[1])[0]
+    @staticmethod
+    def _random_policy(size: int) -> jax.Array:
+        action = jr.randint(Key().key(), (size, ), 0, Shape()[1])[0]
         return action
 
     def save(self):

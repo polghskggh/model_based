@@ -10,7 +10,7 @@ from src.singletons.hyperparameters import Args
 class Key:
     initial_key: Optional[jr.PRNGKey] = None
 
-    def key(self, number_of_keys: int) -> jr.PRNGKey:
+    def key(self, number_of_keys: int = 1) -> jr.PRNGKey:
         if self.initial_key is None:
             self.initial_key = jr.PRNGKey(Args().args.seed)
 

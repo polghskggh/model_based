@@ -17,7 +17,6 @@ hyperparameters = {
         'rollout_length': 3,
         'kl_loss': 0.8,
         'pixel_reward': 0.5,
-        'parallel_agents': 2,
         'agent_updates': 4
     },
     'dqn': {
@@ -66,7 +65,7 @@ def parse_dqn(parser):
     parser.add_argument('--start_steps', type=int, default=100, help='DQN: number of random steps before training')
     parser.add_argument('--update_every', type=int, default=50, help='DQN: number of steps between updates')
     parser.add_argument('--epsilon', type=float, default=0.2, help='DQN: epsilon for epsilon-greedy policy')
-    parser.add_argument('--storage_size', type=int, default=1e5, help='DQN: size of the replay buffer')
+    parser.add_argument('--storage_size', type=int, default=10000, help='DQN: size of the replay buffer')
     return parser
 
 
@@ -118,7 +117,7 @@ class Args:
         parser.add_argument('--num_episodes', type=int, default=1000, help='number of episodes to train')
         parser.add_argument('--batch_size', type=int, default=30, help='the batch size for training')
         parser.add_argument('--num_envs', type=int, default=8, help='the number of parallel environments')
-        parser.add_argument('--num_agents', type=int, default=32,
+        parser.add_argument('--num_agents', type=int, default=8,
                             help='the number of parallel agents. Should equal num_envs, unless using model-based RL')
         parser.add_argument('--trajectory_length', type=int, default=512, help='the length of trajectory')
         parser.add_argument('--learning_rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
