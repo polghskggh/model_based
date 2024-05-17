@@ -62,7 +62,6 @@ hyperparameters = {
 
 
 def parse_dqn(parser):
-    parser.add_argument('--batches_per_update', type=int, default=10, help='DQN: number of batches used at each update')
     parser.add_argument('--target_update_period', type=int, default=10, help='DQN: period of target network update')
     parser.add_argument('--start_steps', type=int, default=100, help='DQN: number of random steps before training')
     parser.add_argument('--update_every', type=int, default=50, help='DQN: number of steps between updates')
@@ -130,6 +129,8 @@ class Args:
         parser.add_argument('--frame_stack', type=int, default=4, help='number of frames to stack')
         parser.add_argument('--frame_skip', type=int, default=4, help='number of frames to skip')
         parser.add_argument('--grayscale', type=bool, default=False, help='whether to use grayscale')
+        parser.add_argument('--num_epochs', type=int, default=10,
+                            help='number of epochs to train during each update')
         parse_dqn(parser)
         parse_ppo(parser)
         parse_simple(parser)

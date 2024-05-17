@@ -31,7 +31,7 @@ class Actor:
         prob = distrax.Categorical(logits)
         return prob
 
-    def calculate_grads(self, states: jax.Array, advantage: jax.Array, action: jax.Array, old_log_odds: jax.Array):
+    def calculate_grads(self, states: jax.Array, action: jax.Array, old_log_odds: jax.Array, advantage: jax.Array):
         grad_fun = value_and_grad(Actor.ppo_grad, 1, has_aux=True)
         (loss, aux), grads = grad_fun(self._train_model, self._model.params, states, advantage, action, old_log_odds,
                                       self._clip_threshold, self._regularization, self._rng)

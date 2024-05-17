@@ -90,21 +90,7 @@ class AgentState(TrainState):
     network_fn: Callable = struct.field(pytree_node=False)
 
 
-@dataclass
-class Storage:
-    obs: jnp.array
-    actions: jnp.array
-    logprobs: jnp.array
-    dones: jnp.array
-    values: jnp.array
-    advantages: jnp.array
-    returns: jnp.array
-    rewards: jnp.array
 
-
-def store(storage: Storage, step: slice | int, **kwargs):
-    replace = {key: getattr(storage, key).at[:, step].set(value) for key, value in kwargs.items()}
-    return storage.replace(**replace)
 
 
 def parse_args():
@@ -217,7 +203,7 @@ def rollout(
             writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
     return next_obs, next_done, storage, key, global_step
-
+#
 
 @jit
 def compute_gae(

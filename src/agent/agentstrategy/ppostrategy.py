@@ -5,49 +5,66 @@ from jax import lax
 from src.agent.actor.actor import Actor
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.agent.critic.ppocritic import PPOCritic
+from src.enviroment import Shape
 from src.pod.montecarlostorage import MonteCarloStorage
+from src.pod.storage import store, Storage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
-from src.utils.rebatch import rebatch
 
 
 class PPOStrategy(StrategyInterface):
     def __init__(self):
         self._actor, self._critic = Actor(), PPOCritic()
 
-        self._trajectory_storage = MonteCarloStorage()
+        self.batch_shape = (Args().args.trajectory_length, Args().args.num_agents)
+
+        self._trajectory_storage = self._init_storage()
         self._iteration: int = 0
         self.old_log_odds = None
 
-    def is_update_time(self):
-        return
+    def _init_storage(self):
+        return Storage(observations=jnp.zeros(self.batch_shape + Shape()[0], dtype=jnp.float32),
+                       rewards=jnp.zeros(self.batch_shape, dtype=jnp.float32),
+                       actions=jnp.zeros(self.batch_shape, dtype=jnp.int32),
+                       logprobs=jnp.zeros(self.batch_shape, dtype=jnp.float32),
+                       dones=jnp.zeros(self.batch_shape, dtype=jnp.bool_))
 
     def update(self, old_state: jax.Array, selected_action: jax.Array, reward: jax.Array,
                new_state: jax.Array, done: jax.Array):
-        self._trajectory_storage.add_transition(old_state, selected_action, reward, done, self.old_log_odds)
+        self._trajectory_storage = store(self._trajectory_storage, self._iteration, states=old_state,
+                                         actions=selected_action, rewards=reward, dones=done, log_odds=self.old_log_odds)
+        self._iteration += 1
 
-        if not all(done):
+        if self._iteration != self.batch_shape[0]:
             return
 
-        self._trajectory_storage.end_episode(new_state)
+        self._trajectory_storage = store(self._trajectory_storage, self._iteration, states=new_state)
+        observations = self._trajectory_storage.observations
+        actions = self._trajectory_storage.actions
+        dones = self._trajectory_storage.dones
+        logprobs = self._trajectory_storage.logprobs
 
-        states, actions, rewards, dones, old_log_odds = self._trajectory_storage.data()
-        advantages, returns = self._critic.provide_feedback(states, rewards, dones)
+        advantages, returns = self._critic.provide_feedback(observations, self._trajectory_storage.rewards, dones)
 
-        # remove end state
-        truncated_states = states[:-1]
-        batch_size = min(Args().args.batch_size, truncated_states.shape[0] + truncated_states.shape[1])
-        trunc_states, advantage, actions, returns, old_log_odds = rebatch(batch_size, truncated_states,
-                                                                          advantages, actions, returns, old_log_odds)
+        observations = observations[:-1].reshape(-1, *Shape()[0])
+        actions, dones, logprobs = actions.reshape(-1), dones.reshape(-1), logprobs.reshape(-1)
 
-        for trunc_state, adv, action, ret, old_log_odd in zip(trunc_states, advantage, actions, returns, old_log_odds):
-            actor_grads = self._actor.calculate_grads(trunc_state, adv, action, old_log_odd)
-            critic_grads = self._critic.calculate_grads(trunc_state, ret)
+        batch_size = Args().args.batch_size
+        for epoch in range(Args().args.num_epochs):
+            for start_idx in range(0, self.batch_shape[0], batch_size):
+                batch_slice = slice(start_idx, start_idx + batch_size)
+                actor_grads = self._actor.calculate_grads(observations[batch_slice],
+                                                          actions[batch_slice],
+                                                          logprobs[batch_slice],
+                                                          advantages[batch_slice])
 
-            self._actor.update(actor_grads)
-            self._critic.update(critic_grads)
+                critic_grads = self._critic.calculate_grads(self._trajectory_storage.observations[batch_slice],
+                                                            returns[batch_slice])
 
-        self._trajectory_storage.reset()
+                self._actor.update(actor_grads)
+                self._critic.update(critic_grads)
+
+        self._iteration = 0
 
     def select_action(self, state: jnp.ndarray) -> int:
         policy = self._actor.policy(state)

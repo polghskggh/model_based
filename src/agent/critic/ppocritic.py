@@ -42,7 +42,7 @@ class PPOCritic:
         """
         self._model.apply_grads(grads)
 
-    def provide_feedback(self, states: Array, rewards: Array, dones: jax.Array) -> tuple[jax.Array, jax.Array]:
+    def provide_feedback(self, states: jax.Array, rewards: jax.Array, dones: jax.Array) -> tuple[jax.Array, jax.Array]:
         """
         Calculate the advantage and returns for the given states, rewards, and dones
 
@@ -55,10 +55,11 @@ class PPOCritic:
         chex.assert_rank(states, 5)
         chex.assert_rank([rewards, dones], 2)
 
-        values = vmap(self._model.forward)(states).squeeze()
+        values = vmap(self._model.forward)(states)
+        values = jnp.squeeze(values)
         discounts = jnp.where(dones, 0, self._discount_factor)
         advantage, returns = generalized_advantage_estimation(values, rewards, discounts, self._lambda)
-        return advantage, returns
+        return advantage.reshape(-1), returns.reshape(-1)
 
     @staticmethod
     @jit
