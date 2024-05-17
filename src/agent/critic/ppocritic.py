@@ -31,7 +31,7 @@ class PPOCritic:
         :param returns: The teacher output
         :return:
         """
-        grads = self._model.train_step(returns.reshape(-1, 1), states)
+        grads = self._model.train_step(jnp.expand_dims(returns, 1), states)
         return grads
 
     def update(self, grads: dict):

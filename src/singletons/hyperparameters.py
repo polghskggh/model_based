@@ -92,7 +92,6 @@ def parse_dreamer(parser):
     parser.add_argument('--min-std-dev', type=float, default=0.1,
                         help='Dreamer: minimum standard deviation of the policy')
     parser.add_argument('--gradient-steps', type=int, default=100, help='Dreamer: number of gradient steps')
-    parser.add_argument('--batch-size', type=int, default=100, help='Dreamer: batch size')
     parser.add_argument('--loss-weights', type=float, nargs=3, default=[0.25, 0.5, 0.25], help='Dreamer: loss weights')
     return parser
 
@@ -116,6 +115,7 @@ class Args:
                             help='the algorithm to use [simple, dreamer, dqn, ppo]')
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
         parser.add_argument('--num_episodes', type=int, default=10000, help='number of episodes to train')
+        parser.add_argument('--batch_size', type=int, default=30, help='the batch size for training')
         parser.add_argument('--num_agents', type=int, default=8, help='the number of parallel agents')
         parser.add_argument('--trajectory_length', type=int, default=512, help='the length of trajectory')
         parser.add_argument('--learning_rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')

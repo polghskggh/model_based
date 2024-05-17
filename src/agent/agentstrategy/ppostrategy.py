@@ -23,11 +23,11 @@ class PPOStrategy(StrategyInterface):
         self.old_log_odds = None
 
     def _init_storage(self):
-        return Storage(observations=jnp.zeros(self.batch_shape + Shape()[0], dtype=jnp.float32),
-                       rewards=jnp.zeros(self.batch_shape, dtype=jnp.float32),
-                       actions=jnp.zeros(self.batch_shape, dtype=jnp.int32),
-                       logprobs=jnp.zeros(self.batch_shape, dtype=jnp.float32),
-                       dones=jnp.zeros(self.batch_shape, dtype=jnp.bool_))
+        return Storage(observations=jnp.zeros((self.batch_shape[0] + 1, self.batch_shape[1]) + Shape()[0]),
+                       rewards=jnp.zeros(self.batch_shape),
+                       actions=jnp.zeros(self.batch_shape),
+                       logprobs=jnp.zeros(self.batch_shape),
+                       dones=jnp.zeros(self.batch_shape))
 
     def update(self, old_state: jax.Array, selected_action: jax.Array, reward: jax.Array,
                new_state: jax.Array, done: jax.Array):
