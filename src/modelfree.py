@@ -14,21 +14,18 @@ def model_free_train_loop(agent: Agent, env: gym.Env):
     writer = Writer().writer
     args = Args().args
 
+    returns = jnp.zeros(args.num_agents)
     for step in range(args.trajectory_length):
         StepTracker().increment(args.num_agents)
         reward, done, infos = interact(agent, env)
+        returns += reward
 
         # Only print when at least 1 env is done
-        if "final_info" not in infos:
+        if not any(done):
             continue
 
-        for info in infos["final_info"]:
-            # Skip the envs that are not done
-            if info is None:
-                continue
-
-            writer.add_scalar("charts/episodic_return", info["episode"]["r"], int(StepTracker()))
-            writer.add_scalar("charts/episodic_length", info["episode"]["l"], int(StepTracker()))
+        for ret in returns:
+            writer.add_scalar("charts/episodic_return", ret, int(StepTracker()))
 
 
 def interact(agent: Agent, environment: WorldModelInterface | gym.Env, update: bool = True):

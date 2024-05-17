@@ -118,7 +118,7 @@ class Args:
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
         parser.add_argument('--num_episodes', type=int, default=10000, help='number of episodes to train')
         parser.add_argument('--num_agents', type=int, default=8, help='the number of parallel agents')
-        parser.add_argument('--trajectory_length', type=int, default=128, help='the length of trajectory')
+        parser.add_argument('--trajectory_length', type=int, default=512, help='the length of trajectory')
         parser.add_argument('--learning_rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
         parser.add_argument('--discount_factor', type=float, default=0.99, help='the discount factor')
 
