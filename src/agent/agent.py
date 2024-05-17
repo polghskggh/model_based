@@ -39,9 +39,6 @@ class Agent:
     def receive_done(self, done):
         self._done = done
 
-    def run_parallel(self, parallel_agents: int):
-        self._strategy.run_parallel(parallel_agents)
-
     def save(self):
         self._strategy.save()
 
@@ -49,4 +46,4 @@ class Agent:
         self._strategy.load()
 
     def last_transition(self):
-        return self._old_state, self._selected_action, self._reward, self._new_state
+        return self._old_state, self._selected_action, self._reward, self._new_state, self._done

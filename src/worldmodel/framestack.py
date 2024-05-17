@@ -2,38 +2,33 @@ from collections import deque
 
 import jax.numpy as jnp
 
+from src.pod.storage import TransitionStorage
 from src.pod.trajectorystorage import TrajectoryStorage
 from src.singletons.hyperparameters import Args
+import jax.random as jr
+
+from src.singletons.rng import Key
 
 
 class FrameStack:
-    def __init__(self, data: TrajectoryStorage):
-        self.size = Args().args.frame_stack
-        self._initial_states = data.sample_states(Args().args.parallel_envs)
-        self._lazy_frames = None
-        self._frames = None
+    def __init__(self, data: TransitionStorage):
+        self._initial_states = FrameStack.sample_initial(data, Args().args.parallel_envs)
+        self._frames = jnp.zeros(self._initial_states.shape, dtype=jnp.float32)
         self.reset()
 
+    @staticmethod
+    def sample_initial(data: TransitionStorage, parallel_envs: int):
+        idx = jr.choice(Key().key(1), data.observations.shape[0], (parallel_envs,), False)
+        return data.observations[idx]
+
     def reset(self):
-        self._lazy_frames = deque([], maxlen=self.size)
-        self._frames = None
-        for _ in range(self.size):
-            self._lazy_frames.append(self._initial_states)
+        self._frames = self._initial_states
+        return self._frames
 
-        self._frames = None
-        return self.frames
-
-    def add_frames(self, next_frames):
-        self._lazy_frames.append(next_frames)
-        self._frames = None
+    def add_frame(self, next_frame):
+        self._frames = jnp.roll(self._frames, -3, axis=-1)
+        self._frames.at[:, :, :, -3:].set(next_frame)
 
     @property
     def frames(self):
-        if self._frames is not None:
-            return self._frames
-
-        frames = jnp.array(self._lazy_frames, dtype=jnp.float32)
-        new_shape = (frames.shape[1],) + frames.shape[2:4] + (frames.shape[0] * frames.shape[4],)
-        self._frames = frames.transpose(1, 2, 3, 0, 4).reshape(new_shape)
-
         return self._frames

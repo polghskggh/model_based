@@ -56,7 +56,7 @@ class Actor:
         loss = rlax.clipped_surrogate_pg_loss(ratio, advantage, epsilon, False)
         entropy_loss = policy.entropy().mean()
 
-        return (loss + regularization * entropy_loss,
+        return (loss - regularization * entropy_loss,
                 {"policy_loss": loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl})
 
     def update(self, grads: dict):

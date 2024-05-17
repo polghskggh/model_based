@@ -6,6 +6,7 @@ from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
 from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
+from src.pod.storage import TransitionStorage
 from src.pod.trajectorystorage import TrajectoryStorage
 from src.singletons.hyperparameters import Args
 from src.trainer.saetrainer import SAETrainer
@@ -54,18 +55,23 @@ class SimpleWorldModel(WorldModelInterface):
     def _stochastic_update(self, stack, actions, rewards, next_frame):
         self._model.params = self._trainer.train_step(self._model.params, stack, actions, rewards, next_frame)
 
-    def update(self, data: TrajectoryStorage):
-        for stack, actions, rewards, next_frame in data.batched_data():
-            rewards = rewards.reshape(-1, 1)
-            if self._deterministic:
-                self._deterministic_update(stack, actions, rewards, next_frame)
-            else:
-                self._stochastic_update(stack, actions, rewards, next_frame)
+    def update(self, storage: TransitionStorage):
+        for start_idx in range(0, Args().args.num_episodes * self._batch_size, self._batch_size):
+            batch_slice = slice(start_idx, start_idx + self._batch_size)
+            stack = storage.observations[batch_slice]
+            actions = storage.actions[batch_slice]
+            next_frames = storage.next_observations[batch_slice]
+            rewards = storage.rewards[batch_slice]
 
-        self._frame_stack = FrameStack(data)
+            if self._deterministic:
+                self._deterministic_update(stack, actions, rewards, next_frames)
+            else:
+                self._stochastic_update(stack, actions, rewards, next_frames)
+
+        self._frame_stack = FrameStack(storage)
 
     def save(self):
-        self._model.save("stochastic_autoencoder")
+        self._model.save()
 
     def load(self):
         self._model.load("stochastic_autoencoder")

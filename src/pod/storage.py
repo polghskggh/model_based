@@ -12,10 +12,10 @@ class PPOStorage:
 
 
 @dataclass
-class DQNStorage:
+class TransitionStorage:
     observations: jnp.array
-    rewards: jnp.array
     actions: jnp.array
+    rewards: jnp.array
     next_observations: jnp.array
 
 

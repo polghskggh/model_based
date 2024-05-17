@@ -7,7 +7,7 @@ from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment.shape import Shape
 from src.models.actorcritic.atarinn import AtariNN
 from src.models.modelwrapper import ModelWrapper
-from src.pod.storage import DQNStorage, store
+from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 
@@ -22,8 +22,12 @@ class DQNStrategy(StrategyInterface):
         self._batch_size: int = Args().args.batch_size
         self._start_steps: int = Args().args.start_steps
         self._update_every: int = Args().args.update_every
+
         self._iteration: int = 0
         self._data_pos: int = 0
+        self._storage_size: int = Args().args.storage_size
+        self._parallel_agents: int = Args().args.num_agents
+
         self._epsilon: float = Args().args.epsilon
         self._target_update_period = Args().args.target_update_period
         self._storage = self._init_storage()
@@ -33,15 +37,31 @@ class DQNStrategy(StrategyInterface):
         size = Args().args.storage_size
         action_shape = (size, )
         observation_shape = action_shape + Shape()[0]
-        return DQNStorage(observations=observation_shape, actions=action_shape, rewards=action_shape,
-                          next_observations=observation_shape)
+        return TransitionStorage(observations=observation_shape, actions=action_shape, rewards=action_shape,
+                                 next_observations=observation_shape)
 
+    def store_flattened(self, old_state, selected_action, reward, new_state):
+        start_idx = self._data_pos % self._storage_size
+        end_idx = (self._data_pos + self._parallel_agents) % self._storage_size
+
+        if end_idx < start_idx:
+            mid_point = self._storage_size - start_idx
+            old_state, old_state_res = jnp.split(old_state, [mid_point])
+            selected_action, selected_action_res = jnp.split(selected_action, [mid_point])
+            reward, reward_res = jnp.split(reward, [mid_point])
+            new_state, new_state_res = jnp.split(new_state, [mid_point])
+
+            self._storage = store(self._storage, slice(0, end_idx),
+                                  observations=old_state_res, actions=selected_action_res,
+                                  rewards=reward_res, next_observations=new_state_res)
+            end_idx = self._storage_size
+
+        self._storage = store(self._storage, slice(start_idx, end_idx), observations=old_state,
+                              actions=selected_action, rewards=reward, next_observations=new_state)
+        self._data_pos += self._parallel_agents
 
     def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
-        self._storage = store(self._storage, self._data_pos, observations=old_state, actions=selected_action,
-                              rewards=reward, next_observations=new_state)
-
-        self._data_pos += 1
+        self.store_flattened(old_state, selected_action, reward, new_state)
 
         # explore at start
         if self._start_steps != 0:
