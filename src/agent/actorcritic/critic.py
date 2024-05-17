@@ -15,7 +15,7 @@ from src.singletons.hyperparameters import Args
 from src.utils.rl import generalized_advantage_estimation
 
 
-class PPOCritic:
+class Critic:
     def __init__(self):
         self._model: ModelWrapper = ModelWrapper(StateValueAtariNN(Shape()[0], 1, True), "ppocritic",
                                                  train_model=StateValueAtariNN(Shape()[0], 1, False))

@@ -7,7 +7,7 @@ from src.models.initalizer.trainerstrategy import InferenceInitializer, BitPredi
 
 def model_initializer_factory(strategy_type: str) -> ModelStrategy:
     match strategy_type:
-        case "actor":
+        case "actorcritic":
             return ActorInitializer()
         case "dqncritic":
             return DQNInitializer()

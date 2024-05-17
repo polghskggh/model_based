@@ -377,7 +377,7 @@ if __name__ == '__main__':
             critic_params=critic_params
         ),
         tx=tx,
-        # As we have separated actor and critic we don't use apply_fn
+        # As we have separated actorcritic and critic we don't use apply_fn
         apply_fn=None,
         actor_fn=actor.apply,
         critic_fn=critic.apply,

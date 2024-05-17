@@ -16,7 +16,7 @@ from src.singletons.writer import Writer
 class Actor:
     def __init__(self):
         train_model = ActorAtari(*Shape(), True)
-        self._model: ModelWrapper = ModelWrapper(train_model, "actor",
+        self._model: ModelWrapper = ModelWrapper(train_model, "actorcritic",
                                                  train_model=train_model)
         self._new_states = None
         self.key = jr.PRNGKey(0)
@@ -70,6 +70,6 @@ class Actor:
         self._model.save()
 
     def load(self):
-        self._model.load("actor")
+        self._model.load("actorcritic")
 
 

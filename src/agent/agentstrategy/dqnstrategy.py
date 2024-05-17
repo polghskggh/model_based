@@ -8,16 +8,16 @@ from src.enviroment.shape import Shape
 from src.models.actorcritic.atarinn import AtariNN
 from src.models.modelwrapper import ModelWrapper
 from src.pod.replaybuffer import ReplayBuffer
+from src.pod.storage import DQNStorage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 
 
 class DQNStrategy(StrategyInterface):
     def __init__(self):
-        self._replay_buffer = ReplayBuffer(Shape()[0])
         self._batches_per_update: int = Args().args.batches_per_update
-        self._q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, True), "dqncritic")
-        self._target_q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, False), "dqncritic")
+        self._q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, False), "dqncritic")
+        self._target_q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, True), "dqncritic")
 
         self._action_space = Shape()[1]
         self._discount_factor: float = Args().args.discount_factor
@@ -29,6 +29,12 @@ class DQNStrategy(StrategyInterface):
         self._key = jr.PRNGKey(Key().key(1))
         self._epsilon: float = Args().args.epsilon
         self._target_update_period = Args().args.target_update_period
+        self._storage = self._init_storage()
+
+    @staticmethod
+    def _init_storage():
+        size = Args().args.storage_size
+        return DQNStorage(observations=jnp.empty((size, Shape()[0])), actions=jnp.empty(size + 1), rewards=size),
 
     def _batch_update(self, training_sample: list[jax.Array]):
         states, actions, rewards, next_states = training_sample
@@ -41,7 +47,7 @@ class DQNStrategy(StrategyInterface):
         grads = self._q_network.train_step(td_error, states, actions)
         return grads
 
-    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool, trunc: bool):
+    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
         self._replay_buffer.add_transition(old_state, selected_action, reward, new_state)
 
         # explore at start
