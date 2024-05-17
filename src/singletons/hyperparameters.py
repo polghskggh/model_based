@@ -129,7 +129,7 @@ class Args:
         parser.add_argument('--frame_stack', type=int, default=4, help='number of frames to stack')
         parser.add_argument('--frame_skip', type=int, default=4, help='number of frames to skip')
         parser.add_argument('--grayscale', type=bool, default=False, help='whether to use grayscale')
-        parser.add_argument('--num_epochs', type=int, default=10,
+        parser.add_argument('--num_epochs', type=int, default=4,
                             help='number of epochs to train during each update')
         parse_dqn(parser)
         parse_ppo(parser)

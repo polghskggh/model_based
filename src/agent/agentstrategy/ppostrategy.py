@@ -49,20 +49,20 @@ class PPOStrategy(StrategyInterface):
         actions, dones, log_probs = actions.reshape(-1), dones.reshape(-1), log_probs.reshape(-1)
 
         batch_size = Args().args.batch_size
-        for epoch in range(Args().args.num_epochs):
-            for start_idx in range(0, self.batch_shape[0], batch_size):
-                batch_slice = slice(start_idx, start_idx + batch_size)
-                batch_observations = observations[batch_slice]
-                actor_grads = self._actor.calculate_grads(batch_observations,
-                                                          actions[batch_slice],
-                                                          log_probs[batch_slice],
-                                                          advantages[batch_slice])
 
-                critic_grads = self._critic.calculate_grads(batch_observations,
-                                                            returns[batch_slice])
+        for start_idx in range(0, self.batch_shape[0], batch_size):
+            batch_slice = slice(start_idx, start_idx + batch_size)
+            batch_observations = observations[batch_slice]
+            actor_grads = self._actor.calculate_grads(batch_observations,
+                                                      actions[batch_slice],
+                                                      log_probs[batch_slice],
+                                                      advantages[batch_slice])
 
-                self._actor.update(actor_grads)
-                self._critic.update(critic_grads)
+            critic_grads = self._critic.calculate_grads(batch_observations,
+                                                        returns[batch_slice])
+
+            self._actor.update(actor_grads)
+            self._critic.update(critic_grads)
         self._iteration = 0
 
     def select_action(self, state: jnp.ndarray) -> int:

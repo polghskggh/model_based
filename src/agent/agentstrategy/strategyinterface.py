@@ -18,7 +18,3 @@ class StrategyInterface:
     @abstractmethod
     def load(self):
         pass
-
-    @abstractmethod
-    def run_parallel(self, parallel_agents):
-        pass
