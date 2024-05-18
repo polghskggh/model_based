@@ -1,5 +1,5 @@
 import flax.linen as nn
-from etils.etree import jax
+import jax
 
 from src.models.base.cnnatari import CNNAtari
 

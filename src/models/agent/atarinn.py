@@ -1,6 +1,7 @@
 import flax.linen as nn
 import jax.numpy as jnp
 from jax import Array
+from rlax import one_hot
 
 from src.models.agent.actoratari import CNNAtari
 from src.models.base.mlpatari import MLPAtari
@@ -21,6 +22,7 @@ class AtariNN(nn.Module):
     @nn.compact
     def __call__(self, image: Array, action: Array):
         cnn = self.cnn(image)
+        action = one_hot(action, self.second_input)
         x = jnp.append(cnn, action, axis=-1)
         x = self.mlp(x)
         return x

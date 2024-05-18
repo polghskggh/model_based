@@ -7,7 +7,7 @@ from src.models.initalizer.modelstrategy import ModelStrategy
 from src.singletons.hyperparameters import Args
 
 
-class ActorInitializer(ModelStrategy):
+class ActorCriticInitializer(ModelStrategy):
     def __init__(self):
         super().__init__()
 
@@ -15,7 +15,7 @@ class ActorInitializer(ModelStrategy):
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32), )
 
     def batch_dims(self) -> tuple:
-        return (4, ), (2,)
+        return (4, ), (1, )
 
 
 class DQNInitializer(ModelStrategy):

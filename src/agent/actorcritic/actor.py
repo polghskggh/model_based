@@ -26,10 +26,7 @@ class Actor:
         self._rng = ModelWrapper.make_rng_keys()
         self._writer = Writer().writer
 
-    def policy(self, states: jax.Array) -> distrax.Categorical:
-        logits = self._model.forward(states)
-        prob = distrax.Categorical(logits)
-        return prob
+
 
     def calculate_grads(self, states: jax.Array, action: jax.Array, old_log_odds: jax.Array, advantage: jax.Array):
         grad_fun = value_and_grad(Actor.ppo_grad, 1, has_aux=True)

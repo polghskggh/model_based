@@ -83,6 +83,7 @@ class DQNStrategy(StrategyInterface):
             batch_slice = slice(start_idx, end_idx)
 
             next_actions = vmap(self._greedy_action)(next_states[batch_slice])
+            next_actions = jnp.expand_dims(next_actions, 1)
             next_values = self._target_q_network.forward(next_states[batch_slice], next_actions).reshape(-1)
             td_targets: jax.Array = rewards + self._discount_factor * next_values
             td_targets = jnp.expand_dims(td_targets, 1)

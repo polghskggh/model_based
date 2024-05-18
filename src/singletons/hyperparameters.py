@@ -71,9 +71,9 @@ def parse_dqn(parser):
 
 def parse_ppo(parser):
     parser.add_argument('--gae_lambda', type=float, default=0.95, help='PPO: lambda for GAE')
-    parser.add_argument('--clip-threshold', type=float, default=0.1, help='PPO: clipping threshold')
+    parser.add_argument('--clip_threshold', type=float, default=0.1, help='PPO: clipping threshold')
     parser.add_argument('--regularization', type=float, default=0.01, help='PPO: regularization coefficient')
-    parser.add_argument('--vf-coef', type=float, default=0.5, help='PPO: coefficient of the value function')
+    parser.add_argument('--value_weight', type=float, default=0.5, help='PPO: coefficient of the value function')
     return parser
 
 
