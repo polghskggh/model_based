@@ -31,7 +31,7 @@ class ModelWrapper:
         self.state = TrainState.create(apply_fn=jit(model.apply), params=params, tx=optimizer)
 
         self._loss_fun = self._initializer.loss_fun()
-        # As we have separated actorcritic and critic we don't use apply_fn
+        # As we have separated agent and critic we don't use apply_fn
 
         self._name = strategy
         self._model_writer = Writer().writer

@@ -6,7 +6,7 @@ import jax.numpy as jnp
 from jax import random as jr, value_and_grad, jit, lax
 
 from src.enviroment import Shape
-from src.models.actorcritic.actoratari import ActorAtari
+from src.models.agent.actoratari import ActorAtari
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
 from src.singletons.step_traceker import StepTracker
@@ -16,7 +16,7 @@ from src.singletons.writer import Writer
 class Actor:
     def __init__(self):
         train_model = ActorAtari(*Shape(), True)
-        self._model: ModelWrapper = ModelWrapper(train_model, "actorcritic",
+        self._model: ModelWrapper = ModelWrapper(train_model, "agent",
                                                  train_model=train_model)
         self._new_states = None
         self.key = jr.PRNGKey(0)
@@ -41,23 +41,7 @@ class Actor:
 
         return grads
 
-    @staticmethod
-    def ppo_grad(model, params: dict, states: jax.Array, advantage: jax.Array, action_index: jax.Array,
-                 old_log_probs: jax.Array, epsilon: float, regularization: float, rng: dict):
-        action_logits = jit(model.apply)(params, states, rngs=rng)
-        policy = distrax.Categorical(action_logits)
-        log_probs = policy.log_prob(action_index)
 
-        log_ratio = log_probs - old_log_probs
-        ratio = jnp.exp(log_ratio)
-
-        approx_kl = ((ratio - 1) - log_ratio).mean()
-
-        loss = rlax.clipped_surrogate_pg_loss(ratio, advantage, epsilon, False)
-        entropy_loss = policy.entropy().mean()
-
-        return (loss - regularization * entropy_loss,
-                {"policy_loss": loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl})
 
     def update(self, grads: dict):
         self._model.apply_grads(grads)
@@ -70,6 +54,6 @@ class Actor:
         self._model.save()
 
     def load(self):
-        self._model.load("actorcritic")
+        self._model.load("agent")
 
 

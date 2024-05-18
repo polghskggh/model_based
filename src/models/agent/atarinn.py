@@ -2,7 +2,7 @@ import flax.linen as nn
 import jax.numpy as jnp
 from jax import Array
 
-from src.models.actorcritic.actoratari import CNNAtari
+from src.models.agent.actoratari import CNNAtari
 from src.models.base.mlpatari import MLPAtari
 
 

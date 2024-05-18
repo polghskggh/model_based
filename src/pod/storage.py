@@ -9,6 +9,7 @@ class PPOStorage:
     actions: jnp.array
     log_probs: jnp.array
     dones: jnp.array
+    values: jnp.ndarray
 
 
 @dataclass

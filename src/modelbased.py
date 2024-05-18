@@ -18,14 +18,14 @@ def sample_env(storage, agent, envs):
     writer = Writer().writer
     args = Args().args
 
-    returns = jnp.zeros(args.num_agents)
+    returns = jnp.zeros(args.num_envs)
     for step in range(args.trajectory_length):
-        StepTracker().increment(args.num_agents)
+        StepTracker().increment(args.num_envs)
         reward, done, _ = interact(agent, envs, False)
         returns += reward
         observations, actions, rewards, next_observations = agent.last_transition()
         next_observations = lax.slice_in_dim(next_observations, (Args().args.frame_stack - 1) * 3, None, -1)
-        storage = store(storage, slice(step * args.num_agents, (step + 1) * args.num_envs), observations=observations,
+        storage = store(storage, slice(step * args.num_envs, (step + 1) * args.num_envs), observations=observations,
                         actions=actions, rewards=rewards, next_observation=next_observations)
 
     for ret in returns:

@@ -9,7 +9,7 @@ from jax import vmap, jit
 from rlax import truncated_generalized_advantage_estimation
 
 from src.enviroment import Shape
-from src.models.actorcritic.atarinn import StateValueAtariNN
+from src.models.agent.atarinn import StateValueAtariNN
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
 from src.utils.rl import generalized_advantage_estimation

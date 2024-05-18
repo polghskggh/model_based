@@ -5,7 +5,7 @@ from jax import vmap
 
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment.shape import Shape
-from src.models.actorcritic.atarinn import AtariNN
+from src.models.agent.atarinn import AtariNN
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
@@ -60,7 +60,7 @@ class DQNStrategy(StrategyInterface):
                               actions=selected_action, rewards=reward, next_observations=new_state)
         self._data_pos += self._parallel_agents
 
-    def update(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
+    def timestep_callback(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
         self.store_flattened(old_state, selected_action, reward, new_state)
 
         # explore at start

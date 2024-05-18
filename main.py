@@ -61,9 +61,9 @@ def run_experiment(agent: Agent, envs: gym.Env, world_model: Optional[WorldModel
     finally:
         envs.close()
         writer.close()
-        #agent.save()
-        if world_model is not None:
-            world_model.save()
+        # agent.save()
+        # if world_model is not None:
+            # world_model.save()
 
 
 def run_episode(agent: Agent, world_model: Optional[WorldModelInterface], envs: gym.Env):
