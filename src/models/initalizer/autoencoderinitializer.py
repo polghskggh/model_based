@@ -14,7 +14,7 @@ class AutoEncoderInitializer(ModelStrategy):
                 jnp.ones(1))
 
     def batch_dims(self) -> tuple:
-        return (4, 1), (3, 2)
+        return (4, 1), (3, 1)
 
     def loss_fun(self):
         return cross_entropy_loss

@@ -35,7 +35,7 @@ def sample_env(storage, agent, envs):
 
 
 def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: gym.Env):
-    data_size = Args().args.batch_size * Args().args.num_epochs
+    data_size = Args().args.trajectory_length
     storage: TransitionStorage = TransitionStorage(observations=jnp.zeros((data_size,) + Shape()[0]),
                                                    actions=jnp.zeros((data_size)),
                                                    rewards=jnp.zeros((data_size)),

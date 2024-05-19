@@ -16,10 +16,8 @@ from src.utils.rl import tile_image
 
 
 class SAETrainer(Trainer):
-    def __init__(self, model, deterministic: bool):
-        super().__init__()
+    def __init__(self, model):
         self._batch_size = Args().args.batch_size
-        self._deterministic = deterministic
 
         self._model = model
         self._autoencoder = ModelWrapper(AutoEncoder(*Shape()), "autoencoder_with_latent")

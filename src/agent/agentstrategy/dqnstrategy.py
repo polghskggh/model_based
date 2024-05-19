@@ -78,18 +78,18 @@ class DQNStrategy(StrategyInterface):
 
         num_epochs, batch_size = Args().args.num_epochs, Args().args.batch_size
         states, actions, rewards, next_states = self.sample(num_epochs * batch_size)
+        for _ in range(num_epochs):
+            for start_idx in range(0, num_epochs * batch_size, batch_size):
+                end_idx = start_idx + batch_size
+                batch_slice = slice(start_idx, end_idx)
 
-        for start_idx in range(0, num_epochs * batch_size, batch_size):
-            end_idx = start_idx + batch_size
-            batch_slice = slice(start_idx, end_idx)
+                next_actions = vmap(self._greedy_action)(next_states[batch_slice])
+                next_values = self._target_q_network.forward(next_states[batch_slice], next_actions).reshape(-1)
+                td_targets: jax.Array = rewards[batch_slice] + self._discount_factor * next_values
+                td_targets = jnp.expand_dims(td_targets, 1)
 
-            next_actions = vmap(self._greedy_action)(next_states[batch_slice])
-            next_values = self._target_q_network.forward(next_states[batch_slice], next_actions).reshape(-1)
-            td_targets: jax.Array = rewards[batch_slice] + self._discount_factor * next_values
-            td_targets = jnp.expand_dims(td_targets, 1)
-
-            grads = self._q_network.train_step(td_targets, states[batch_slice], actions[batch_slice])
-            self._q_network.apply_grads(grads)
+                grads = self._q_network.train_step(td_targets, states[batch_slice], actions[batch_slice])
+                self._q_network.apply_grads(grads)
 
         self._target_q_network.params = self._q_network.params
 

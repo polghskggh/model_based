@@ -24,11 +24,10 @@ class SimpleWorldModel(WorldModelInterface):
             self._model: ModelWrapper = ModelWrapper(AutoEncoder(*Shape()), "autoencoder")
         else:
             self._model: ModelWrapper = ModelWrapper(StochasticAutoencoder(*Shape()), "autoencoder")
+            self._trainer = SAETrainer(self._model)
 
         self._frame_stack = None
         self._time_step = 0
-
-        self._trainer = SAETrainer(self._model, deterministic)
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         next_frames, rewards = self._model.forward(self._frame_stack.frames, actions)
@@ -44,10 +43,11 @@ class SimpleWorldModel(WorldModelInterface):
         return self._frame_stack.frames, {}
 
     def _deterministic_update(self, stack, actions, rewards, next_frame):
+        next_frame = vmap(tile_image)(next_frame)
         batch_size = Args().args.batch_size
         for start_idx in range(0, stack.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
-            grads = self._model.train_step(next_frame, stack[batch_slice], actions[batch_slice], rewards[batch_slice])
+            grads = self._model.train_step((next_frame[batch_slice], rewards[batch_slice]), stack[batch_slice], actions[batch_slice])
             self._model.apply_grads(grads)
 
     def _stochastic_update(self, stack, actions, rewards, next_frame):

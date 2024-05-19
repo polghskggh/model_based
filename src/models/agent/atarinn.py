@@ -21,9 +21,7 @@ class AtariNN(nn.Module):
     @nn.compact
     def __call__(self, image: Array, action: Array):
         cnn = self.cnn(image)
-        print(action.shape)
         action = one_hot(action, self.second_input)
-        print(action.shape)
         x = jnp.append(cnn, action, axis=-1)
         x = self.mlp(x)
         return x
