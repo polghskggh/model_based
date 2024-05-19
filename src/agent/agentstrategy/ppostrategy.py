@@ -5,8 +5,7 @@ import optax
 import rlax
 from jax import jit, value_and_grad
 
-from src.agent.actorcritic.actor import Actor
-from src.agent.actorcritic.critic import Critic
+from altmodel import Network
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment import Shape
 from src.models.agent.actorcritic import ActorCritic
@@ -14,12 +13,13 @@ from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import store, PPOStorage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
-from src.singletons.writer import Writer, log
+from src.singletons.writer import log
 
 
 class PPOStrategy(StrategyInterface):
     def __init__(self):
         self._actor_critic = ModelWrapper(ActorCritic(Shape()[0], (Shape()[1], 1)), "actor_critic")
+        #self._actor_critic = ModelWrapper(Network(Shape()[0]), "actor_critic")
         self.batch_shape = (Args().args.trajectory_length,
                             Args().args.num_agents)
 
@@ -59,17 +59,18 @@ class PPOStrategy(StrategyInterface):
         batch_size = Args().args.batch_size
 
         grad_fn = jit(value_and_grad(PPOStrategy.ppo_loss, 1, has_aux=True))
-        for start_idx in range(0, self.batch_shape[0], batch_size):
-            batch_slice = slice(start_idx, start_idx + batch_size)
-            (loss, aux), grads = grad_fn(self._actor_critic.state,
-                                         self._actor_critic.params,
-                                         batch_observations[batch_slice],
-                                         batch_actions[batch_slice],
-                                         batch_log_probs[batch_slice],
-                                         batch_advantages[batch_slice],
-                                         batch_returns[batch_slice])
-            log(aux)
-            self._actor_critic.apply_grads(grads)
+        for _ in range(Args().args.num_epochs):
+            for start_idx in range(0, self.batch_shape[0], batch_size):
+                batch_slice = slice(start_idx, start_idx + batch_size)
+                (loss, aux), grads = grad_fn(self._actor_critic.state,
+                                             self._actor_critic.params,
+                                             batch_observations[batch_slice],
+                                             batch_actions[batch_slice],
+                                             batch_log_probs[batch_slice],
+                                             batch_advantages[batch_slice],
+                                             batch_returns[batch_slice])
+                log(aux)
+                self._actor_critic.apply_grads(grads)
 
     @staticmethod
     def ppo_loss(state, params, states: jax.Array, actions, old_log_probs: jax.Array, advantages: jax.Array,
