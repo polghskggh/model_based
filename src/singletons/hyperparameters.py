@@ -80,6 +80,8 @@ def parse_ppo(parser):
 def parse_simple(parser):
     parser.add_argument('--sim_trajectory_length', type=int, default=50,
                         help='Model_based: length of simulated trajectory')
+    parser.add_argument('--pixel_reward', type=int, default=0.5, help='pixel loss weight')
+    parser.add_argument('--kl_loss', type=int, default=0.8, help='KL divergence weight')
     return parser
 
 

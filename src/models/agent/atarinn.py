@@ -18,11 +18,12 @@ class AtariNN(nn.Module):
         self.cnn = CNNAtari(bottleneck)
         self.mlp = MLPAtari(bottleneck + self.second_input, self.output_dimensions)
 
-
     @nn.compact
     def __call__(self, image: Array, action: Array):
         cnn = self.cnn(image)
+        print(action.shape)
         action = one_hot(action, self.second_input)
+        print(action.shape)
         x = jnp.append(cnn, action, axis=-1)
         x = self.mlp(x)
         return x
@@ -43,6 +44,3 @@ class StateValueAtariNN(nn.Module):
         x = nn.Dense(self.output_dimensions)(cnn)
         return x
 
-
-    def deterministic(self, deterministic: bool):
-        self.cnn.encoder.deterministic = deterministic

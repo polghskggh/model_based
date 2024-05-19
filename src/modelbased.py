@@ -21,12 +21,12 @@ def sample_env(storage, agent, envs):
     returns = jnp.zeros(args.num_envs)
     for step in range(args.trajectory_length):
         StepTracker().increment(args.num_envs)
-        reward, done, _ = interact(agent, envs, False)
+        reward, done, _ = interact(agent, envs)
         returns += reward
-        observations, actions, rewards, next_observations = agent.last_transition()
-        next_observations = lax.slice_in_dim(next_observations, (Args().args.frame_stack - 1) * 3, None, -1)
+        observations, actions, rewards, next_observations, _ = agent.last_transition()
+        next_observations = lax.slice_in_dim(next_observations, (Args().args.frame_stack - 1) * 3, None, axis=-1)
         storage = store(storage, slice(step * args.num_envs, (step + 1) * args.num_envs), observations=observations,
-                        actions=actions, rewards=rewards, next_observation=next_observations)
+                        actions=actions, rewards=rewards, next_observations=next_observations)
 
     for ret in returns:
         writer.add_scalar("charts/episodic_return", ret, int(StepTracker()))
@@ -39,12 +39,14 @@ def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: 
     storage: TransitionStorage = TransitionStorage(observations=jnp.zeros((data_size,) + Shape()[0]),
                                                    actions=jnp.zeros((data_size)),
                                                    rewards=jnp.zeros((data_size)),
-                                                   next_observation=jnp.zeros((data_size, Shape()[0][0], Shape()[0][1],
+                                                   next_observations=jnp.zeros((data_size, Shape()[0][0], Shape()[0][1],
                                                                        Shape()[0][2] // Args().args.frame_stack)))
+    agent.store_trajectories = False
 
     sample_env(storage, agent, env)
     world_model.update(storage)
 
+    agent.store_trajectories = True
     temp = Args().args.trajectory_length
     Args().args.trajectory_length = Args().args.sim_trajectory_length
     model_free_train_loop(agent, world_model)

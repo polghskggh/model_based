@@ -16,16 +16,17 @@ from src.utils.rl import tile_image
 
 
 class SAETrainer(Trainer):
-    def __init__(self, model):
+    def __init__(self, model, deterministic: bool):
         super().__init__()
         self._batch_size = Args().args.batch_size
+        self._deterministic = deterministic
 
         self._model = model
         self._autoencoder = ModelWrapper(AutoEncoder(*Shape()), "autoencoder_with_latent")
 
         third_input = (Shape()[0][0], Shape()[0][1], 3)
         self._stochastic_ae = ModelWrapper(TrainStochasticAutoencoder(*Shape(), third_input), "trainer_stochastic")
-        self._bit_predictor = ModelWrapper(BitPredictor(model.bits), "bit_predictor")
+        self._bit_predictor = ModelWrapper(BitPredictor(self._model.bits), "bit_predictor")
 
         self._inference = ModelWrapper(ConvolutionalInference(*Shape(), third_input, False), "inference")
 
@@ -33,7 +34,8 @@ class SAETrainer(Trainer):
         self._sae_trainer = ParamCopyingTrainer(self._stochastic_ae, "autoencoder", "autoencoder")
         self._bit_predictor_trainer = ParamCopyingTrainer(self._bit_predictor, "bit_predictor")
 
-    def train_step(self, params: dict, stack: jax.Array, actions: jax.Array, rewards: jax.Array, next_frame: jax.Array):
+    def train_step(self, params: dict, stack: jax.Array, actions: jax.Array, rewards: jax.Array, next_frame: jax.Array,
+                   update_fn):
         reconstructed = tile_image(next_frame)
         params = self._train_autoencoder(params, stack, actions, reconstructed)
         params = self._train_inference_autoencoder(params, stack, actions, next_frame, reconstructed)
@@ -43,7 +45,7 @@ class SAETrainer(Trainer):
         return params
 
     def _train_autoencoder(self, params: dict, stack: Array, actions: Array, reconstructed: Array):
-        latent = jnp.where(jr.normal(jr.PRNGKey(1), (self._batch_size, 128)) >= 0, 1, 0)
+        latent = jnp.where(jr.normal(jr.PRNGKey(1), (stack.shape[0], 128)) >= 0, 1, 0)
         return self._ae_trainer.train_step(params, reconstructed, stack, actions, latent)
 
     def _train_inference_autoencoder(self, params: dict, stack: Array, actions: Array,
@@ -61,7 +63,6 @@ class SAETrainer(Trainer):
         bits_inferred = self._inference.forward(stack, actions, next_frame)
         return self._bit_predictor_trainer.train_step(params, bits_inferred)
 
-
 class ParamCopyingTrainer(Trainer):
     def __init__(self, model, param_name, model_param_name=None):
         super().__init__()
@@ -72,8 +73,12 @@ class ParamCopyingTrainer(Trainer):
     def train_step(self, params: dict, output, *inputs):
         ParamCopyingTrainer.assign_params(self._model.params, self._model_param_name, params, self._param_name)
 
-        grads = self._model.train_step(output, *inputs)
-        self._model.apply_grads(grads)
+        batch_size = Args().args.batch_size
+
+        for start_idx in range(0, output.shape[0], batch_size):
+            batch_slice = slice(start_idx, start_idx + batch_size)
+            grads = self._model.train_step(output[batch_slice], *inputs[batch_slice])
+            self._model.apply_grads(grads)
 
         ParamCopyingTrainer.assign_params(params, self._param_name, self._model.params, self._model_param_name)
         return params

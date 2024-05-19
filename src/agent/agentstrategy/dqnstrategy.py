@@ -2,6 +2,7 @@ import jax
 import jax.numpy as jnp
 import jax.random as jr
 from jax import vmap
+from rlax import one_hot
 
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment.shape import Shape
@@ -83,9 +84,8 @@ class DQNStrategy(StrategyInterface):
             batch_slice = slice(start_idx, end_idx)
 
             next_actions = vmap(self._greedy_action)(next_states[batch_slice])
-            next_actions = jnp.expand_dims(next_actions, 1)
             next_values = self._target_q_network.forward(next_states[batch_slice], next_actions).reshape(-1)
-            td_targets: jax.Array = rewards + self._discount_factor * next_values
+            td_targets: jax.Array = rewards[batch_slice] + self._discount_factor * next_values
             td_targets = jnp.expand_dims(td_targets, 1)
 
             grads = self._q_network.train_step(td_targets, states[batch_slice], actions[batch_slice])
@@ -93,7 +93,7 @@ class DQNStrategy(StrategyInterface):
 
         self._target_q_network.params = self._q_network.params
 
-    def select_action(self, states: jax.Array) -> jnp.ndarray:
+    def select_action(self, states: jax.Array, **kwargs) -> jnp.ndarray:
         batch_size = states.shape[0]
         key = Key().key()
         probs = jr.uniform(key, (batch_size, ))
@@ -102,7 +102,7 @@ class DQNStrategy(StrategyInterface):
         return jnp.squeeze(actions)
 
     def _greedy_action(self, state: jax.Array) -> jax.Array:
-        actions = jnp.eye(self._action_space)
+        actions = jnp.arange(self._action_space)
         mapped_fun = vmap(self._q_network.forward, in_axes=(None, 0))
         values = mapped_fun(state, actions)
         values = jnp.squeeze(values)

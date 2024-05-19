@@ -103,7 +103,7 @@ class ModelWrapper:
 
         :param params: the parameters to set
         """
-        self.state.params = params
+        self.state = self.state.replace(params=params)
 
     def batch_input(self, *data):
         """

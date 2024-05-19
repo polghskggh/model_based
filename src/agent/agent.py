@@ -18,14 +18,16 @@ class Agent:
         self._selected_action: int = 0
         self._reward: float = 0
         self._done = False
+        self._store_trajectories: bool = True
         self._strategy: StrategyInterface = agent_strategy_factory(Args().args.algorithm)
 
     def update_policy(self):
-        self._strategy.timestep_callback(self._old_state, self._selected_action, self._reward, self._new_state,
-                                         self._done)
+        if self.store_trajectories:
+            self._strategy.timestep_callback(self._old_state, self._selected_action, self._reward, self._new_state,
+                                             self._done)
 
     def select_action(self) -> jax.Array:
-        self._selected_action = self._strategy.select_action(self._new_state)
+        self._selected_action = self._strategy.select_action(self._new_state, store=self.store_trajectories)
         return self._selected_action
 
     def receive_reward(self, reward: float):
@@ -43,6 +45,14 @@ class Agent:
 
     def load(self):
         self._strategy.load()
+
+    @property
+    def store_trajectories(self):
+        return self._store_trajectories
+
+    @store_trajectories.setter
+    def store_trajectories(self, new_value: bool):
+        self._store_trajectories = new_value
 
     def last_transition(self):
         return self._old_state, self._selected_action, self._reward, self._new_state, self._done

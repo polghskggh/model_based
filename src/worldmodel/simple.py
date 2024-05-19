@@ -28,8 +28,7 @@ class SimpleWorldModel(WorldModelInterface):
         self._frame_stack = None
         self._time_step = 0
 
-        if not self._deterministic:
-            self._trainer = SAETrainer(self._model)
+        self._trainer = SAETrainer(self._model, deterministic)
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         next_frames, rewards = self._model.forward(self._frame_stack.frames, actions)
@@ -45,25 +44,19 @@ class SimpleWorldModel(WorldModelInterface):
         return self._frame_stack.frames, {}
 
     def _deterministic_update(self, stack, actions, rewards, next_frame):
-        teach_pixels = vmap(tile_image)(next_frame)
-        grads = self._model.train_step((teach_pixels, rewards), stack, actions)
-        self._model.apply_grads(grads)
+        batch_size = Args().args.batch_size
+        for start_idx in range(0, stack.shape[0], batch_size):
+            batch_slice = slice(start_idx, start_idx + batch_size)
+            grads = self._model.train_step(next_frame, stack[batch_slice], actions[batch_slice], rewards[batch_slice])
+            self._model.apply_grads(grads)
 
     def _stochastic_update(self, stack, actions, rewards, next_frame):
         self._model.params = self._trainer.train_step(self._model.params, stack, actions, rewards, next_frame)
 
     def update(self, storage: TransitionStorage):
-        for start_idx in range(0, Args().args.num_episodes * self._batch_size, self._batch_size):
-            batch_slice = slice(start_idx, start_idx + self._batch_size)
-            stack = storage.observations[batch_slice]
-            actions = storage.actions[batch_slice]
-            next_frames = storage.next_observations[batch_slice]
-            rewards = storage.rewards[batch_slice]
-
-            if self._deterministic:
-                self._deterministic_update(stack, actions, rewards, next_frames)
-            else:
-                self._stochastic_update(stack, actions, rewards, next_frames)
+        update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
+        for _ in range(Args().args.num_epochs):
+            update_fn(storage.observations, storage.actions, storage.rewards, storage.next_observations)
 
         self._frame_stack = FrameStack(storage)
 

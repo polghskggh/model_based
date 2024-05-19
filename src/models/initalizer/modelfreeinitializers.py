@@ -21,10 +21,10 @@ class ActorCriticInitializer(ModelStrategy):
 class DQNInitializer(ModelStrategy):
     def init_params(self, model: nn.Module) -> tuple:
         return (jnp.ones(model.input_dimensions, dtype=jnp.float32),
-                jnp.ones(model.second_input, dtype=jnp.float32))
+                jnp.ones(1))
 
     def batch_dims(self) -> tuple:
-        return (4, 2), (2, )
+        return (4, 1), (2, )
 
 
 class CriticInitializer(ModelStrategy):

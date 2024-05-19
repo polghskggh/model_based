@@ -17,7 +17,7 @@ def model_free_train_loop(agent: Agent, envs: gym.Env):
     returns = jnp.zeros(args.num_agents)
     for step in range(args.trajectory_length):
         StepTracker().increment(args.num_agents)
-        reward, done, infos = interact(agent, envs, True)
+        reward, done, infos = interact(agent, envs)
         returns += reward
 
         # Only print when at least 1 env is done
@@ -28,7 +28,7 @@ def model_free_train_loop(agent: Agent, envs: gym.Env):
             writer.add_scalar("charts/episodic_return", ret, int(StepTracker()))
 
 
-def interact(agent: Agent, environment: WorldModelInterface | gym.Env, update: bool = True):
+def interact(agent: Agent, environment: WorldModelInterface | gym.Env):
     action = agent.select_action()
     observation, reward, terminated, truncated, infos = environment.step(action)
     agent.receive_reward(reward)
@@ -36,7 +36,6 @@ def interact(agent: Agent, environment: WorldModelInterface | gym.Env, update: b
     dones = terminated | truncated
     agent.receive_done(dones)
 
-    if update:
-        agent.update_policy()
+    agent.update_policy()
 
     return reward, dones, infos

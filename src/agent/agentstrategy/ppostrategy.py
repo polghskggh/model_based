@@ -50,7 +50,6 @@ class PPOStrategy(StrategyInterface):
                                                             self._trajectory_storage.rewards,
                                                             self._trajectory_storage.dones, term_value.squeeze(),
                                                             Args().args.discount_factor, Args().args.gae_lambda)
-        print(advantages.shape, advantages[0])
         batch_observations = self._trajectory_storage.observations.reshape(-1, *Shape()[0])
         batch_actions = self._trajectory_storage.actions.reshape(-1)
         batch_log_probs = self._trajectory_storage.log_probs.reshape(-1)
@@ -92,13 +91,14 @@ class PPOStrategy(StrategyInterface):
                 {"policy_loss": loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl,
                  "value_loss": value_loss})
 
-    def select_action(self, states: jnp.ndarray) -> int:
+    def select_action(self, states: jnp.ndarray, store: bool) -> int:
         logits, value_estimate = self._actor_critic.forward(states)
         value_estimate = value_estimate.squeeze()
         policy = distrax.Categorical(logits)
         action = policy.sample(seed=Key().key(1))
-        self._trajectory_storage = store(self._trajectory_storage, self._iteration, log_probs=policy.log_prob(action),
-                                         values=value_estimate)
+        if store:
+            self._trajectory_storage = store(self._trajectory_storage, self._iteration,
+                                             log_probs=policy.log_prob(action), values=value_estimate)
         return action
 
     @staticmethod
