@@ -15,7 +15,6 @@ class TransitionModel(nn.Module):
     state_size: int
     action_size: int
     hidden_size: int
-    embedding_size: int
     activation_function: str = 'relu'
 
     def setup(self):
@@ -23,6 +22,7 @@ class TransitionModel(nn.Module):
         self.activation_fun = activation_function_dict[self.activation_function]
         self.rnn = nn.GRUCell(self.belief_size, self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
+        self.embedding_size = 100
 
 
     # Operates over (previous) state, (previous) actions, (previous) belief, (previous) nonterminals (mask), and (current) observations

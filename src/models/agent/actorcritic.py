@@ -19,3 +19,19 @@ class ActorCritic(nn.Module):
         policy = nn.Dense(self.output_dimensions[0])(hidden)
         value = nn.Dense(self.output_dimensions[1])(hidden)
         return policy, value
+
+
+class ActorCriticDreamer(nn.Module):
+    input_dimensions: tuple
+    output_dimensions: tuple
+    deterministic: bool = True
+
+    def setup(self):
+        self.bottleneck = 100
+
+    @nn.compact
+    def __call__(self, state: jax.Array):
+        hidden = nn.Dense(self.bottleneck)(state)
+        policy = nn.Dense(self.output_dimensions[0])(hidden)
+        value = nn.Dense(self.output_dimensions[1])(hidden)
+        return policy, value

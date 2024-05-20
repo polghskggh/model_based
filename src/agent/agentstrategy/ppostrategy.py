@@ -5,10 +5,9 @@ import optax
 import rlax
 from jax import jit, value_and_grad
 
-from altmodel import Network
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment import Shape
-from src.models.agent.actorcritic import ActorCritic
+from src.models.agent.actorcritic import ActorCritic, ActorCriticDreamer
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import store, PPOStorage
 from src.singletons.hyperparameters import Args
@@ -18,21 +17,27 @@ from src.singletons.writer import log
 
 class PPOStrategy(StrategyInterface):
     def __init__(self):
-        self._actor_critic = ModelWrapper(ActorCritic(Shape()[0], (Shape()[1], 1)), "actor_critic")
-        #self._actor_critic = ModelWrapper(Network(Shape()[0]), "actor_critic")
-        self.batch_shape = (Args().args.trajectory_length,
-                            Args().args.num_agents)
+        if Args().args.algorithm == "dreamer":
+            state_shape = (Args().args.belief_size + Args().args.state_size, )
+            model = ActorCriticDreamer(state_shape, (Shape()[1], 1))
+        else:
+            state_shape = Shape()[0]
+            model = ActorCritic(Shape()[0], (Shape()[1], 1))
 
-        self._trajectory_storage = self._init_storage()
+        self._actor_critic = ModelWrapper(model, "actor_critic")
+        self._batch_shape = (Args().args.trajectory_length,
+                             Args().args.num_agents)
+
+        self._trajectory_storage = self._init_storage(state_shape)
         self._iteration: int = 0
 
-    def _init_storage(self):
-        return PPOStorage(observations=jnp.zeros((self.batch_shape) + Shape()[0]),
-                          rewards=jnp.zeros(self.batch_shape),
-                          actions=jnp.zeros(self.batch_shape),
-                          log_probs=jnp.zeros(self.batch_shape),
-                          dones=jnp.zeros(self.batch_shape),
-                          values=jnp.zeros(self.batch_shape))
+    def _init_storage(self, state_shape):
+        return PPOStorage(observations=jnp.zeros((self._batch_shape) + state_shape),
+                          rewards=jnp.zeros(self._batch_shape),
+                          actions=jnp.zeros(self._batch_shape),
+                          log_probs=jnp.zeros(self._batch_shape),
+                          dones=jnp.zeros(self._batch_shape),
+                          values=jnp.zeros(self._batch_shape))
 
     def timestep_callback(self, old_state: jax.Array, selected_action: jax.Array, reward: jax.Array,
                           new_state: jax.Array, done: jax.Array):
