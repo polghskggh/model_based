@@ -15,9 +15,8 @@ class ModelStrategy:
     def init_params(self, model: nn.Module) -> tuple:
         pass
 
-    @abstractmethod
     def batch_dims(self) -> Tuple:
-        pass
+        return None, None
 
     def init_optim(self):
         return optax.chain(

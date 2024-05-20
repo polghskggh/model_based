@@ -20,10 +20,9 @@ class TransitionModel(nn.Module):
     def setup(self):
         super().__init__()
         self.activation_fun = activation_function_dict[self.activation_function]
-        self.rnn = nn.GRUCell(self.belief_size, self.belief_size)
+        self.rnn = nn.GRUCell(features=self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
         self.embedding_size = 100
-
 
     # Operates over (previous) state, (previous) actions, (previous) belief, (previous) nonterminals (mask), and (current) observations
     # Diagram of expected inputs and outputs for T = 5 (-x- signifying beginning of output belief/state that gets sliced off):
@@ -35,15 +34,15 @@ class TransitionModel(nn.Module):
     # ps: -X-
     # b : -x--X--X--X--X--X-
     # s : -x--X--X--X--X--X-
-    # @jit.script_metho
     # d
-
-    def update_belief(self, state, belief, action):
+    def update_belief(self, belief, state, action):
         # Compute belief (deterministic hidden state)
-        state_action = jnp.append(state, action)
+
+        print(state.shape, action.shape)
+        state_action = jnp.append(state, action, axis=-1)
         state_action = nn.Dense(self.state_size + self.action_size, self.belief_size)(state_action)
         state_action = self.activation_fun(state_action)
-        belief = self.rnn(state_action, belief)
+        belief = self.rnn(belief, state_action)
         return belief
 
     def prior_update(self, belief):
@@ -52,6 +51,7 @@ class TransitionModel(nn.Module):
         hidden = self.activation_fun(hidden)
         return self.variational_encoder(hidden)
 
+    @nn.compact
     def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array,
                  nonterminals: Optional[jax.Array] = None) \
             -> List[jax.Array]:
@@ -62,13 +62,14 @@ class TransitionModel(nn.Module):
         """
         batch = actions.shape[0] + 1
         beliefs = [jnp.empty(0)] * batch
+        # TODO: incorrect dims
         prior_states = [jnp.empty(0)] * batch
         prior_means = [jnp.empty(0)] * batch
         prior_std_devs = [jnp.empty(0)] * batch
 
         beliefs[0], prior_states[0] = prev_belief, prev_state
-
         # Loop over time sequence
+        print(beliefs[0].shape, actions[0].shape, prior_states[0].shape)
         for t in range(batch - 1):
             # Mask if previous transition was terminal
             state = prior_states[t]

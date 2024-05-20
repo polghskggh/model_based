@@ -31,7 +31,8 @@ class Dreamer(WorldModelInterface):
         # Initialise model parameters randomly
         representation_model = ModelWrapper(RepresentationModel(self.belief_size, self.state_size,
                                                                 self.action_size, self.hidden_size,
-                                                                self.embedding_size), "representation")
+                                                                self.embedding_size, Shape()[0]),
+                                            "representation")
         observation_model = ModelWrapper(ObservationModel(self.belief_size, self.state_size,
                                                           self.embedding_size, self.observation_size),
                                          "observation")

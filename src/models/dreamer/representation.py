@@ -17,6 +17,7 @@ class RepresentationModel(nn.Module):
     action_size: int
     hidden_size: int
     embedding_size: int
+    observation_shape: tuple
     activation_function: str = 'relu'
     min_std_dev: float = 0.1
     __constants__ = ['min_std_dev']

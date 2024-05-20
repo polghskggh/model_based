@@ -1,8 +1,11 @@
+from src.models.initalizer.dreamerinitializers import TransitionInitializer, RepresentationInitializer, ObservationInitializer, \
+    RewardInitializer
 from src.models.initalizer.modelfreeinitializers import ActorCriticInitializer, CriticInitializer, DQNInitializer
 from src.models.initalizer.autoencoderinitializer import AutoEncoderInitializer
 from src.models.initalizer.modelstrategy import ModelStrategy
 from src.models.initalizer.trainerstrategy import InferenceInitializer, BitPredictorInitializer, StochasticInitializer, \
     StochasticAETrainerInitializer, LatentAEInitializer
+
 
 
 def model_initializer_factory(strategy_type: str) -> ModelStrategy:
@@ -25,5 +28,13 @@ def model_initializer_factory(strategy_type: str) -> ModelStrategy:
             return StochasticAETrainerInitializer()
         case "autoencoder_with_latent":
             return LatentAEInitializer()
+        case "transition":
+            return TransitionInitializer()
+        case "representation":
+            return RepresentationInitializer()
+        case "observation":
+            return ObservationInitializer()
+        case "reward":
+            return RewardInitializer()
         case _:
             raise ValueError(f"Initalizetion {strategy_type} not found")

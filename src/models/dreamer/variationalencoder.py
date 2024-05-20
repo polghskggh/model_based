@@ -11,6 +11,7 @@ class VariationalEncoder(nn.Module):
     def setup(self) -> None:
         self.min_std_dev: float = Args().args.min_std_dev
 
+    @nn.compact
     def __call__(self, data):
         hidden = nn.Dense(self.hidden_size)(data)
         mean, std_dev = jnp.array_split(hidden, 2, axis=1)
