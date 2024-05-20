@@ -62,14 +62,13 @@ class TransitionModel(nn.Module):
         """
         batch = actions.shape[0] + 1
         beliefs = [jnp.empty(0)] * batch
-        # TODO: incorrect dims
+        # TODO: incorrect dims for actions
         prior_states = [jnp.empty(0)] * batch
         prior_means = [jnp.empty(0)] * batch
         prior_std_devs = [jnp.empty(0)] * batch
 
         beliefs[0], prior_states[0] = prev_belief, prev_state
         # Loop over time sequence
-        print(beliefs[0].shape, actions[0].shape, prior_states[0].shape)
         for t in range(batch - 1):
             # Mask if previous transition was terminal
             state = prior_states[t]
