@@ -18,6 +18,7 @@ class ObservationModel(nn.Module):
         self.features = 256
         self.decoder = Decoder(self.features, (2, 2), 2, self.layers, True)
 
+    @nn.compact
     def __call__(self, belief, state):
         hidden = jnp.append(belief, state, axis=1)
         hidden = nn.Dense(features=self.embedding_size)(hidden)

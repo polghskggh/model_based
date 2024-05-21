@@ -14,6 +14,7 @@ class RewardModel(nn.Module):
         self.hidden_size = 256
         self.activation_fun = activation_function_dict[self.activation_function]
 
+    @nn.compact
     def __call__(self, belief, state):
         x = jnp.append(belief, state, axis=1)
 

@@ -6,11 +6,11 @@ import jax.numpy as jnp
 
 # encoder
 class Encoder(nn.Module):
-    features: int
-    kernel: tuple
-    strides: tuple
-    layers: int
-    deterministic: bool
+    features: int = 256
+    kernel: tuple = (4, 4)
+    strides: tuple = (2, 2)
+    layers: int = 6
+    deterministic: bool = True
     dropout: float = 0.15
 
     @nn.compact
