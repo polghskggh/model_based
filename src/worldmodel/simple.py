@@ -40,7 +40,7 @@ class SimpleWorldModel(WorldModelInterface):
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         truncated = self._time_step >= self._rollout_length
-        return self._frame_stack.frames, rewards.squeeze(), False, truncated, {}
+        return self._frame_stack.frames, rewards.squeeze(), jnp.zeros(truncated.shape), truncated, {}
 
     def reset(self):
         self._frame_stack.reset()
