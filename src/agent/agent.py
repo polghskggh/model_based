@@ -10,7 +10,7 @@ from src.singletons.hyperparameters import Args
 
 
 class Agent:
-    def __init__(self):
+    def __init__(self, strategy: str):
         super().__init__()
         self._old_state: jax.Array = None
         self._new_state: jax.Array = None
@@ -19,7 +19,7 @@ class Agent:
         self._reward: float = 0
         self._done = False
         self._store_trajectories: bool = True
-        self._strategy: StrategyInterface = agent_strategy_factory(Args().args.algorithm)
+        self._strategy: StrategyInterface = agent_strategy_factory(strategy)
 
     def update_policy(self):
         if self.store_trajectories:

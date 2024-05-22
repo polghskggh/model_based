@@ -12,7 +12,7 @@ from src.singletons.rng import Key
 
 class FrameStack:
     def __init__(self, data: TransitionStorage):
-        self._initial_states = FrameStack.sample_initial(data, Args().args.parallel_envs)
+        self._initial_states = FrameStack.sample_initial(data, Args().args.num_agents)
         self._frames = jnp.zeros(self._initial_states.shape, dtype=jnp.float32)
         self.reset()
 

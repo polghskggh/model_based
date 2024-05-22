@@ -41,7 +41,7 @@ def main():
     # envs = gym.vector.SyncVectorEnv(
     #     [make_env("ALE/Breakout-v5", i, False, "alt_impl") for i in range(Args().args.num_envs)]
     # )
-    agent = Agent()
+    agent = Agent(Args().args.algorithm)
     world_model = world_model_factory()
     run_experiment(agent, envs, world_model)
 
