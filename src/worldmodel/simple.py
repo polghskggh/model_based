@@ -65,3 +65,6 @@ class SimpleWorldModel(WorldModelInterface):
 
     def load(self):
         self._model.load("stochastic_autoencoder")
+
+    def wrap_env(self, env):
+        return env

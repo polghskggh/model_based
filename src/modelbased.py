@@ -12,7 +12,8 @@ from src.singletons.writer import Writer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
-def sample_env(storage, agent, envs):
+def sample_env(storage, agent, envs, world_model):
+    envs = world_model.wrap_env(envs)
     observation, _ = envs.reset()
     agent.receive_state(observation)
     writer = Writer().writer
@@ -43,7 +44,7 @@ def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: 
                                                                        Shape()[0][2] // Args().args.frame_stack)))
     agent.store_trajectories = False
 
-    sample_env(storage, agent, env)
+    sample_env(storage, agent, env, world_model)
     world_model.update(storage)
 
     agent.store_trajectories = True

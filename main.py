@@ -24,13 +24,13 @@ from src.worldmodel.simple import SimpleWorldModel
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
-def world_model_factory():
+def world_model_factory(envs):
     args = Args().args
     match args.algorithm:
         case "simple":
             return SimpleWorldModel(True)
         case "dreamer":
-            return Dreamer()
+            return Dreamer(envs)
         case _:
             return None
 
@@ -42,7 +42,7 @@ def main():
     #     [make_env("ALE/Breakout-v5", i, False, "alt_impl") for i in range(Args().args.num_envs)]
     # )
     agent = Agent(Args().args.algorithm)
-    world_model = world_model_factory()
+    world_model = world_model_factory(envs)
     run_experiment(agent, envs, world_model)
 
 

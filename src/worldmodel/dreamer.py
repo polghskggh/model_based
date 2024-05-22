@@ -1,4 +1,10 @@
+from typing import Tuple
+
+import gym
 import jax
+import jax.numpy as jnp
+
+from gym.core import ActType, ObsType
 
 from src.enviroment import Shape
 from src.models.dreamer.observation import ObservationModel
@@ -10,11 +16,35 @@ from src.pod.trajectorystorage import TrajectoryStorage
 from src.singletons.hyperparameters import Args
 from src.trainer.dreamertrainer import DreamerTrainer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
-import jax.numpy as jnp
+
+
+class DreamerWrapper(gym.Wrapper):
+    representation_model: ModelWrapper
+    prev_state: jax.Array
+    prev_belief: jax.Array
+
+    def __init__(self, env: gym.Env, reperesentation_model: ModelWrapper):
+        super.__init__(env)
+        self.representation_model = reperesentation_model
+
+    def reset(self, **kwargs) -> Tuple[ObsType, dict]:
+        observation, info = self.env.reset(**kwargs)
+        self.prev_state, self.prev_belief, _, _ = (
+            self.representation_model.forward(jnp.zeros(self.representation_model.model.state_size),
+                                              jnp.eye(1, 4, 0),
+                                              jnp.zeros(self.representation_model.model.belief_size),
+                                              observation))
+        return self.prev_state, info
+
+    def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
+        observation, reward, term, trunc, info = self.env.step(action)
+        self.prev_state, self.prev_belief, _, _ = self.representation_model.forward(self.prev_state, action,
+                                                                                    observation)
+        return self.prev_state, reward, term, trunc, info
 
 
 class Dreamer(WorldModelInterface):
-    def __init__(self):
+    def __init__(self, envs):
         self.batch_size = Args().args.batch_size
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
@@ -62,8 +92,8 @@ class Dreamer(WorldModelInterface):
         self.imagined_beliefs = []
 
     def save(self):
-        for key, model in self.models.items():
-            model.save(key)
+        for model in self.models.values():
+            model.save()
 
     def load(self):
         for key, model in self.models.items():
@@ -79,10 +109,6 @@ class Dreamer(WorldModelInterface):
             model.params = new_params[key]
 
     def infer_state(self, observation, action, belief=None, state=None):
-        """ Infer belief over current state q(s_t|o≤t,a<t) from the history,
-            return updated belief and posterior_state at time t
-            returned shape: belief/state [belief/state_dim] (remove the time_dim)
-        """
         # observation is obs.to(device), action.shape=[act_dim] (will add time dim inside this fn), belief.shape
         belief, _, _, _, posterior_state, _, _ = self.models["representation"].forward(state, action,
                                                                                        belief, observation)
@@ -92,4 +118,5 @@ class Dreamer(WorldModelInterface):
 
         return belief, posterior_state
 
-
+    def wrap_env(self, env):
+        return DreamerWrapper(env, self.models["representation"])

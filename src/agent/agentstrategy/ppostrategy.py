@@ -96,12 +96,12 @@ class PPOStrategy(StrategyInterface):
                 {"policy_loss": loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl,
                  "value_loss": value_loss})
 
-    def select_action(self, states: jnp.ndarray, store: bool) -> int:
+    def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
         logits, value_estimate = self._actor_critic.forward(states)
         value_estimate = value_estimate.squeeze()
         policy = distrax.Categorical(logits)
         action = policy.sample(seed=Key().key(1))
-        if store:
+        if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
                                              log_probs=policy.log_prob(action), values=value_estimate)
         return action
