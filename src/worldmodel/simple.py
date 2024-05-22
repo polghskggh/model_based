@@ -32,7 +32,7 @@ class SimpleWorldModel(WorldModelInterface):
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         next_frames, rewards = self._model.forward(self._frame_stack.frames, actions)
         next_frames = vmap(vmap(reverse_tile_image))(next_frames)
-        self._frame_stack.add_frames(next_frames)
+        self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         truncated = self._time_step >= self._rollout_length
         return self._frame_stack.frames, rewards, False, truncated, {}
