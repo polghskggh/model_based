@@ -12,44 +12,22 @@ from src.singletons.writer import Writer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
-def sample_env(storage, agent, envs, world_model):
-    envs = world_model.wrap_env(envs)
-    observation, _ = envs.reset()
-    agent.receive_state(observation)
-    writer = Writer().writer
-    args = Args().args
-
-    returns = jnp.zeros(args.num_envs)
-    for step in range(args.trajectory_length):
-        StepTracker().increment(args.num_envs)
-        reward, done, _ = interact(agent, envs)
-        returns += reward
-        observations, actions, rewards, next_observations, _ = agent.last_transition()
-        next_observations = lax.slice_in_dim(next_observations, (Args().args.frame_stack - 1) * 3, None, axis=-1)
-        storage = store(storage, slice(step * args.num_envs, (step + 1) * args.num_envs), observations=observations,
-                        actions=actions, rewards=rewards, next_observations=next_observations)
-
-    for ret in returns:
-        writer.add_scalar("charts/episodic_return", ret, int(StepTracker()))
-
-    return storage
+def sample_env(agent, envs):
+    model_free_train_loop(agent, envs)
+    return envs.storage
 
 
 def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: gym.Env):
-    data_size = Args().args.trajectory_length
-    storage: TransitionStorage = TransitionStorage(observations=jnp.zeros((data_size,) + Shape()[0]),
-                                                   actions=jnp.zeros((data_size)),
-                                                   rewards=jnp.zeros((data_size)),
-                                                   next_observations=jnp.zeros((data_size, Shape()[0][0], Shape()[0][1],
-                                                                       Shape()[0][2] // Args().args.frame_stack)))
     agent.store_trajectories = False
-
-    sample_env(storage, agent, env, world_model)
+    storage = sample_env(agent, world_model.wrap_env(env))
     world_model.update(storage)
-
     agent.store_trajectories = True
+
     temp = Args().args.trajectory_length
     Args().args.trajectory_length = Args().args.sim_trajectory_length
-    model_free_train_loop(agent, world_model)
+
+    for update in range(Args().args.model_updates):
+        model_free_train_loop(agent, world_model)
+
     Args().args.trajectory_length = temp
 

@@ -16,7 +16,7 @@ class ObservationModel(nn.Module):
         self.activation_fun = activation_function_dict[self.activation_function]
         self.layers = 4
         self.features = 256
-        self.decoder = Decoder(self.features, (2, 2), 2, self.layers, True)
+        self.decoder = Decoder()
 
     @nn.compact
     def __call__(self, belief, state):

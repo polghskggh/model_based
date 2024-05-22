@@ -135,6 +135,8 @@ class Args:
         parser.add_argument('--grayscale', type=bool, default=False, help='whether to use grayscale')
         parser.add_argument('--num_epochs', type=int, default=4,
                             help='number of epochs to train during each update')
+        parser.add_argument('--model_updates', type=int, default=4,
+                            help='number of updates of agent on the model in model-based RL')
 
         parse_dqn(parser)
         parse_ppo(parser)

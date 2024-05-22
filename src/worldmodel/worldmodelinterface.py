@@ -2,7 +2,6 @@ from abc import abstractmethod
 
 import jax
 
-from src.pod.trajectorystorage import TrajectoryStorage
 
 
 class WorldModelInterface:
@@ -15,7 +14,7 @@ class WorldModelInterface:
         pass
 
     @abstractmethod
-    def update(self, data: TrajectoryStorage):
+    def update(self, data):
         pass
 
     @abstractmethod
@@ -26,5 +25,7 @@ class WorldModelInterface:
     def load(self):
         pass
 
+    def wrap_env(self, env):
+        return env
 
 

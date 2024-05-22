@@ -1,9 +1,6 @@
-from collections import deque
-
 import jax.numpy as jnp
 
 from src.pod.storage import TransitionStorage
-from src.pod.trajectorystorage import TrajectoryStorage
 from src.singletons.hyperparameters import Args
 import jax.random as jr
 

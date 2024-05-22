@@ -12,7 +12,8 @@ from src.models.dreamer.representation import RepresentationModel
 from src.models.dreamer.reward import RewardModel
 from src.models.dreamer.transition import TransitionModel
 from src.models.modelwrapper import ModelWrapper
-from src.pod.trajectorystorage import TrajectoryStorage
+
+from src.pod.storage import store, TrajectoryStorage
 from src.singletons.hyperparameters import Args
 from src.trainer.dreamertrainer import DreamerTrainer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
@@ -24,8 +25,14 @@ class DreamerWrapper(gym.Wrapper):
     prev_belief: jax.Array
 
     def __init__(self, env: gym.Env, reperesentation_model: ModelWrapper):
-        super.__init__(env)
+        super().__init__(env)
         self.representation_model = reperesentation_model
+        batch_shape = (Args().args.trajectory_length,
+                       Args().args.num_agents)
+        self.timestep = 0
+        self.storage = TrajectoryStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
+                                         actions=jnp.zeros(batch_shape),
+                                         rewards=jnp.zeros(batch_shape))
 
     def reset(self, **kwargs) -> Tuple[ObsType, dict]:
         observation, info = self.env.reset(**kwargs)
@@ -34,12 +41,15 @@ class DreamerWrapper(gym.Wrapper):
                                               jnp.eye(1, 4, 0),
                                               jnp.zeros(self.representation_model.model.belief_size),
                                               observation))
+        self.timestep = 0
         return self.prev_state, info
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
         observation, reward, term, trunc, info = self.env.step(action)
         self.prev_state, self.prev_belief, _, _ = self.representation_model.forward(self.prev_state, action,
                                                                                     observation)
+        self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward)
+        self.timestep += 1
         return self.prev_state, reward, term, trunc, info
 
 
