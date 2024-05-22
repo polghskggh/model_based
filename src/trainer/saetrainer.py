@@ -32,8 +32,7 @@ class SAETrainer(Trainer):
         self._sae_trainer = ParamCopyingTrainer(self._stochastic_ae, "autoencoder", "autoencoder")
         self._bit_predictor_trainer = ParamCopyingTrainer(self._bit_predictor, "bit_predictor")
 
-    def train_step(self, params: dict, stack: jax.Array, actions: jax.Array, rewards: jax.Array, next_frame: jax.Array,
-                   update_fn):
+    def train_step(self, params: dict, stack: jax.Array, actions: jax.Array, rewards: jax.Array, next_frame: jax.Array):
         reconstructed = tile_image(next_frame)
         params = self._train_autoencoder(params, stack, actions, reconstructed)
         params = self._train_inference_autoencoder(params, stack, actions, next_frame, reconstructed)

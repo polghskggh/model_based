@@ -35,7 +35,7 @@ class SimpleWorldModel(WorldModelInterface):
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         truncated = self._time_step >= self._rollout_length
-        return self._frame_stack.frames, rewards, False, truncated, {}
+        return self._frame_stack.frames, rewards.squeeze(), False, truncated, {}
 
     def reset(self):
         self._frame_stack.reset()
@@ -47,7 +47,8 @@ class SimpleWorldModel(WorldModelInterface):
         batch_size = Args().args.batch_size
         for start_idx in range(0, stack.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
-            grads = self._model.train_step((next_frame[batch_slice], rewards[batch_slice]), stack[batch_slice], actions[batch_slice])
+            grads = self._model.train_step((next_frame[batch_slice], rewards[batch_slice]),
+                                           stack[batch_slice], actions[batch_slice])
             self._model.apply_grads(grads)
 
     def _stochastic_update(self, stack, actions, rewards, next_frame):
