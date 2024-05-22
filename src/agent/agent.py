@@ -27,7 +27,7 @@ class Agent:
                                              self._done)
 
     def select_action(self) -> jax.Array:
-        self._selected_action = self._strategy.select_action(self._new_state, store=self.store_trajectories)
+        self._selected_action = self._strategy.select_action(self._new_state, self.store_trajectories)
         return self._selected_action
 
     def receive_reward(self, reward: float):
