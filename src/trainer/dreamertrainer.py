@@ -18,11 +18,11 @@ class DreamerTrainer(Trainer):
                        "observation": observation_model,
                        "reward": reward_model}
 
-    def train_step(self, observations, actions, rewards, nonterminals, params: dict):
+    def train_step(self, observations, actions, rewards, params: dict):
         init_belief = jnp.zeros(self.batch_size, self.belief_size)
         init_state = jnp.zeros(self.batch_size, self.state_size)
 
-        data = (observations, actions, rewards, nonterminals, init_state, init_belief)
+        data = (observations, actions, rewards,init_state, init_belief)
 
         loss, grads = value_and_grad(self.loss_fun, 1)(self.models, params, data)
         for key in self.models.keys():

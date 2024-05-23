@@ -29,6 +29,8 @@ class DreamerWrapper(gym.Wrapper):
         self.representation_model = reperesentation_model
         batch_shape = (Args().args.trajectory_length,
                        Args().args.num_agents)
+        self.prev_belief = jnp.zeros((Args().args.num_agents, Args().args.belief_size))
+        self.prev_state = jnp.zeros((Args().args.num_agents, Args().args.state_size))
         self.timestep = 0
         self.storage = TrajectoryStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
                                          actions=jnp.zeros(batch_shape),
@@ -64,8 +66,8 @@ class Dreamer(WorldModelInterface):
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]
 
-        self.imagined_beliefs = []
-        self.imagined_states = []
+        self.prev_belief = jnp.zeros(self.batch_size, self.belief_size)
+        self.prev_state = jnp.zeros(self.batch_size, self.state_size)
 
         transition_model = ModelWrapper(TransitionModel(self.belief_size, self.state_size, self.action_size,
                                                         self.hidden_size), "transition")
@@ -89,18 +91,19 @@ class Dreamer(WorldModelInterface):
                                       reward_model.model)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
-        imagined_belief, imagined_state, _, _ = self.models["transition"].forward(self.imagined_beliefs[-1],
-                                                                                  self.imagined_states[-1], action)
-        self.imagined_beliefs.append(imagined_belief.squeeze(dim=0))
-        self.imagined_states.append(imagined_state.squeeze(dim=0))
+        self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_beliefs,
+                                                                                    action, self.prev_state)
 
-        imagined_reward = self.models["reward"].forward(imagined_belief, imagined_state)
+        imagined_reward = self.models["reward"].forward(self.prev_belief, self.prev_state)
 
-        return (imagined_belief, imagined_state), imagined_reward, 0, False, {}
+        return self.prev_state, imagined_reward, 0, False, {}
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
-        self.imagined_states = []
-        self.imagined_beliefs = []
+        self.prev_belief = jnp.zeros(self.batch_size, self.belief_size)
+        self.prev_state = self.models["transition"].forward(self.prev_belief,
+                                                            jnp.zeros(self.batch_size, self.state_size),
+                                                            jnp.zeros(self.batch_size, self.state_size))
+        return self.prev_state, {}
 
     def save(self):
         for model in self.models.values():
@@ -110,11 +113,11 @@ class Dreamer(WorldModelInterface):
         for key, model in self.models.items():
             model.load(key)
 
-    def update(self, data: TrajectoryStorage):
-        observations, actions, rewards, nonterminals = data
+    def update(self, data):
+        observations, actions, rewards = data.observations, data.actions, data.rewards
 
         params = {key: model.params for key, model in self.models.items()}
-        new_params = self.trainer.train_step(observations, actions, rewards, nonterminals, params)
+        new_params = self.trainer.train_step(observations, actions, rewards, params)
 
         for key, model in self.models.items():
             model.params = new_params[key]
