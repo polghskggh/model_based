@@ -38,9 +38,9 @@ class DreamerWrapper(gym.Wrapper):
         observation, info = self.env.reset(**kwargs)
         batch = Args().args.num_agents
         self.prev_state, self.prev_belief, _, _ = (
-            self.representation_model.forward(jnp.zeros((batch, ) + self.representation_model.model.state_size),
-                                              jnp.eye(batch, 4),
-                                              jnp.zeros((batch, ) + self.representation_model.model.belief_size),
+            self.representation_model.forward(jnp.zeros((batch, self.representation_model.model.state_size)),
+                                              jnp.zeros(batch),
+                                              jnp.zeros((batch, self.representation_model.model.belief_size)),
                                               observation))
         self.timestep = 0
         return self.prev_state, info
@@ -48,7 +48,7 @@ class DreamerWrapper(gym.Wrapper):
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
         observation, reward, term, trunc, info = self.env.step(action)
         self.prev_state, self.prev_belief, _, _ = self.representation_model.forward(self.prev_state, action,
-                                                                                    observation)
+                                                                                    self.prev_belief, observation)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward)
         self.timestep += 1
         return self.prev_state, reward, term, trunc, info

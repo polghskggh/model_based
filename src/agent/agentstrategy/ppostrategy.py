@@ -18,7 +18,7 @@ from src.singletons.writer import log
 class PPOStrategy(StrategyInterface):
     def __init__(self):
         if Args().args.algorithm == "dreamer":
-            state_shape = (Args().args.belief_size + Args().args.state_size, )
+            state_shape = (Args().args.state_size, )
             model = ActorCriticDreamer(state_shape, (Shape()[1], 1))
         else:
             state_shape = Shape()[0]
@@ -104,7 +104,7 @@ class PPOStrategy(StrategyInterface):
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
                                              log_probs=policy.log_prob(action), values=value_estimate)
-        return action
+        return action.squeeze()
 
     @staticmethod
     @jit

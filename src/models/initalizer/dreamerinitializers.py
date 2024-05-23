@@ -9,10 +9,10 @@ class TransitionInitializer(ModelStrategy):
         super().__init__()
 
     def init_params(self, model: nn.Module) -> tuple:
-        return jnp.ones((model.state_size,)), jnp.ones((model.action_size, )), jnp.ones((model.belief_size, ))
+        return jnp.ones((model.state_size,)), jnp.ones(1), jnp.ones((model.belief_size, ))
 
     def batch_dims(self) -> tuple:
-        return (2, 2, 2), None
+        return (2, 1, 2), None
 
 
 class RepresentationInitializer(ModelStrategy):
@@ -20,11 +20,11 @@ class RepresentationInitializer(ModelStrategy):
         super().__init__()
 
     def init_params(self, model: nn.Module) -> tuple:
-        return (jnp.ones((model.state_size, )), jnp.ones((model.belief_size, )), jnp.ones((model.action_size, )),
+        return (jnp.ones((model.state_size, )), jnp.ones(1), jnp.ones((model.belief_size, )),
                 jnp.ones(model.observation_shape))
 
     def batch_dims(self) -> tuple:
-        return (2, 2, 2, 4), None
+        return (2, 1, 2, 4), None
 
 
 class ObservationInitializer(ModelStrategy):

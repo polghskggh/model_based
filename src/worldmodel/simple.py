@@ -40,7 +40,7 @@ class SimpleWorldModel(WorldModelInterface):
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         truncated = self._time_step >= self._rollout_length
-        return self._frame_stack.frames, rewards.squeeze(), jnp.zeros(truncated.shape), truncated, {}
+        return self._frame_stack.frames, rewards.squeeze(), jnp.zeros(rewards.shape), jnp.zeros(rewards.shape), {}
 
     def reset(self):
         self._frame_stack.reset()
@@ -74,6 +74,7 @@ class SimpleWorldModel(WorldModelInterface):
 
     def wrap_env(self, env):
         return env
+
 
 class SimpleWrapper(gym.Wrapper):
     def __init__(self, env):

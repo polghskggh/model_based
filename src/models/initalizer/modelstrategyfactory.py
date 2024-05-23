@@ -7,7 +7,6 @@ from src.models.initalizer.trainerstrategy import InferenceInitializer, BitPredi
     StochasticAETrainerInitializer, LatentAEInitializer
 
 
-
 def model_initializer_factory(strategy_type: str) -> ModelStrategy:
     match strategy_type:
         case "actor_critic":

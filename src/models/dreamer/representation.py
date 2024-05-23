@@ -3,7 +3,9 @@ from typing import List, Optional
 import flax.linen as nn
 import jax
 import jax.numpy as jnp
+from flax.training.common_utils import onehot
 
+from src.enviroment import Shape
 from src.models.autoencoder.encoder import Encoder
 from src.models.dreamer.transition import TransitionModel
 from src.models.dreamer.variationalencoder import VariationalEncoder
@@ -50,6 +52,8 @@ class RepresentationModel(nn.Module):
         Output: beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs
                 torch.Size([49, 50, 200]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30])
         """
+
+        actions = onehot(actions, Shape()[1])
         beliefs = self.transition_model.update_belief(prev_belief, prev_state, actions)
         posterior_states, posterior_means, posterior_std_devs = self.posterior_update(beliefs, observations)
         return beliefs, posterior_states, posterior_means, posterior_std_devs
