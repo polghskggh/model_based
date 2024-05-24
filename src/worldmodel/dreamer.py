@@ -66,8 +66,8 @@ class Dreamer(WorldModelInterface):
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]
 
-        self.prev_belief = jnp.zeros(self.batch_size, self.belief_size)
-        self.prev_state = jnp.zeros(self.batch_size, self.state_size)
+        self.prev_belief = jnp.zeros((self.batch_size, self.belief_size))
+        self.prev_state = jnp.zeros((self.batch_size, self.state_size))
 
         transition_model = ModelWrapper(TransitionModel(self.belief_size, self.state_size, self.action_size,
                                                         self.hidden_size), "transition")
