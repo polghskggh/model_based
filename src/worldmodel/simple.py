@@ -73,29 +73,32 @@ class SimpleWorldModel(WorldModelInterface):
         self._model.load("stochastic_autoencoder")
 
     def wrap_env(self, env):
-        return env
+        return SimpleWrapper(env)
 
 
 class SimpleWrapper(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
-        data_size = Args().args.trajectory_length
+        batch_shape = (Args().args.trajectory_length, Args().args.num_envs)
         self.last_observation = None
-        self._storage = TransitionStorage(observations=jnp.zeros((data_size,) + Shape()[0]),
-                                          actions=jnp.zeros((data_size)),
-                                          rewards=jnp.zeros((data_size)),
-                                          next_observations=jnp.zeros((data_size, Shape()[0][0], Shape()[0][1],
+        self._timestep = 0
+        self._storage = TransitionStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
+                                          actions=jnp.zeros(batch_shape),
+                                          rewards=jnp.zeros(batch_shape),
+                                          next_observations=jnp.zeros(batch_shape + (Shape()[0][0], Shape()[0][1],
                                                                        Shape()[0][2] // Args().args.frame_stack)))
 
     def reset(self, **kwargs) -> Tuple[ObsType, dict]:
         observation, info = self.env.reset(**kwargs)
         self.last_observation = observation
+        self._timestep = 0
         return observation, info
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
         next_observations = lax.slice_in_dim(observation, (Args().args.frame_stack - 1) * 3, None, axis=-1)
-        self._storage = store(self._storage, slice(0, 1), observations=self.last_observation, actions=action,
+        print(self.last_observation.shape, observation.shape, next_observations.shape, action.shape, reward.shape)
+        self._storage = store(self._storage, self._timestep, observations=self.last_observation, actions=action,
                               rewards=reward, next_observations=next_observations)
         self.last_observation = observation
         return observation, reward, term, trunc, info

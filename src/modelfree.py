@@ -14,7 +14,7 @@ def model_free_train_loop(agent: Agent, envs: gym.Env):
     writer = Writer().writer
     args = Args().args
 
-    returns = jnp.zeros(args.num_agents)
+    returns = jnp.zeros(observation.shape[0])
     for step in range(args.trajectory_length):
         StepTracker().increment(args.num_agents)
         reward, done, infos = interact(agent, envs)

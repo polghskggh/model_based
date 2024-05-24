@@ -22,7 +22,7 @@ class DreamerTrainer(Trainer):
         init_belief = jnp.zeros(self.batch_size, self.belief_size)
         init_state = jnp.zeros(self.batch_size, self.state_size)
 
-        data = (observations, actions, rewards,init_state, init_belief)
+        data = (observations, actions, rewards, init_state, init_belief)
 
         loss, grads = value_and_grad(self.loss_fun, 1)(self.models, params, data)
         for key in self.models.keys():

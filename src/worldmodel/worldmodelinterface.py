@@ -3,7 +3,6 @@ from abc import abstractmethod
 import jax
 
 
-
 class WorldModelInterface:
     @abstractmethod
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
@@ -25,7 +24,8 @@ class WorldModelInterface:
     def load(self):
         pass
 
+    @abstractmethod
     def wrap_env(self, env):
-        return env
+        pass
 
 
