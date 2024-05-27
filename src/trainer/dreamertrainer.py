@@ -32,7 +32,7 @@ class DreamerTrainer(Trainer):
         return params
 
     @staticmethod
-    def loss_fun(data: tuple, models: dict, params: dict):
+    def loss_fun(models: dict, params: dict, data: tuple):
         observations, actions, rewards, init_state, init_belief = data
 
         key = "representation"
