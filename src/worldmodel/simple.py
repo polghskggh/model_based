@@ -39,7 +39,6 @@ class SimpleWorldModel(WorldModelInterface):
         next_frames = vmap(vmap(reverse_tile_image))(next_frames)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
-        truncated = self._time_step >= self._rollout_length
         return self._frame_stack.frames, rewards.squeeze(), jnp.zeros(rewards.shape), jnp.zeros(rewards.shape), {}
 
     def reset(self):
@@ -79,7 +78,7 @@ class SimpleWorldModel(WorldModelInterface):
 class SimpleWrapper(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
-        batch_shape = (Args().args.trajectory_length, Args().args.num_envs)
+        batch_shape = (Args().args.trajectory_length * Args().args.num_envs, )
         self.last_observation = None
         self._timestep = 0
         self._storage = TransitionStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
@@ -97,7 +96,9 @@ class SimpleWrapper(gym.Wrapper):
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
         next_observations = lax.slice_in_dim(observation, (Args().args.frame_stack - 1) * 3, None, axis=-1)
-        self._storage = store(self._storage, self._timestep, observations=self.last_observation, actions=action,
+
+        store_slice = slice(self._timestep * Args().args.num_envs, (self._timestep + 1) * Args().args.num_envs)
+        self._storage = store(self._storage, store_slice, observations=self.last_observation, actions=action,
                               rewards=reward, next_observations=next_observations)
         self.last_observation = observation
         return observation, reward, term, trunc, info
