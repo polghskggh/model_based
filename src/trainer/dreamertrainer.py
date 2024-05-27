@@ -33,11 +33,12 @@ class DreamerTrainer(Trainer):
 
     @staticmethod
     def loss_fun(data: tuple, models: dict, params: dict):
-        observations, actions, rewards, nonterminals, init_state, init_belief = data
+        observations, actions, rewards, init_state, init_belief = data
 
         key = "representation"
-        state = models[key].apply(params[key], init_state, actions, init_belief, observations, nonterminals)
-        beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs = state
+        state = models[key].apply(params[key], init_state, actions, init_belief, observations)
+        beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs =\
+            state
 
         key = "observation"
         observation_loss = mean_squared_error(models[key], params[key], observations, beliefs, posterior_states)
