@@ -35,7 +35,7 @@ class DreamerTrainer(Trainer):
     def loss_fun(models: dict, params: dict, data: tuple):
         observations, actions, rewards, state, belief = data
 
-        states = [] * observations.shape[0]
+        states = [0] * observations.shape[0]
 
         key = "representation"
         for idx in range(len(states)):
