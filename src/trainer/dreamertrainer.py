@@ -19,8 +19,8 @@ class DreamerTrainer(Trainer):
                        "reward": reward_model}
 
     def train_step(self, observations, actions, rewards, params: dict):
-        init_belief = jnp.zeros((self.batch_size, self.belief_size))
-        init_state = jnp.zeros((self.batch_size, self.state_size))
+        init_belief = jnp.zeros((observations.shape[1], self.belief_size))
+        init_state = jnp.zeros((observations.shape[1], self.state_size))
 
         data = (observations, actions, rewards, init_state, init_belief)
 
@@ -33,12 +33,22 @@ class DreamerTrainer(Trainer):
 
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple):
-        observations, actions, rewards, init_state, init_belief = data
+        observations, actions, rewards, state, belief = data
+
+        states = [] * observations.shape[0]
 
         key = "representation"
-        state = models[key].apply(params[key], init_state, actions, init_belief, observations)
-        beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs =\
-            state
+        for idx in range(len(states)):
+            states[idx] = models[key].apply(params[key], state, actions, belief, observations)
+            next_belief, _, _, _, posterior_states, _, _ = states[idx]
+
+        beliefs, _, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs = states
+        beliefs = beliefs.reshape(-1)
+        prior_means = prior_means.reshape(-1)
+        prior_std_devs = prior_std_devs.reshape(-1)
+        posterior_states = posterior_states.reshape(-1)
+        posterior_means = posterior_means.reshape(-1)
+        posterior_std_devs = posterior_std_devs.reshape(-1)
 
         key = "observation"
         observation_loss = mean_squared_error(models[key], params[key], observations, beliefs, posterior_states)
@@ -51,3 +61,4 @@ class DreamerTrainer(Trainer):
 
         alpha, beta, gamma = Args().args.loss_weights
         return alpha * observation_loss, beta * reward_loss, gamma * kl_loss
+
