@@ -64,7 +64,7 @@ class PPOStrategy(StrategyInterface):
 
         grad_fn = jit(value_and_grad(PPOStrategy.ppo_loss, 1, has_aux=True))
         for _ in range(Args().args.num_epochs):
-            for start_idx in range(0, self.batch_shape[0], batch_size):
+            for start_idx in range(0, self._batch_shape[0], batch_size):
                 batch_slice = slice(start_idx, start_idx + batch_size)
                 (loss, aux), grads = grad_fn(self._actor_critic.state,
                                              self._actor_critic.params,
