@@ -4,6 +4,7 @@ from jax import value_and_grad
 
 from src.models.lossfuns import mean_squared_error
 from src.singletons.hyperparameters import Args
+from src.singletons.rng import Key
 from src.trainer.trainer import Trainer
 import jax.numpy as jnp
 
@@ -23,8 +24,8 @@ class DreamerTrainer(Trainer):
         init_state = jnp.zeros((observations.shape[1], self.state_size))
 
         data = (observations, actions, rewards, init_state, init_belief)
-
-        loss, grads = value_and_grad(self.loss_fun, 1)(self.models, params, data)
+        rng = {"normal": Key().key()}
+        loss, grads = value_and_grad(self.loss_fun, 1)(self.models, params, data, rng)
         for key in self.models.keys():
             params[key] = optax.apply_updates(params[key], grads[key])
 
@@ -32,14 +33,14 @@ class DreamerTrainer(Trainer):
         return params
 
     @staticmethod
-    def loss_fun(models: dict, params: dict, data: tuple):
+    def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, state, belief = data
 
         states = [0] * observations.shape[0]
 
         key = "representation"
         for idx in range(len(states)):
-            states[idx] = models[key].apply(params[key], state, actions[idx], belief, observations[idx])
+            states[idx] = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rng)
             next_belief, _, _, _, posterior_states, _, _ = states[idx]
 
         beliefs, _, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs = zip(*states)
