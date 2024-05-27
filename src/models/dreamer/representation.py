@@ -50,6 +50,6 @@ class RepresentationModel(nn.Module):
         actions = onehot(actions, Shape()[1])
         print("actions shape: ", actions.shape, "prev_state shape: ", prev_state.shape,
               "prev_belief shape: ", prev_belief.shape)
-        beliefs = self.transition_model.update_belief(prev_belief, prev_state, actions)
+        beliefs, prior_states, prior_means, prior_std_devs = self.transition_model(prev_belief, prev_state, actions)
         posterior_states, posterior_means, posterior_std_devs = self.posterior_update(beliefs, observations)
-        return beliefs, posterior_states, posterior_means, posterior_std_devs
+        return beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs

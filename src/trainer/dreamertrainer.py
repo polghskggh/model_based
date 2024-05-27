@@ -29,6 +29,7 @@ class DreamerTrainer(Trainer):
         for key in self.models.keys():
             params[key] = optax.apply_updates(params[key], grads[key])
 
+        params["transition"]["params"] = params["representation"]["params"]["transition"]
         print("Dreamer world loss: ", loss)
         return params
 
