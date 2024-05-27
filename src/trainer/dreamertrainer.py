@@ -40,7 +40,7 @@ class DreamerTrainer(Trainer):
 
         key = "representation"
         for idx in range(len(states)):
-            states[idx] = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rng)
+            states[idx] = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
             next_belief, _, _, _, posterior_states, _, _ = states[idx]
 
         beliefs, _, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs = zip(*states)
