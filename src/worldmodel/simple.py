@@ -97,7 +97,6 @@ class SimpleWrapper(gym.Wrapper):
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
         next_observations = lax.slice_in_dim(observation, (Args().args.frame_stack - 1) * 3, None, axis=-1)
-        print(self.last_observation.shape, observation.shape, next_observations.shape, action.shape, reward.shape)
         self._storage = store(self._storage, self._timestep, observations=self.last_observation, actions=action,
                               rewards=reward, next_observations=next_observations)
         self.last_observation = observation
