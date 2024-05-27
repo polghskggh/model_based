@@ -51,14 +51,7 @@ class TransitionModel(nn.Module):
         return self.variational_encoder(hidden)
 
     @nn.compact
-    def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array,
-                 nonterminals: Optional[jax.Array] = None) \
-            -> List[jax.Array]:
-        """
-        Input: init_belief, init_state:  torch.Size([50, 200]) torch.Size([50, 30])
-        Output: beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs
-                torch.Size([49, 50, 200]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30])
-        """
+    def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array) -> List[jax.Array]:
         actions = onehot(actions, Shape()[1])
         beliefs = self.update_belief(prev_belief, prev_state, actions)
         state, std_dev, mean = self.prior_update(beliefs)

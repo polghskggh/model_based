@@ -49,6 +49,6 @@ class RepresentationModel(nn.Module):
             -> List[jax.Array]:
         print("actions shape: ", actions.shape, "prev_state shape: ", prev_state.shape,
               "prev_belief shape: ", prev_belief.shape)
-        beliefs, prior_states, prior_means, prior_std_devs = self.transition_model(prev_belief, prev_state, actions)
+        beliefs, prior_states, prior_means, prior_std_devs = self.transition_model(prev_state, actions, prev_belief)
         posterior_states, posterior_means, posterior_std_devs = self.posterior_update(beliefs, observations)
         return beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs

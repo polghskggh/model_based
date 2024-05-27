@@ -39,7 +39,7 @@ class DreamerWrapper(gym.Wrapper):
     def reset(self, **kwargs) -> Tuple[ObsType, dict]:
         observation, info = self.env.reset(**kwargs)
         batch = Args().args.num_agents
-        self.prev_state, self.prev_belief, _, _ = (
+        self.prev_belief, _, _, _, self.prev_state, _, _ = (
             self.representation_model.forward(jnp.zeros((batch, self.representation_model.model.state_size)),
                                               jnp.zeros(batch),
                                               jnp.zeros((batch, self.representation_model.model.belief_size)),
@@ -49,7 +49,7 @@ class DreamerWrapper(gym.Wrapper):
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
         observation, reward, term, trunc, info = self.env.step(action)
-        self.prev_state, self.prev_belief, _, _ = self.representation_model.forward(self.prev_state, action,
+        self.prev_belief, _, _, _, self.prev_state, _, _ = self.representation_model.forward(self.prev_state, action,
                                                                                     self.prev_belief, observation)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward)
         self.timestep += 1
@@ -91,7 +91,7 @@ class Dreamer(WorldModelInterface):
                                       reward_model.model)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
-        self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_beliefs,
+        self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_belief,
                                                                                     action, self.prev_state)
 
         imagined_reward = self.models["reward"].forward(self.prev_belief, self.prev_state)
@@ -100,9 +100,10 @@ class Dreamer(WorldModelInterface):
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
         self.prev_belief = jnp.zeros(self.batch_size, self.belief_size)
-        self.prev_state = self.models["transition"].forward(self.prev_belief,
+        self.prev_belief, self.prev_state, _, _ = (self.models["transition"]
+                                                   .forward(self.prev_belief,
                                                             jnp.zeros(self.batch_size, self.state_size),
-                                                            jnp.zeros(self.batch_size, self.state_size))
+                                                            jnp.zeros(self.batch_size, self.state_size)))
         return self.prev_state, {}
 
     def save(self):
