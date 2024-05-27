@@ -47,13 +47,9 @@ class RepresentationModel(nn.Module):
 
     def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array, observations: jax.Array) \
             -> List[jax.Array]:
-        """
-        Input: init_belief, init_state:  torch.Size([50, 200]) torch.Size([50, 30])
-        Output: beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs
-                torch.Size([49, 50, 200]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30]) torch.Size([49, 50, 30])
-        """
-
         actions = onehot(actions, Shape()[1])
+        print("actions shape: ", actions.shape, "prev_state shape: ", prev_state.shape,
+              "prev_belief shape: ", prev_belief.shape)
         beliefs = self.transition_model.update_belief(prev_belief, prev_state, actions)
         posterior_states, posterior_means, posterior_std_devs = self.posterior_update(beliefs, observations)
         return beliefs, posterior_states, posterior_means, posterior_std_devs
