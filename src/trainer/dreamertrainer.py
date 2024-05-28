@@ -42,12 +42,21 @@ class DreamerTrainer(Trainer):
         observations, actions, rewards, state, belief = data
 
         states = [0] * observations.shape[0]
+        beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
+        prior_means = jnp.zeros((observations.shape[0], Args().args.belief_size))
+        prior_std_devs = jnp.zeros((observations.shape[0], Args().args.belief_size))
+        posterior_states = jnp.zeros((observations.shape[0], Args().args.state_size))
+        posterior_means = jnp.zeros((observations.shape[0], Args().args.belief_size))
+        posterior_std_devs = jnp.zeros((observations.shape[0], Args().args.belief_size))
 
         key = "representation"
         for idx in range(len(states)):
-            states[idx] = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
-            belief, _, _, _, state, _, _ = states[idx]
-        beliefs, _, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs = zip(*states)
+            data = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
+            (beliefs[idx], prior_means[idx], prior_std_devs[idx], posterior_states[idx], posterior_means[idx],
+             posterior_std_devs[idx]) = data
+            belief = beliefs[idx]
+            state = posterior_states[idx]
+
         beliefs = beliefs.reshape(-1)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
