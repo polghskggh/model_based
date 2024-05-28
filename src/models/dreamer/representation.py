@@ -45,8 +45,7 @@ class RepresentationModel(nn.Module):
 
         return self.variational_encoder(hidden)
 
-    def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array, observations: jax.Array) \
-            -> List[jax.Array]:
-        beliefs, prior_states, prior_means, prior_std_devs = self.transition_model(prev_state, actions, prev_belief)
+    def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array, observations: jax.Array):
+        beliefs, _, prior_means, prior_std_devs = self.transition_model(prev_state, actions, prev_belief)
         posterior_states, posterior_means, posterior_std_devs = self.posterior_update(beliefs, observations)
-        return beliefs, prior_states, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs
+        return beliefs, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs
