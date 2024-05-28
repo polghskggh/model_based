@@ -36,7 +36,7 @@ def make_env(env_name: str = "breakout") -> gym.Env:
 def apply_common_wrappers(env: gym.Env):
     env = ResizeObservation(env, shape=(105, 80))
     env = optional_grayscale(env)
-    env = FrameStack(env, num_stack=4)
+    env = FrameStack(env, num_stack=Args().args.frame_stack)
     env = TimeLimit(env, max_episode_steps=Args().args.trajectory_length)
     env = ReshapeObservation(env)
     return env
@@ -58,7 +58,7 @@ def make_mario() -> gym.Env:
     env = FrameSkip(env, skip=4)
     env = optional_grayscale(env)
     env = ResizeObservation(env, shape=(84, 84))
-    env = FrameStack(env, num_stack=4)
+    env = FrameStack(env, num_stack=Args().args.frame_stack)
 
     env = JoypadSpace(env, RIGHT_ONLY)
     return env

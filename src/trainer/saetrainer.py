@@ -60,6 +60,7 @@ class SAETrainer(Trainer):
         bits_inferred = self._inference.forward(stack, actions, next_frame)
         return self._bit_predictor_trainer.train_step(params, bits_inferred)
 
+
 class ParamCopyingTrainer(Trainer):
     def __init__(self, model, param_name, model_param_name=None):
         super().__init__()

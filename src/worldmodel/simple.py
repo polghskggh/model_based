@@ -39,7 +39,8 @@ class SimpleWorldModel(WorldModelInterface):
         next_frames = vmap(vmap(reverse_tile_image))(next_frames)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
-        return self._frame_stack.frames, rewards.squeeze(), jnp.zeros(rewards.shape), jnp.zeros(rewards.shape), {}
+        return (self._frame_stack.frames, rewards.squeeze(), jnp.zeros(rewards.shape, dtype=bool),
+                jnp.zeros(rewards.shape, dtype=bool), {})
 
     def reset(self):
         self._frame_stack.reset()
