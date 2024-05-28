@@ -1,3 +1,4 @@
+import optax
 from flax import linen as nn
 from jax import numpy as jnp
 
@@ -19,3 +20,5 @@ class AutoEncoderInitializer(ModelStrategy):
     def loss_fun(self):
         return cross_entropy_loss
 
+    def init_optim(self):
+        return optax.adafactor(learning_rate=1e-3)
