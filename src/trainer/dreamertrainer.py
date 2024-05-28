@@ -69,10 +69,10 @@ class DreamerTrainer(Trainer):
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
         key = "observation"
-        observation_loss = mean_squared_error(models[key], params[key], observations, beliefs, states)
+        observation_loss = jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs, states), observations))
 
         key = "reward"
-        reward_loss = mean_squared_error(models[key], params[key], rewards, beliefs, states)
+        reward_loss = jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs, states), rewards))
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
