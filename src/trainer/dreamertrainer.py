@@ -41,34 +41,34 @@ class DreamerTrainer(Trainer):
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, state, belief = data
 
-        states = [0] * observations.shape[0]
         beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
-        prior_means = jnp.zeros((observations.shape[0], Args().args.belief_size))
-        prior_std_devs = jnp.zeros((observations.shape[0], Args().args.belief_size))
-        posterior_states = jnp.zeros((observations.shape[0], Args().args.state_size))
-        posterior_means = jnp.zeros((observations.shape[0], Args().args.belief_size))
-        posterior_std_devs = jnp.zeros((observations.shape[0], Args().args.belief_size))
+        state_shape = (observations.shape[0], Args().args.state_size)
+        prior_means = jnp.zeros(state_shape)
+        prior_std_devs = jnp.zeros(state_shape)
+        states = jnp.zeros(state_shape)
+        posterior_means = jnp.zeros(state_shape)
+        posterior_std_devs = jnp.zeros(state_shape)
 
         key = "representation"
         for idx in range(len(states)):
             data = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
-            (beliefs[idx], prior_means[idx], prior_std_devs[idx], posterior_states[idx], posterior_means[idx],
+            (beliefs[idx], states[idx], prior_means[idx], prior_std_devs[idx], posterior_means[idx],
              posterior_std_devs[idx]) = data
             belief = beliefs[idx]
-            state = posterior_states[idx]
+            state = states[idx]
 
         beliefs = beliefs.reshape(-1)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
-        posterior_states = posterior_states.reshape(-1)
+        states = states.reshape(-1)
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
         key = "observation"
-        observation_loss = mean_squared_error(models[key], params[key], observations, beliefs, posterior_states)
+        observation_loss = mean_squared_error(models[key], params[key], observations, beliefs, states)
 
         key = "reward"
-        reward_loss = mean_squared_error(models[key], params[key], rewards, beliefs, posterior_states)
+        reward_loss = mean_squared_error(models[key], params[key], rewards, beliefs, states)
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
