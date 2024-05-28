@@ -4,6 +4,7 @@ from jax import numpy as jnp
 
 from src.models.initalizer.modelstrategy import ModelStrategy
 from src.models.lossfuns import cross_entropy_loss
+from src.singletons.hyperparameters import Args
 
 
 class AutoEncoderInitializer(ModelStrategy):
@@ -21,4 +22,10 @@ class AutoEncoderInitializer(ModelStrategy):
         return cross_entropy_loss
 
     def init_optim(self):
-        return optax.adafactor(learning_rate=1e-3)
+        return optax.chain(
+            optax.clip_by_global_norm(Args().args.max_grad_norm),
+            optax.inject_hyperparams(optax.adafactor)(
+                learning_rate=optax.linear_schedule,
+                eps=1e-5
+            )
+        )
