@@ -1,10 +1,7 @@
 import jax.numpy as jnp
-import optax
 from flax import linen as nn
 
-from src.models.initalizer.helper import linear_schedule
 from src.models.initalizer.modelstrategy import ModelStrategy
-from src.singletons.hyperparameters import Args
 
 
 class ActorCriticInitializer(ModelStrategy):
