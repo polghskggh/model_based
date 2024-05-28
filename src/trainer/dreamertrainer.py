@@ -31,9 +31,10 @@ class DreamerTrainer(Trainer):
             batch_slice = slice(start_idx, start_idx + batch_size)
             data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], init_state, init_belief)
             (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(self.models, params, data, rng)
+            init_belief, init_state = aux["data"]
             for key in self.models.keys():
                 params[key] = optax.apply_updates(params[key], grads[key])
-            log(aux)
+            log(aux["info"])
         return params
 
     @staticmethod
@@ -45,10 +46,8 @@ class DreamerTrainer(Trainer):
         key = "representation"
         for idx in range(len(states)):
             states[idx] = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
-            next_belief, _, _, _, posterior_states, _, _ = states[idx]
-
+            belief, _, _, _, state, _, _ = states[idx]
         beliefs, _, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs = zip(*states)
-        print(beliefs)
         beliefs = beliefs.reshape(-1)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
@@ -67,5 +66,7 @@ class DreamerTrainer(Trainer):
 
         alpha, beta, gamma = Args().args.loss_weights
         return (alpha * observation_loss + beta * reward_loss + gamma * kl_loss,
-                {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss})
-
+                {
+                    "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss},
+                    "data": (belief, state)
+                })
