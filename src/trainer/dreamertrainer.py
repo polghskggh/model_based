@@ -41,8 +41,8 @@ class DreamerTrainer(Trainer):
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, state, belief = data
 
-        beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
-        state_shape = (observations.shape[0], Args().args.state_size)
+        beliefs = jnp.zeros((observations.shape[0], Args().args.num_envs, Args().args.belief_size))
+        state_shape = (observations.shape[0], Args().args.num_envs, Args().args.state_size)
         prior_means = jnp.zeros(state_shape)
         prior_std_devs = jnp.zeros(state_shape)
         states = jnp.zeros(state_shape)
@@ -61,10 +61,10 @@ class DreamerTrainer(Trainer):
             belief = beliefs[idx]
             state = states[idx]
 
-        beliefs = beliefs.reshape(-1)
+        beliefs = beliefs.reshape(-1, Args().args.belief_size)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
-        states = states.reshape(-1)
+        states = states.reshape(-1, Args().args.state_size)
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
