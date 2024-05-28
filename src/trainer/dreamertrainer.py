@@ -48,6 +48,7 @@ class DreamerTrainer(Trainer):
             next_belief, _, _, _, posterior_states, _, _ = states[idx]
 
         beliefs, _, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs = zip(*states)
+        print(beliefs)
         beliefs = beliefs.reshape(-1)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
