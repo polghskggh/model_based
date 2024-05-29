@@ -80,6 +80,7 @@ class DreamerTrainer(Trainer):
             key = "observation"
             pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
             print(pixels.shape, observations[batch_slice].shape)
+            #(30, 1920, 64, 64) (30, 8, 105, 12) WTFFFFFFFFFF
             observation_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(pixels,
                                                                                          observations[batch_slice]))
 
