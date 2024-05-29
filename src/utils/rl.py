@@ -35,7 +35,7 @@ def reverse_tile_image(image: jax.Array) -> jax.Array:
         return rgb_pixel
 
     image_sampled = jnp.argmax(image, axis=-1)
-    return vmap(reverse_tile_pixel)(image_sampled)
+    return vmap(vmap(reverse_tile_pixel))(image_sampled)
 
 
 @jit

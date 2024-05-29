@@ -79,6 +79,7 @@ class DreamerTrainer(Trainer):
             batch_slice = slice(start_idx, start_idx + batch_size)
             key = "observation"
             pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+            print(pixels.shape, observations[batch_slice].shape)
             observation_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(pixels,
                                                                                          observations[batch_slice]))
 

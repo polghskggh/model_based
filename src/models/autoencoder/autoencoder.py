@@ -42,6 +42,5 @@ class AutoEncoder(nn.Module):
         decoded = self.decoder(injected, skip)
         logits = self.logits(decoded)
         reward = self.reward_predictor(injected, logits)
-        pixels = self.softmax(logits)
-        return pixels, reward
+        return logits, reward
 

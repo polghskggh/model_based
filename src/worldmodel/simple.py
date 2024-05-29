@@ -2,7 +2,6 @@ from typing import Tuple
 
 import gym
 import jax
-from gym.core import ObsType
 from jax import vmap, lax
 import jax.numpy as jnp
 
@@ -16,6 +15,7 @@ from src.trainer.saetrainer import SAETrainer
 from src.utils.rl import tile_image, reverse_tile_image
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
+import flax.linen as nn
 
 
 class SimpleWorldModel(WorldModelInterface):
@@ -36,7 +36,8 @@ class SimpleWorldModel(WorldModelInterface):
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         next_frames, rewards = self._model.forward(self._frame_stack.frames, actions)
-        next_frames = vmap(vmap(reverse_tile_image))(next_frames)
+        next_frames = nn.softmax(next_frames)
+        next_frames = vmap(reverse_tile_image)(next_frames)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         rewards = rewards.squeeze()
@@ -89,7 +90,7 @@ class SimpleWrapper(gym.Wrapper):
                                           next_observations=jnp.zeros(batch_shape + (Shape()[0][0], Shape()[0][1],
                                                                        Shape()[0][2] // Args().args.frame_stack)))
 
-    def reset(self, **kwargs) -> Tuple[ObsType, dict]:
+    def reset(self, **kwargs):
         observation, info = self.env.reset(**kwargs)
         self.last_observation = observation
         self._timestep = 0
