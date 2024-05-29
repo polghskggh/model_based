@@ -1,7 +1,12 @@
+from typing import Any
+
+import gymnasium
 import numpy as np
+from gymnasium.core import WrapperObsType
 from gymnasium.spaces import Box
-from gymnasium import ObservationWrapper
+from gymnasium import ObservationWrapper, Wrapper
 import gymnasium as gym
+from gymnasium.spaces.discrete import Discrete
 
 
 class ReshapeObservation(ObservationWrapper):
@@ -43,3 +48,16 @@ class FrameSkip(ObservationWrapper):
                 break
 
         return obs, total_reward, done, trunk, info
+
+
+class CompatibilityWrapper(Wrapper):
+    def __init__(self, env: gym.Env):
+        super().__init__(env)
+        self.observation_space = Box(low=env.observation_space.low, high=env.observation_space.high,
+                                     shape=env.observation_space.shape, dtype=env.observation_space.dtype)
+        self.action_space = Discrete(n=env.action_space.n)
+
+    def reset(
+        self, *, seed: int | None = None, options: dict[str, Any] | None = None
+    ) -> tuple[WrapperObsType, dict[str, Any]]:
+        return self.env.reset()

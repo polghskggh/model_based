@@ -1,6 +1,6 @@
 import distrax
 import optax
-from jax import value_and_grad
+from jax import value_and_grad, vmap
 
 from src.models.lossfuns import mean_squared_error
 from src.singletons.hyperparameters import Args
@@ -8,6 +8,8 @@ from src.singletons.rng import Key
 from src.singletons.writer import Writer, log
 from src.trainer.trainer import Trainer
 import jax.numpy as jnp
+
+from src.utils.rl import tile_image
 
 
 class DreamerTrainer(Trainer):
@@ -71,18 +73,18 @@ class DreamerTrainer(Trainer):
         batch_size = Args().args.batch_size
         observation_loss, reward_loss = 0, 0
         num_batches = 0
+        observations = vmap(tile_image)(observations)
         for start_idx in range(0, observations.shape[0], Args().args.batch_size):
             num_batches += 1
             batch_slice = slice(start_idx, start_idx + batch_size)
             key = "observation"
-            observation_loss += jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs[batch_slice],
-                                                                               states[batch_slice]),
-                                                             observations[batch_slice]))
+            pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+            observation_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(pixels,
+                                                                                         observations[batch_slice]))
 
             key = "reward"
-            reward_loss += jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs[batch_slice],
-                                                                          states[batch_slice]),
-                                                        rewards[batch_slice]))
+            predicted_rewards = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+            reward_loss += jnp.mean(optax.squared_error(predicted_rewards, rewards[batch_slice]))
 
         observation_loss /= num_batches
         reward_loss /= num_batches

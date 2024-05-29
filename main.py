@@ -38,9 +38,6 @@ def world_model_factory(envs):
 def main():
     check_gpu()
     envs = make_envs()
-    # envs = gym.vector.SyncVectorEnv(
-    #     [make_env("ALE/Breakout-v5", i, False, "alt_impl") for i in range(Args().args.num_envs)]
-    # )
     agent = Agent(Args().args.algorithm)
     world_model = world_model_factory(envs)
     run_experiment(agent, envs, world_model)
