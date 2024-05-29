@@ -68,11 +68,24 @@ class DreamerTrainer(Trainer):
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
-        key = "observation"
-        observation_loss = jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs, states), observations))
+        batch_size = Args().args.batch_size
+        observation_loss, reward_loss = 0, 0
+        num_batches = 0
+        for start_idx in range(0, observations.shape[0], Args().args.batch_size):
+            num_batches += 1
+            batch_slice = slice(start_idx, start_idx + batch_size)
+            key = "observation"
+            observation_loss += jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs[batch_slice],
+                                                                               states[batch_slice]),
+                                                             observations[batch_slice]))
 
-        key = "reward"
-        reward_loss = jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs, states), rewards))
+            key = "reward"
+            reward_loss += jnp.mean(optax.squared_error(models[key].apply(params[key], beliefs[batch_slice],
+                                                                          states[batch_slice]),
+                                                        rewards[batch_slice]))
+
+        observation_loss /= num_batches
+        reward_loss /= num_batches
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
