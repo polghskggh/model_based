@@ -73,14 +73,16 @@ class DreamerTrainer(Trainer):
         batch_size = Args().args.batch_size
         observation_loss, reward_loss = 0, 0
         num_batches = 0
+        print("before tiling: ", observations.shape)
         observations = vmap(tile_image)(observations)
+        print("after tiling: ", observations.shape)
         for start_idx in range(0, observations.shape[0], Args().args.batch_size):
             num_batches += 1
             batch_slice = slice(start_idx, start_idx + batch_size)
             key = "observation"
             pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
             print(pixels.shape, observations[batch_slice].shape)
-            #(30, 1920, 64, 64) (30, 8, 105, 12) WTFFFFFFFFFF
+            #(30, 105, 80, 64) (30, 8, 105, 12) WTFFFFFFFFFF
             observation_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(pixels,
                                                                                          observations[batch_slice]))
 

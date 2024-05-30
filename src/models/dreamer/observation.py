@@ -2,6 +2,7 @@ import flax.linen as nn
 import jax.numpy as jnp
 
 from src.models.autoencoder.decoder import Decoder
+from src.models.autoencoder.logitslayer import LogitsLayer
 from src.utils.activationfuns import activation_function_dict
 
 
@@ -25,6 +26,7 @@ class ObservationModel(nn.Module):
         hidden = hidden.reshape(-1, 2, 2, self.embedding_size // 4)
 
         reconstructed = self.decoder(hidden, None)
+        reconstructed = LogitsLayer()(reconstructed)
         return reconstructed
 
     def scaled_features(self, layer_id: int):
