@@ -104,6 +104,7 @@ class DreamerTrainer(Trainer):
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
+        kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
         jax.debug.print("Losses: {obs}, {rew}, {kl}", obs=observation_loss, rew=reward_loss, kl=kl_loss)
