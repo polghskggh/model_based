@@ -55,12 +55,12 @@ class DreamerTrainer(Trainer):
         key = "representation"
         for idx in range(len(states)):
             data = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
-            beliefs.at[idx].set(data[0])
-            states.at[idx].set(data[1])
-            prior_means.at[idx].set(data[2])
-            prior_std_devs.at[idx].set(data[3])
-            posterior_means.at[idx].set(data[4])
-            posterior_std_devs.at[idx].set(data[5])
+            beliefs = beliefs.at[idx].set(data[0])
+            states = states.at[idx].set(data[1])
+            prior_means = prior_means.at[idx].set(data[2])
+            prior_std_devs = prior_std_devs.at[idx].set(data[3])
+            posterior_means = posterior_means.at[idx].set(data[4])
+            posterior_std_devs = posterior_std_devs.at[idx].set(data[5])
             belief = beliefs[idx]
             state = states[idx]
 
