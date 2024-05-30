@@ -16,7 +16,7 @@ def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):
     pixels, reward = state.apply_fn(params, *inputs, **kwargs)
     alpha = Args().args.pixel_reward
     return alpha * jnp.mean(softmax_cross_entropy_with_integer_labels(pixels, teach_pixels)) \
-        + (1 - alpha) * jnp.mean(optax.squared_error(reward, jnp.expand_dims(teach_reward, 1)))
+        + (1 - alpha) * jnp.mean(optax.softmax_cross_entropy_with_integer_labels(reward, teach_reward))
 
 
 def cross_entropy_with_kl_loss(state, params, teacher_outputs, *inputs, **kwargs):

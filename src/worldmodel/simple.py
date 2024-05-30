@@ -35,8 +35,9 @@ class SimpleWorldModel(WorldModelInterface):
         self._time_step = 0
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
-        next_frames, rewards = self._model.forward(self._frame_stack.frames, actions)
+        next_frames, rewards_logits = self._model.forward(self._frame_stack.frames, actions)
         next_frames = nn.softmax(next_frames)
+        rewards = jnp.argmax(nn.softmax(rewards_logits))
         next_frames = vmap(reverse_tile_image)(next_frames)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
@@ -56,7 +57,6 @@ class SimpleWorldModel(WorldModelInterface):
             batch_slice = slice(start_idx, start_idx + batch_size)
             grads = self._model.train_step((next_frame[batch_slice], rewards[batch_slice]),
                                            stack[batch_slice], actions[batch_slice])
-            print(grads)
             self._model.apply_grads(grads)
 
     def _stochastic_update(self, stack, actions, rewards, next_frame):

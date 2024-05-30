@@ -27,7 +27,6 @@ class AutoEncoder(nn.Module):
         self.latent_injector = Injector(self.features)
         self.logits = LogitsLayer()
         self.reward_predictor = RewardPredictor()
-        self.softmax = vmap(vmap(nn.softmax))
 
     @nn.compact
     def __call__(self, image: Array, action: Array, latent: Array = None) -> Array:
@@ -41,6 +40,6 @@ class AutoEncoder(nn.Module):
 
         decoded = self.decoder(injected, skip)
         logits = self.logits(decoded)
-        reward = self.reward_predictor(injected, logits)
-        return logits, reward
+        reward_logits = self.reward_predictor(injected, logits)
+        return logits, reward_logits
 

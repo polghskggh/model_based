@@ -4,6 +4,8 @@ import flax.linen as nn
 
 import jax.numpy as jnp
 
+from src.singletons.hyperparameters import Args
+
 
 class RewardPredictor(nn.Module):
     @nn.compact
@@ -13,5 +15,5 @@ class RewardPredictor(nn.Module):
         reward_pred = jnp.concat((middle, final), axis=-1)
         reward_pred = nn.Dense(128, name="reward_hidden")(reward_pred)
         reward_pred = nn.relu(reward_pred)
-        reward_pred = nn.Dense(1, name="reward_final")(reward_pred)
+        reward_pred = nn.Dense(Args().args.rewards, name="reward_final")(reward_pred)
         return reward_pred
