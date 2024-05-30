@@ -69,6 +69,9 @@ class DreamerTrainer(Trainer):
         states = states.reshape(-1, Args().args.state_size)
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
+        observations = observations.reshape(-1, observations.shape[2:])
+        rewards = rewards.reshape(-1)
+
 
         batch_size = Args().args.batch_size
         observation_loss, reward_loss = 0, 0
