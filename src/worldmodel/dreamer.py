@@ -129,13 +129,16 @@ class Dreamer(WorldModelInterface):
         observations, actions, rewards = data.observations, data.actions, data.rewards
 
         params = {key: model.params for key, model in self.models.items()}
-        new_params = self.trainer.train_step(observations, actions, rewards, params)
+        grads = self.trainer.train_step(observations, actions, rewards, params)
 
         self.initial_beliefs = data.beliefs
         self.initial_states = data.states
-
+        print(grads["representation"].keys())
         for key, model in self.models.items():
-            model.params = new_params[key]
+            if key == "transition":
+                model.apply_grads(grads[key]["transition"])
+            else:
+                model.apply_grads(grads[key])
 
     def wrap_env(self, env):
         return DreamerWrapper(env, self.models["representation"])

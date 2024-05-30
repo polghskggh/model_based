@@ -3,6 +3,7 @@ import jax
 import optax
 from jax import value_and_grad, vmap
 
+from src.models.initalizer.modelstrategy import ModelStrategy
 from src.models.lossfuns import mean_squared_error
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
@@ -23,6 +24,9 @@ class DreamerTrainer(Trainer):
                        "observation": observation_model,
                        "reward": reward_model}
 
+        initializer = ModelStrategy()
+        self.optims = {key: initializer.init_optim() for key in self.models.keys()}
+
     def train_step(self, observations, actions, rewards, params: dict):
         init_belief = jnp.zeros((observations.shape[1], self.belief_size))
         init_state = jnp.zeros((observations.shape[1], self.state_size))
@@ -35,10 +39,8 @@ class DreamerTrainer(Trainer):
             data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], init_state, init_belief)
             (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(self.models, params, data, rng)
             init_belief, init_state = aux["data"]
-            for key in self.models.keys():
-                params[key] = optax.apply_updates(params[key], grads[key])
             log(aux["info"])
-        return params
+        return grads
 
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
