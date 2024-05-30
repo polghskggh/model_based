@@ -90,8 +90,8 @@ class DreamerTrainer(Trainer):
 
             key = "reward"
             reward_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
-            reward_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(reward_logits,
-                                                                                    rewards[batch_slice]))
+            teacher_rewards = jnp.astype(rewards[batch_slice], jnp.int32)
+            reward_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(reward_logits, teacher_rewards))
 
         observation_loss /= num_batches
         reward_loss /= num_batches
