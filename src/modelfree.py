@@ -8,7 +8,7 @@ from src.singletons.writer import Writer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
-def model_free_train_loop(agent: Agent, envs: gym.Env):
+def model_free_train_loop(agent: Agent, envs: gym.Env, increment: bool = True):
     observation, _ = envs.reset()
     agent.receive_state(observation)
     writer = Writer().writer
@@ -16,12 +16,14 @@ def model_free_train_loop(agent: Agent, envs: gym.Env):
 
     returns = jnp.zeros(observation.shape[0])
     for step in range(args.trajectory_length):
-        StepTracker().increment(args.num_agents)
+        if increment:
+            StepTracker().increment(args.num_agents)
+
         reward, done, infos = interact(agent, envs)
         returns += reward
 
         # Only print when at least 1 env is done
-        if not any(done):
+        if not any(done) or not increment:
             continue
 
         for ret in returns:

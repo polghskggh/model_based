@@ -56,6 +56,7 @@ class SimpleWorldModel(WorldModelInterface):
             batch_slice = slice(start_idx, start_idx + batch_size)
             grads = self._model.train_step((next_frame[batch_slice], rewards[batch_slice]),
                                            stack[batch_slice], actions[batch_slice])
+            print(grads)
             self._model.apply_grads(grads)
 
     def _stochastic_update(self, stack, actions, rewards, next_frame):

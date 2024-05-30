@@ -1,10 +1,7 @@
 from typing import Tuple
 
-import gym
 import jax
 import jax.numpy as jnp
-
-from gym.core import ActType, ObsType
 
 from src.enviroment import Shape
 from src.models.dreamer.observation import ObservationModel
@@ -13,10 +10,13 @@ from src.models.dreamer.reward import RewardModel
 from src.models.dreamer.transition import TransitionModel
 from src.models.modelwrapper import ModelWrapper
 
-from src.pod.storage import store, TrajectoryStorage
+from src.pod.storage import store, TrajectoryStorage, DreamerStorage
 from src.singletons.hyperparameters import Args
+from src.singletons.rng import Key
 from src.trainer.dreamertrainer import DreamerTrainer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
+import jax.random as jr
+import gymnasium as gym
 
 
 class DreamerWrapper(gym.Wrapper):
@@ -24,7 +24,7 @@ class DreamerWrapper(gym.Wrapper):
     prev_state: jax.Array
     prev_belief: jax.Array
 
-    def __init__(self, env: gym.Env, reperesentation_model: ModelWrapper):
+    def __init__(self, env, reperesentation_model: ModelWrapper):
         super().__init__(env)
         self.representation_model = reperesentation_model
         batch_shape = (Args().args.trajectory_length,
@@ -32,11 +32,13 @@ class DreamerWrapper(gym.Wrapper):
         self.prev_belief = jnp.zeros((Args().args.num_agents, Args().args.belief_size))
         self.prev_state = jnp.zeros((Args().args.num_agents, Args().args.state_size))
         self.timestep = 0
-        self.storage = TrajectoryStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
-                                         actions=jnp.zeros(batch_shape),
-                                         rewards=jnp.zeros(batch_shape))
+        self.storage = DreamerStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
+                                      actions=jnp.zeros(batch_shape),
+                                      rewards=jnp.zeros(batch_shape),
+                                      beliefs=jnp.zeros(batch_shape + (Args().args.belief_size,)),
+                                      states=jnp.zeros(batch_shape + (Args().args.state_size,)))
 
-    def reset(self, **kwargs) -> Tuple[ObsType, dict]:
+    def reset(self, **kwargs):
         observation, info = self.env.reset(**kwargs)
         batch = Args().args.num_agents
         self.prev_belief, self.prev_state, _, _, _, _ = (
@@ -47,11 +49,15 @@ class DreamerWrapper(gym.Wrapper):
         self.timestep = 0
         return self.prev_state, info
 
-    def step(self, action: ActType) -> Tuple[ObsType, float, bool, bool, dict]:
+    def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
-        self.prev_belief, self.prev_state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
-                                                                                    self.prev_belief, observation)
-        self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward)
+        belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
+                                                                      self.prev_belief, observation)
+        self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
+                             beliefs=self.prev_belief, states=self.prev_state)
+        self.prev_belief = belief
+        self.prev_state = state
+
         self.timestep += 1
         return self.prev_state, reward, term, trunc, info
 
@@ -65,6 +71,9 @@ class Dreamer(WorldModelInterface):
         self.hidden_size = Args().args.hidden_size
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]
+
+        self.initial_beliefs = jnp.zeros((self.batch_size, self.belief_size))
+        self.initial_states = jnp.zeros((self.batch_size, self.state_size))
 
         self.prev_belief = jnp.zeros((self.batch_size, self.belief_size))
         self.prev_state = jnp.zeros((self.batch_size, self.state_size))
@@ -99,11 +108,10 @@ class Dreamer(WorldModelInterface):
         return self.prev_state, imagined_reward, 0, False, {}
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
-        self.prev_belief = jnp.zeros(self.batch_size, self.belief_size)
-        self.prev_belief, self.prev_state, _, _ = (self.models["transition"]
-                                                   .forward(self.prev_belief,
-                                                            jnp.zeros(self.batch_size, self.state_size),
-                                                            jnp.zeros(self.batch_size, self.state_size)))
+        key = Key().key(1)
+        self.prev_belief = jr.choice(key, self.initial_beliefs, (self.batch_size,))
+        self.prev_state = jr.choice(key, self.initial_states, (self.batch_size,))
+
         return self.prev_state, {}
 
     def save(self):
@@ -120,18 +128,11 @@ class Dreamer(WorldModelInterface):
         params = {key: model.params for key, model in self.models.items()}
         new_params = self.trainer.train_step(observations, actions, rewards, params)
 
+        self.initial_beliefs = data.beliefs
+        self.initial_states = data.states
+
         for key, model in self.models.items():
             model.params = new_params[key]
-
-    def infer_state(self, observation, action, belief=None, state=None):
-        # observation is obs.to(device), action.shape=[act_dim] (will add time dim inside this fn), belief.shape
-        belief, _, _, _, posterior_state, _, _ = self.models["representation"].forward(state, action,
-                                                                                       belief, observation)
-
-        belief, posterior_state = belief.squeeze(dim=0), posterior_state.squeeze(
-            dim=0)  # Remove time dimension from belief/state
-
-        return belief, posterior_state
 
     def wrap_env(self, env):
         return DreamerWrapper(env, self.models["representation"])
