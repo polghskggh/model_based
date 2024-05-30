@@ -13,6 +13,7 @@ def mean_squared_error(state, params, teacher_outputs, *inputs, **kwargs):
 
 def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):
     teach_pixels, teach_reward = teacher_outputs
+    teach_reward = jnp.astype(teach_reward, jnp.int32)
     pixels, reward = state.apply_fn(params, *inputs, **kwargs)
     alpha = Args().args.pixel_reward
     return alpha * jnp.mean(softmax_cross_entropy_with_integer_labels(pixels, teach_pixels)) \
