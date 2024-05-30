@@ -55,7 +55,6 @@ class DreamerTrainer(Trainer):
         key = "representation"
         for idx in range(len(states)):
             data = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
-            jax.debug.print("Data: {data}", data=data)
             beliefs.at[idx].set(data[0])
             states.at[idx].set(data[1])
             prior_means.at[idx].set(data[2])
@@ -65,6 +64,8 @@ class DreamerTrainer(Trainer):
             belief = beliefs[idx]
             state = states[idx]
 
+        jax.debug.print("beliefs: {beliefs}, prior_means: {prior_means}, prior_std_devs: {prior_std_devs}, ", beliefs=beliefs,
+                        prior_means=prior_means, prior_std_devs=prior_std_devs)
         beliefs = beliefs.reshape(-1, Args().args.belief_size)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
