@@ -18,6 +18,8 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 import jax.random as jr
 import gymnasium as gym
 
+import flax.linen as nn
+
 
 class DreamerWrapper(gym.Wrapper):
     representation_model: ModelWrapper
@@ -103,7 +105,8 @@ class Dreamer(WorldModelInterface):
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_belief,
                                                                                     action, self.prev_state)
 
-        imagined_reward = self.models["reward"].forward(self.prev_belief, self.prev_state)
+        imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
+        imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
 
         return self.prev_state, imagined_reward, 0, False, {}
 

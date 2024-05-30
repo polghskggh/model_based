@@ -1,6 +1,7 @@
 from flax import linen as nn
 import jax.numpy as jnp
 
+from src.singletons.hyperparameters import Args
 from src.utils.activationfuns import activation_function_dict
 
 
@@ -24,7 +25,7 @@ class RewardModel(nn.Module):
         hidden = nn.Dense(features=self.hidden_size)(hidden)
         hidden = self.activation_fun(hidden)
 
-        output = nn.Dense(features=1)(hidden)
+        output = nn.Dense(features=Args().args.rewards)(hidden)
         reward = jnp.squeeze(output, axis=-1)
         return reward
 

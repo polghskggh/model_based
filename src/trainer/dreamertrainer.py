@@ -1,4 +1,5 @@
 import distrax
+import jax
 import optax
 from jax import value_and_grad, vmap
 
@@ -75,22 +76,22 @@ class DreamerTrainer(Trainer):
         batch_size = Args().args.batch_size
         observation_loss, reward_loss = 0, 0
         num_batches = 0
-        print("before tiling: ", observations.shape)
         observations = vmap(tile_image)(observations)
-        print("after tiling: ", observations.shape)
+
         for start_idx in range(0, observations.shape[0], Args().args.batch_size):
             num_batches += 1
             batch_slice = slice(start_idx, start_idx + batch_size)
             key = "observation"
             pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
             print(pixels.shape, observations[batch_slice].shape)
-            #(30, 105, 80, 64) (30, 8, 105, 12) WTFFFFFFFFFF
+
             observation_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(pixels,
                                                                                          observations[batch_slice]))
 
             key = "reward"
-            predicted_rewards = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
-            reward_loss += jnp.mean(optax.squared_error(predicted_rewards, rewards[batch_slice]))
+            reward_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+            reward_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(reward_logits,
+                                                                                    rewards[batch_slice]))
 
         observation_loss /= num_batches
         reward_loss /= num_batches
@@ -99,6 +100,7 @@ class DreamerTrainer(Trainer):
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
 
         alpha, beta, gamma = Args().args.loss_weights
+        jax.debug.print("Losses: {obs}, {rew}, {kl}", obs=observation_loss, rew=reward_loss, kl=kl_loss)
         return (alpha * observation_loss + beta * reward_loss + gamma * kl_loss,
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss},
