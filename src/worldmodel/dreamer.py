@@ -133,10 +133,10 @@ class Dreamer(WorldModelInterface):
 
         self.initial_beliefs = data.beliefs
         self.initial_states = data.states
-        print(grads["representation"].keys())
+        print(grads["representation"]['params'].keys())
         for key, model in self.models.items():
             if key == "transition":
-                model.apply_grads(grads[key]["transition"])
+                model.apply_grads({"params": grads[key]['params']['transition_model']})
             else:
                 model.apply_grads(grads[key])
 
