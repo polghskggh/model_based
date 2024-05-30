@@ -96,6 +96,10 @@ class DreamerTrainer(Trainer):
         observation_loss /= num_batches
         reward_loss /= num_batches
 
+        jax.debug.print("prior: N({pmean}, {pstdev}) posterior: N({postmean}, {posterior_std_devs})",
+                        pmean=prior_means, pstdev=prior_std_devs, postmean=posterior_means,
+                        posterior_std_devs=posterior_std_devs)
+
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
 
