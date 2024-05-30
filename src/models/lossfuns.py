@@ -1,3 +1,4 @@
+import jax
 import jax.numpy as jnp
 import optax
 from optax import softmax_cross_entropy_with_integer_labels
@@ -13,6 +14,7 @@ def mean_squared_error(state, params, teacher_outputs, *inputs, **kwargs):
 def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):
     teach_pixels, teach_reward = teacher_outputs
     pixels, reward = state.apply_fn(params, *inputs, **kwargs)
+    jax.debug.print('rewards {reward}', reward=reward)
     alpha = Args().args.pixel_reward
     return alpha * jnp.mean(softmax_cross_entropy_with_integer_labels(pixels, teach_pixels)) \
         + (1 - alpha) * jnp.mean(optax.squared_error(reward, jnp.expand_dims(teach_reward, 1)))
