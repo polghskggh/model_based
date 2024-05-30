@@ -26,6 +26,5 @@ class RewardModel(nn.Module):
         hidden = self.activation_fun(hidden)
 
         output = nn.Dense(features=Args().args.rewards)(hidden)
-        reward = jnp.squeeze(output, axis=-1)
-        return reward
+        return output
 
