@@ -41,7 +41,6 @@ hyperparameters = {
     'dreamer': {
         'belief_size': 200,
         'state_size': 30,
-        'embedding_size': 30,
         'hidden_size': 200,
         'min_std_dev': 0.1,
         'gradient_steps': 100,

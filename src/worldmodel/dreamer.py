@@ -61,7 +61,7 @@ class Dreamer(WorldModelInterface):
         self.batch_size = Args().args.batch_size
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
-        self.embedding_size = Args().args.embedding_size
+        self.embedding_size = 4 * 256
         self.hidden_size = Args().args.hidden_size
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]

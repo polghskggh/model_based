@@ -24,8 +24,9 @@ def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env: 
     agent.store_trajectories = True
 
     temp = Args().args.trajectory_length
+    print("before:", Args().args.trajectory_length)
     Args().args.trajectory_length = Args().args.sim_trajectory_length
-
+    print("after:", Args().args.trajectory_length)
     for update in range(Args().args.model_updates):
         model_free_train_loop(agent, world_model)
 

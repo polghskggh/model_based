@@ -44,7 +44,7 @@ class PPOStrategy(StrategyInterface):
         self._trajectory_storage = store(self._trajectory_storage, self._iteration, observations=old_state,
                                          actions=selected_action, rewards=reward, dones=done)
         self._iteration += 1
-
+        print(self._iteration, Args().args.trajectory_length)
         if self._iteration == Args().args.trajectory_length:
             self.update(new_state)
             self._iteration = 0
