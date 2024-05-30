@@ -17,6 +17,5 @@ class VariationalEncoder(nn.Module):
         hidden = nn.Dense(self.hidden_size)(data)
         mean, std_dev = jnp.array_split(hidden, 2, axis=1)
         std_dev = nn.softplus(std_dev) + self.min_std_dev
-        jax.debug.print("mean {m}, std_dev {s}", m=mean, s=std_dev)
         sample = sample_normal(self.make_rng('normal'), mean, std_dev)
         return sample, mean, std_dev

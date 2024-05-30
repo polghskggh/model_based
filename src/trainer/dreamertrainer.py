@@ -55,6 +55,7 @@ class DreamerTrainer(Trainer):
         key = "representation"
         for idx in range(len(states)):
             data = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
+            jax.debug.print("Data: {data}", data=data)
             beliefs.at[idx].set(data[0])
             states.at[idx].set(data[1])
             prior_means.at[idx].set(data[2])
