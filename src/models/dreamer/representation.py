@@ -23,14 +23,15 @@ class RepresentationModel(nn.Module):
     activation_function: str = 'relu'
     min_std_dev: float = 0.1
     __constants__ = ['min_std_dev']
+    _transition_model: TransitionModel
 
     def setup(self):
         super().__init__()
         self.activation_fun = activation_function_dict[self.activation_function]
         self.rnn = nn.GRUCell(self.belief_size, self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
-        self.transition_model = TransitionModel(self.belief_size, self.state_size, self.action_size,
-                                                self.hidden_size)
+        self._transition_model = TransitionModel(self.belief_size, self.state_size, self.action_size,
+                                                 self.hidden_size)
         self.posterior_dense = nn.Dense(self.belief_size + self.embedding_size, self.hidden_size)
         self.encoder = Encoder()
 
@@ -49,3 +50,7 @@ class RepresentationModel(nn.Module):
         beliefs, _, prior_means, prior_std_devs = self.transition_model(prev_state, actions, prev_belief)
         posterior_states, posterior_means, posterior_std_devs = self.posterior_update(beliefs, observations)
         return beliefs, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs
+
+    @property
+    def transition_model(self):
+        return self.transition_model

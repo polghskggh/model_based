@@ -80,8 +80,6 @@ class Dreamer(WorldModelInterface):
         self.prev_belief = jnp.zeros((self.batch_size, self.belief_size))
         self.prev_state = jnp.zeros((self.batch_size, self.state_size))
 
-        transition_model = ModelWrapper(TransitionModel(self.belief_size, self.state_size, self.action_size,
-                                                        self.hidden_size), "transition")
         # Initialise model parameters randomly
         representation_model = ModelWrapper(RepresentationModel(self.belief_size, self.state_size,
                                                                 self.action_size, self.hidden_size,
@@ -94,16 +92,19 @@ class Dreamer(WorldModelInterface):
         reward_model = ModelWrapper(RewardModel(self.belief_size, self.state_size, self.hidden_size), "reward")
 
         self.models = {"representation": representation_model,
-                       "transition": transition_model,
                        "observation": observation_model,
                        "reward": reward_model}
 
         self.trainer = DreamerTrainer(representation_model.model, observation_model.model,
                                       reward_model.model)
 
+    def transition_pass(self, action) -> (jax.Array, jax.Array):
+        model = self.models["representation"].model.transition_model
+        params = {"params": self.models["representation"].params["params"]["transition_model"]}
+        return model.apply(params, self.prev_state, action, self.prev_belief)
+
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
-        self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_belief,
-                                                                                    action, self.prev_state)
+        self.prev_belief, self.prev_state, _, _ = self.transition_pass(action)
 
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
@@ -133,12 +134,8 @@ class Dreamer(WorldModelInterface):
 
         self.initial_beliefs = data.beliefs
         self.initial_states = data.states
-        print(grads["representation"]['params'].keys())
         for key, model in self.models.items():
-            if key == "transition":
-                model.apply_grads({"params": grads[key]['params']['transition_model']})
-            else:
-                model.apply_grads(grads[key])
+            model.apply_grads(grads[key])
 
     def wrap_env(self, env):
         return DreamerWrapper(env, self.models["representation"])
