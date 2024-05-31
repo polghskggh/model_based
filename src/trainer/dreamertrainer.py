@@ -66,8 +66,6 @@ class DreamerTrainer(Trainer):
             belief = beliefs[idx]
             state = states[idx]
 
-        jax.debug.print("beliefs: {beliefs}, prior_means: {prior_means}, prior_std_devs: {prior_std_devs}, ", beliefs=beliefs,
-                        prior_means=prior_means, prior_std_devs=prior_std_devs)
         beliefs = beliefs.reshape(-1, Args().args.belief_size)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
@@ -100,16 +98,11 @@ class DreamerTrainer(Trainer):
         observation_loss /= num_batches
         reward_loss /= num_batches
 
-        jax.debug.print("prior: N({pmean}, {pstdev}) posterior: N({postmean}, {posterior_std_devs})",
-                        pmean=prior_means, pstdev=prior_std_devs, postmean=posterior_means,
-                        posterior_std_devs=posterior_std_devs)
-
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
         kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
-        jax.debug.print("Losses: {obs}, {rew}, {kl}", obs=observation_loss, rew=reward_loss, kl=kl_loss)
         return (alpha * observation_loss + beta * reward_loss + gamma * kl_loss,
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss},
