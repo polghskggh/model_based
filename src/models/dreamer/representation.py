@@ -23,7 +23,6 @@ class RepresentationModel(nn.Module):
     activation_function: str = 'relu'
     min_std_dev: float = 0.1
     __constants__ = ['min_std_dev']
-    _transition_model: TransitionModel
 
     def setup(self):
         super().__init__()
@@ -51,6 +50,3 @@ class RepresentationModel(nn.Module):
         posterior_states, posterior_means, posterior_std_devs = self.posterior_update(beliefs, observations)
         return beliefs, prior_means, prior_std_devs, posterior_states, posterior_means, posterior_std_devs
 
-    @property
-    def transition_model(self):
-        return self.transition_model
