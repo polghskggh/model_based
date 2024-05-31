@@ -106,6 +106,7 @@ class Dreamer(WorldModelInterface):
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
 
+        print(self.prev_state.shape, self.prev_belief.shape)
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
 

@@ -101,6 +101,7 @@ class PPOStrategy(StrategyInterface):
         value_estimate = value_estimate.squeeze()
         policy = distrax.Categorical(logits)
         action = policy.sample(seed=Key().key(1))
+        print(action.shape, value_estimate.shape, policy.log_prob(action).shape)
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
                                              log_probs=policy.log_prob(action), values=value_estimate)
