@@ -29,7 +29,7 @@ class RepresentationModel(nn.Module):
         self.activation_fun = activation_function_dict[self.activation_function]
         self.rnn = nn.GRUCell(self.belief_size, self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
-        self._transition_model = TransitionModel(self.belief_size, self.state_size, self.action_size,
+        self.transition_model = TransitionModel(self.belief_size, self.state_size, self.action_size,
                                                  self.hidden_size)
         self.posterior_dense = nn.Dense(self.belief_size + self.embedding_size, self.hidden_size)
         self.encoder = Encoder()
