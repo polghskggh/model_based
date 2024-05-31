@@ -93,7 +93,7 @@ class DQNStrategy(StrategyInterface):
 
         self._target_q_network.params = self._q_network.params
 
-    def select_action(self, states: jax.Array, **kwargs) -> jnp.ndarray:
+    def select_action(self, states: jax.Array, store_trajectories=True) -> jnp.ndarray:
         batch_size = states.shape[0]
         key = Key().key()
         probs = jr.uniform(key, (batch_size, ))
