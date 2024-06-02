@@ -25,8 +25,13 @@ class PPOStrategy(StrategyInterface):
             model = ActorCritic(Shape()[0], (Shape()[1], 1))
 
         self._actor_critic = ModelWrapper(model, "actor_critic")
-        self._batch_shape = (Args().args.trajectory_length,
-                             Args().args.num_agents)
+
+        if Args().args.algorithm == "dreamer" or Args().args.algorithm == "simple":
+            self.trajectory_length = Args().args.sim_trajectory_length
+        else:
+            self.trajectory_length = Args().args.trajectory_length
+
+        self._batch_shape = (self.trajectory_length, Args().args.num_agents)
 
         self._trajectory_storage = self._init_storage(state_shape)
         self._iteration: int = 0
@@ -44,8 +49,8 @@ class PPOStrategy(StrategyInterface):
         self._trajectory_storage = store(self._trajectory_storage, self._iteration, observations=old_state,
                                          actions=selected_action, rewards=reward, dones=done)
         self._iteration += 1
-        print(self._iteration, Args().args.trajectory_length)
-        if self._iteration == Args().args.trajectory_length:
+
+        if self._iteration == self.trajectory_length:
             self.update(new_state)
             self._iteration = 0
 
@@ -101,7 +106,6 @@ class PPOStrategy(StrategyInterface):
         value_estimate = value_estimate.squeeze()
         policy = distrax.Categorical(logits)
         action = policy.sample(seed=Key().key(1))
-        print(action.shape, value_estimate.shape, policy.log_prob(action).shape)
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
                                              log_probs=policy.log_prob(action), values=value_estimate)
