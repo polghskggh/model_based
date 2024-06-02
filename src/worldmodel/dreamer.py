@@ -30,9 +30,9 @@ class DreamerWrapper(gym.Wrapper):
         super().__init__(env)
         self.representation_model = representation_model
         batch_shape = (Args().args.trajectory_length,
-                       Args().args.num_agents)
-        self.prev_belief = jnp.zeros((Args().args.num_agents, Args().args.belief_size))
-        self.prev_state = jnp.zeros((Args().args.num_agents, Args().args.state_size))
+                       Args().args.num_envs)
+        self.prev_belief = jnp.zeros((Args().args.num_envs, Args().args.belief_size))
+        self.prev_state = jnp.zeros((Args().args.num_envs, Args().args.state_size))
         self.timestep = 0
         self.storage = DreamerStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
                                       actions=jnp.zeros(batch_shape),
@@ -42,7 +42,7 @@ class DreamerWrapper(gym.Wrapper):
 
     def reset(self, **kwargs):
         observation, info = self.env.reset(**kwargs)
-        batch = Args().args.num_agents
+        batch = Args().args.num_envs
         self.prev_belief, self.prev_state, _, _, _, _ = (
             self.representation_model.forward(jnp.zeros((batch, self.representation_model.model.state_size)),
                                               jnp.zeros(batch),
@@ -103,9 +103,9 @@ class Dreamer(WorldModelInterface):
                                       reward_model.model)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
+        print(self.prev_state.shape, action.shape, self.prev_belief.shape)
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
-        print(self.prev_state.shape, self.prev_belief.shape)
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
 
