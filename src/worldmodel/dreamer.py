@@ -109,7 +109,8 @@ class Dreamer(WorldModelInterface):
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
 
-        return self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape), jnp.zeros(imagined_reward.shape), {}
+        return (self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape, dtype=bool),
+                jnp.zeros(imagined_reward.shape, dtype=bool), {})
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
         key = Key().key(1)
