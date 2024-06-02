@@ -66,7 +66,7 @@ class DreamerWrapper(gym.Wrapper):
 
 class Dreamer(WorldModelInterface):
     def __init__(self, envs):
-        self.batch_size = Args().args.batch_size
+        self.num_agents = Args().args.num_agents
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
         self.embedding_size = 4 * 256
@@ -74,11 +74,11 @@ class Dreamer(WorldModelInterface):
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]
 
-        self.initial_beliefs = jnp.zeros((self.batch_size, self.belief_size))
-        self.initial_states = jnp.zeros((self.batch_size, self.state_size))
+        self.initial_beliefs = jnp.zeros(self.belief_size)
+        self.initial_states = jnp.zeros(self.state_size)
 
-        self.prev_belief = jnp.zeros((self.batch_size, self.belief_size))
-        self.prev_state = jnp.zeros((self.batch_size, self.state_size))
+        self.prev_belief = jnp.zeros((self.num_agents, self.belief_size))
+        self.prev_state = jnp.zeros((self.num_agents, self.state_size))
 
         # Initialise model parameters randomly
         representation_model = ModelWrapper(RepresentationModel(self.belief_size, self.state_size,
@@ -114,8 +114,8 @@ class Dreamer(WorldModelInterface):
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
         key = Key().key(1)
-        self.prev_belief = jr.choice(key, self.initial_beliefs, (self.batch_size,))
-        self.prev_state = jr.choice(key, self.initial_states, (self.batch_size,))
+        self.prev_belief = jr.choice(key, self.initial_beliefs, (self.num_agents,))
+        self.prev_state = jr.choice(key, self.initial_states, (self.num_agents,))
 
         return self.prev_state, {}
 
