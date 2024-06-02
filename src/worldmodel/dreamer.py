@@ -26,9 +26,9 @@ class DreamerWrapper(gym.Wrapper):
     prev_state: jax.Array
     prev_belief: jax.Array
 
-    def __init__(self, env, reperesentation_model: ModelWrapper):
+    def __init__(self, env, representation_model: ModelWrapper):
         super().__init__(env)
-        self.representation_model = reperesentation_model
+        self.representation_model = representation_model
         batch_shape = (Args().args.trajectory_length,
                        Args().args.num_agents)
         self.prev_belief = jnp.zeros((Args().args.num_agents, Args().args.belief_size))
@@ -105,12 +105,11 @@ class Dreamer(WorldModelInterface):
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
-
         print(self.prev_state.shape, self.prev_belief.shape)
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
 
-        return self.prev_state, imagined_reward, 0, False, {}
+        return self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape), jnp.zeros(imagined_reward.shape), {}
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
         key = Key().key(1)
