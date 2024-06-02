@@ -132,8 +132,8 @@ class Dreamer(WorldModelInterface):
         params = {key: model.params for key, model in self.models.items()}
         grads = self.trainer.train_step(observations, actions, rewards, params)
 
-        self.initial_beliefs = data.beliefs
-        self.initial_states = data.states
+        self.initial_beliefs = data.beliefs.reshape(-1, self.belief_size)
+        self.initial_states = data.states.reshape(-1, self.state_size)
         for key, model in self.models.items():
             if key == "transition":
                 continue
