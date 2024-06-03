@@ -66,6 +66,7 @@ def make_mario() -> gym.Env:
     Shape.initialize(env)
     return env
 
+
 def optional_grayscale(env):
     if Args().args.grayscale:
         env = GrayScaleObservation(env, True)

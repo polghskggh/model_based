@@ -82,11 +82,12 @@ class SimpleWrapper(gym.Wrapper):
         batch_shape = (Args().args.trajectory_length * Args().args.num_envs, )
         self.last_observation = None
         self._timestep = 0
+        self.n_channels = Shape()[0][2] // Args().args.frame_stack
         self._storage = TransitionStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
                                           actions=jnp.zeros(batch_shape),
                                           rewards=jnp.zeros(batch_shape),
                                           next_observations=jnp.zeros(batch_shape + (Shape()[0][0], Shape()[0][1],
-                                                                       Shape()[0][2] // Args().args.frame_stack)))
+                                                                       self.n_channels)))
 
     def reset(self, **kwargs):
         observation, info = self.env.reset(**kwargs)
@@ -96,7 +97,9 @@ class SimpleWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
-        next_observations = lax.slice_in_dim(observation, (Args().args.frame_stack - 1) * 3, None, axis=-1)
+
+        next_observations = lax.slice_in_dim(observation, (Args().args.frame_stack - 1) * self.n_channels,
+                                             None, axis=-1)
 
         store_slice = slice(self._timestep * Args().args.num_envs, (self._timestep + 1) * Args().args.num_envs)
         self._storage = store(self._storage, store_slice, observations=self.last_observation, actions=action,
