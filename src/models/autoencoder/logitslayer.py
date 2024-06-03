@@ -12,11 +12,13 @@ class LogitsLayer(nn.Module):
         self.green = nn.Dense(features=self.features, name="greed_logits")
         self.blue = nn.Dense(features=self.features, name="blue_logits")
         self.grayscale = nn.Dense(features=self.features, name="grayscale_logits")
-        self.type = Args().args.grayscale
 
     def rgb(self, x: Array) -> Array:
         return jnp.stack((self.red(x), self.green(x), self.blue(x)), axis=jnp.ndim(x) - 1)
 
     @nn.compact
     def __call__(self, x: Array) -> Array:
-        return lax.cond(self.type, self.grayscale, self.rgb, x)
+        if Args().args.grayscale:
+            return self.grayscale(x)
+        else:
+            return self.rgb(x)
