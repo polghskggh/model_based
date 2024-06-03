@@ -18,10 +18,10 @@ from src.singletons.writer import log
 class PPOStrategy(StrategyInterface):
     def __init__(self):
         if Args().args.algorithm == "dreamer":
-            state_shape = (Args().args.state_size, )
-            model = ActorCriticDreamer(state_shape, (Shape()[1], 1))
+            self.state_shape = (Args().args.state_size, )
+            model = ActorCriticDreamer(self.state_shape, (Shape()[1], 1))
         else:
-            state_shape = Shape()[0]
+            self.state_shape = Shape()[0]
             model = ActorCritic(Shape()[0], (Shape()[1], 1))
 
         self._actor_critic = ModelWrapper(model, "actor_critic")
@@ -33,11 +33,11 @@ class PPOStrategy(StrategyInterface):
 
         self._batch_shape = (self.trajectory_length, Args().args.num_agents)
 
-        self._trajectory_storage = self._init_storage(state_shape)
+        self._trajectory_storage = self._init_storage()
         self._iteration: int = 0
 
-    def _init_storage(self, state_shape):
-        return PPOStorage(observations=jnp.zeros((self._batch_shape) + state_shape),
+    def _init_storage(self):
+        return PPOStorage(observations=jnp.zeros((self._batch_shape) + self.state_shape),
                           rewards=jnp.zeros(self._batch_shape),
                           actions=jnp.zeros(self._batch_shape),
                           log_probs=jnp.zeros(self._batch_shape),
@@ -60,7 +60,7 @@ class PPOStrategy(StrategyInterface):
                                                             self._trajectory_storage.rewards,
                                                             self._trajectory_storage.dones, term_value.squeeze(),
                                                             Args().args.discount_factor, Args().args.gae_lambda)
-        batch_observations = self._trajectory_storage.observations.reshape(-1, *Shape()[0])
+        batch_observations = self._trajectory_storage.observations.reshape(-1, *self.state_shape)
         batch_actions = self._trajectory_storage.actions.reshape(-1)
         batch_log_probs = self._trajectory_storage.log_probs.reshape(-1)
         batch_advantages = advantages.reshape(-1)
