@@ -12,7 +12,7 @@ def mean_squared_error(state, params, teacher_outputs, *inputs, **kwargs):
 
 def image_loss_fn(pixels, teacher_pixels):
     print(pixels.shape, teacher_pixels.shape)
-    teacher_pixels = jnp.astype(teacher_pixels, jnp.int32)
+    teacher_pixels = jnp.squeeze(jnp.astype(teacher_pixels, jnp.int32))
     return jnp.mean(jnp.minimum(softmax_cross_entropy_with_integer_labels(pixels, teacher_pixels),
                                 Args().args.pixel_loss_const))
 
