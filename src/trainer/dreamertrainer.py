@@ -72,7 +72,7 @@ class DreamerTrainer(Trainer):
         observations = observations.reshape(-1, *observations.shape[2:])
         n_channels = Shape()[0][2] // Args().args.frame_stack
         observations = lax.slice_in_dim(observations, (Args().args.frame_stack - 1) * n_channels,
-                                        None, axis=1)
+                                        None, axis=-1)
         rewards = rewards.reshape(-1)
 
         batch_size = Args().args.batch_size
