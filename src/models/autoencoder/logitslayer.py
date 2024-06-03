@@ -16,4 +16,4 @@ class LogitsLayer(nn.Module):
         red = self.red(x)
         green = self.green(x)
         blue = self.blue(x)
-        return jnp.stack((red, green, blue), axis=-1)
+        return jnp.stack((red, green, blue), axis=jnp.ndim(red) - 1)
