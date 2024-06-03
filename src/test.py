@@ -87,7 +87,6 @@ def test_deterministic_on_loaded_data():
                                   jnp.asarray(files["action"]),
                                   jnp.asarray(files["next_frame"]))
 
-    observation = vmap(tile_image)(observation)
     for _ in range(10):
         grads = autoencoder.train_step(observation[:10], stack[:10], action[:10])
         autoencoder.apply_grads(grads)

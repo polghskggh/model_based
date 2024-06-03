@@ -1,17 +1,14 @@
 import distrax
-import jax
+import jax.numpy as jnp
 import optax
-from jax import value_and_grad, vmap
+from jax import value_and_grad
 
 from src.models.initalizer.modelstrategy import ModelStrategy
-from src.models.lossfuns import mean_squared_error
+from src.models.lossfuns import reward_loss_fn, image_loss_fn
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
-from src.singletons.writer import Writer, log
+from src.singletons.writer import log
 from src.trainer.trainer import Trainer
-import jax.numpy as jnp
-
-from src.utils.rl import tile_image
 
 
 class DreamerTrainer(Trainer):
@@ -78,7 +75,6 @@ class DreamerTrainer(Trainer):
         batch_size = Args().args.batch_size
         observation_loss, reward_loss = 0, 0
         num_batches = 0
-        observations = vmap(tile_image)(observations)
 
         for start_idx in range(0, observations.shape[0], Args().args.batch_size):
             num_batches += 1
@@ -87,13 +83,12 @@ class DreamerTrainer(Trainer):
             pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
             print(pixels.shape, observations[batch_slice].shape)
 
-            observation_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(pixels,
-                                                                                         observations[batch_slice]))
+            observation_loss += image_loss_fn(pixels, observations[batch_slice])
 
             key = "reward"
             reward_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
             teacher_rewards = jnp.astype(rewards[batch_slice], jnp.int32)
-            reward_loss += jnp.mean(optax.softmax_cross_entropy_with_integer_labels(reward_logits, teacher_rewards))
+            reward_loss += reward_loss_fn(reward_logits, teacher_rewards)
 
         observation_loss /= num_batches
         reward_loss /= num_batches

@@ -12,7 +12,6 @@ from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
 from src.trainer.saetrainer import SAETrainer
-from src.utils.rl import tile_image, reverse_tile_image
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 import flax.linen as nn
@@ -38,7 +37,6 @@ class SimpleWorldModel(WorldModelInterface):
         next_frames, rewards_logits = self._model.forward(self._frame_stack.frames, actions)
         next_frames = nn.softmax(next_frames)
         rewards = jnp.argmax(nn.softmax(rewards_logits), axis=-1)
-        next_frames = vmap(reverse_tile_image)(next_frames)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         rewards = rewards.squeeze()
@@ -51,7 +49,6 @@ class SimpleWorldModel(WorldModelInterface):
         return self._frame_stack.frames, {}
 
     def _deterministic_update(self, stack, actions, rewards, next_frame):
-        next_frame = vmap(tile_image)(next_frame)
         batch_size = Args().args.batch_size
         for start_idx in range(0, stack.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)

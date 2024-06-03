@@ -74,3 +74,9 @@ def run_episode(agent: Agent, world_model: Optional[WorldModelInterface], envs: 
 
 if __name__ == '__main__':
     main()
+    # TODO: try gym = 0.23.1 for mario
+    # presentation
+    # slides 10 - 15
+    #
+    #
+    #

@@ -82,6 +82,7 @@ def parse_simple(parser):
     parser.add_argument('--pixel_reward', type=int, default=0.5, help='pixel loss weight')
     parser.add_argument('--kl_loss', type=int, default=0.8, help='KL divergence weight')
     parser.add_argument('--rewards', type=int, default=200, help='Simple: number of possible reward values')
+    parser.add_argument('--pixel_loss_const', type=int, default=0.03, help='Simple: minimum pixel loss')
     return parser
 
 

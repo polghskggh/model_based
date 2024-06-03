@@ -1,6 +1,5 @@
 
 import jax
-import rlax
 from jax import vmap, jit
 import jax.numpy as jnp
 
