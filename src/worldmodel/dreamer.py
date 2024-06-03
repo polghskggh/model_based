@@ -109,7 +109,8 @@ class Dreamer(WorldModelInterface):
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
 
-        return self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape), jnp.zeros(imagined_reward.shape), {}
+        return (self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape, dtype=bool),
+                jnp.zeros(imagined_reward.shape, dtype=bool), {})
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
         key = Key().key(1)
@@ -132,8 +133,8 @@ class Dreamer(WorldModelInterface):
         params = {key: model.params for key, model in self.models.items()}
         grads = self.trainer.train_step(observations, actions, rewards, params)
 
-        self.initial_beliefs = data.beliefs
-        self.initial_states = data.states
+        self.initial_beliefs = data.beliefs.reshape(-1, self.belief_size)
+        self.initial_states = data.states.reshape(-1, self.state_size)
         for key, model in self.models.items():
             if key == "transition":
                 continue

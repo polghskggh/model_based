@@ -103,6 +103,7 @@ class PPOStrategy(StrategyInterface):
 
     def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
         logits, value_estimate = self._actor_critic.forward(states)
+        logits = jnp.squeeze(logits)
         value_estimate = value_estimate.squeeze()
         policy = distrax.Categorical(logits)
         action = policy.sample(seed=Key().key(1))
