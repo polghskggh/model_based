@@ -1,8 +1,8 @@
 import distrax
 import jax.numpy as jnp
-import optax
-from jax import value_and_grad
+from jax import value_and_grad, lax
 
+from src.enviroment import Shape
 from src.models.initalizer.modelstrategy import ModelStrategy
 from src.models.lossfuns import reward_loss_fn, image_loss_fn
 from src.singletons.hyperparameters import Args
@@ -70,6 +70,9 @@ class DreamerTrainer(Trainer):
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
         observations = observations.reshape(-1, *observations.shape[2:])
+        n_channels = Shape()[0][2] // Args().args.frame_stack
+        observations = lax.slice_in_dim(observations, (Args().args.frame_stack - 1) * n_channels,
+                                        None, axis=1)
         rewards = rewards.reshape(-1)
 
         batch_size = Args().args.batch_size
