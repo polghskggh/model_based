@@ -1,12 +1,10 @@
 from typing import Any
 
-import gymnasium
 import numpy as np
-from gymnasium.core import WrapperObsType
-from gymnasium.spaces import Box
-from gymnasium import ObservationWrapper, Wrapper
-import gymnasium as gym
-from gymnasium.spaces.discrete import Discrete
+from gym.spaces import Box
+from gym import Wrapper
+from gym import ObservationWrapper
+import gym
 
 
 class ReshapeObservation(ObservationWrapper):
@@ -20,7 +18,7 @@ class ReshapeObservation(ObservationWrapper):
         self.observation_space = Box(low=low, high=high, shape=self.new_shape,
                                      dtype=env.observation_space.dtype)
 
-    def observation(self, observation: "LazyFrames"):
+    def observation(self, observation: Any):
         """
         transform observation from (Stack, Height, Width, Channel)
                                 to (Height, Width, Channel * Stack)
@@ -31,7 +29,7 @@ class ReshapeObservation(ObservationWrapper):
         return np.array(observation).transpose(*self.transpose).reshape(self.new_shape)
 
 
-class FrameSkip(ObservationWrapper):
+class FrameSkip(Wrapper):
     def __init__(self, env: gym.Env, skip: int):
         """Return only every `skip`-th frame"""
         super().__init__(env)
@@ -48,16 +46,3 @@ class FrameSkip(ObservationWrapper):
                 break
 
         return obs, total_reward, done, trunk, info
-
-
-class CompatibilityWrapper(Wrapper):
-    def __init__(self, env: gym.Env):
-        super().__init__(env)
-        self.observation_space = Box(low=env.observation_space.low, high=env.observation_space.high,
-                                     shape=env.observation_space.shape, dtype=env.observation_space.dtype)
-        self.action_space = Discrete(n=env.action_space.n)
-
-    def reset(
-        self, *, seed: int | None = None, options: dict[str, Any] | None = None
-    ) -> tuple[WrapperObsType, dict[str, Any]]:
-        return self.env.reset()

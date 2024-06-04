@@ -1,15 +1,13 @@
 import gym_super_mario_bros
 from gym_super_mario_bros.actions import RIGHT_ONLY
 
-import gymnasium as gym
-
-from gymnasium.wrappers import RecordEpisodeStatistics, StepAPICompatibility
-from gymnasium.wrappers import FrameStack, ResizeObservation
-from gymnasium.wrappers import GrayScaleObservation
-from gymnasium.wrappers import TimeLimit
+import gym
+from gym.wrappers import FrameStack, ResizeObservation
+from gym.wrappers import GrayScaleObservation
+from gym.wrappers import TimeLimit
 from nes_py.wrappers import JoypadSpace
 
-from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper
+from src.enviroment.wrappers import ReshapeObservation, FrameSkip
 from src.enviroment.shape import Shape
 from src.singletons.hyperparameters import Args
 
@@ -17,6 +15,7 @@ from src.singletons.hyperparameters import Args
 def make_envs():
     env_name = Args().args.env
     envs = gym.vector.SyncVectorEnv([lambda: make_env(env_name) for _ in range(Args().args.num_envs)])
+    #envs = make_env(env_name)
     return envs
 
 
@@ -47,16 +46,14 @@ def make_breakout() -> gym.Env:
     env = FrameStack(env, num_stack=Args().args.frame_stack)
     env = TimeLimit(env, max_episode_steps=Args().args.trajectory_length)
     env = ReshapeObservation(env)
-    print(type(env.action_space))
     Shape.initialize(env)
     return env
 
 
 def make_mario() -> gym.Env:
-    env = gym_super_mario_bros.make("SuperMarioBros-v0", render_mode='rgb', apply_api_compatibility=True)
+    env = gym_super_mario_bros.make("SuperMarioBros-v3")
     env = FrameSkip(env, skip=4)
     env = JoypadSpace(env, RIGHT_ONLY)
-    env = CompatibilityWrapper(env)
     env = optional_grayscale(env)
 
     env = ResizeObservation(env, shape=(84, 84))

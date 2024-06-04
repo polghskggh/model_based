@@ -9,7 +9,7 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
 def model_free_train_loop(agent: Agent, envs: gym.Env, increment: bool = True):
-    observation, _ = envs.reset()
+    observation = envs.reset()
     agent.receive_state(observation)
     writer = Writer().writer
     args = Args().args

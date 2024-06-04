@@ -1,22 +1,16 @@
-import os
-import shutil
 import time
-
 from typing import Optional
 
-import jax.random as jr
-import gymnasium as gym
+import gym
 from termcolor import colored
 from tqdm import tqdm
 
-from altmodel import make_env
 from src.agent.agent import Agent
 from src.enviroment import make_envs
 from src.gpu import check_gpu
 from src.modelbased import model_based_train_loop
 from src.modelfree import model_free_train_loop
 from src.singletons.hyperparameters import Args
-
 from src.singletons.step_traceker import StepTracker
 from src.singletons.writer import Writer
 from src.worldmodel.dreamer import Dreamer
@@ -46,7 +40,7 @@ def main():
 def run_experiment(agent: Agent, envs: gym.Env, world_model: Optional[WorldModelInterface] = None):
     start_time = time.time()
     writer = Writer().writer
-    initial_observation, _ = envs.reset(seed=Args().args.seed)
+    initial_observation = envs.reset()
     agent.receive_state(initial_observation)
 
     try:
