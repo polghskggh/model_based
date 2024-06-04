@@ -13,6 +13,7 @@ from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
 from src.singletons.writer import Writer, log
 from src.trainer.saetrainer import SAETrainer
+from src.utils.rl import process_reward
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 import flax.linen as nn
@@ -38,10 +39,9 @@ class SimpleWorldModel(WorldModelInterface):
         start_time = time.time()
         next_frames, rewards_logits = self._model.forward(self._frame_stack.frames, actions)
         next_frames = jnp.argmax(nn.softmax(next_frames), axis=-1, keepdims=True)
-        rewards = jnp.argmax(nn.softmax(rewards_logits), axis=-1)
+        rewards = process_reward(rewards_logits)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
-        rewards = rewards.squeeze()
         log({"Step time": (time.time() - start_time) // actions.shape[0]})
         return (self._frame_stack.frames, rewards, jnp.zeros(rewards.shape, dtype=bool),
                 jnp.zeros(rewards.shape, dtype=bool), {})

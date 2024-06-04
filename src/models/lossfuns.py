@@ -11,15 +11,25 @@ def mean_squared_error(state, params, teacher_outputs, *inputs, **kwargs):
 
 
 def image_loss_fn(pixels, teacher_pixels):
-    print(pixels.shape, teacher_pixels.shape)
     teacher_pixels = jnp.squeeze(jnp.astype(teacher_pixels, jnp.int32))
     return jnp.mean(jnp.maximum(softmax_cross_entropy_with_integer_labels(pixels, teacher_pixels),
                                 Args().args.pixel_loss_const))
 
 
+def softmax_reward(reward, teacher_reward):
+    teacher_reward = jnp.squeeze(jnp.astype(teacher_reward, jnp.int32))
+    return softmax_cross_entropy_with_integer_labels(reward, teacher_reward)
+
+
+def mse_reward(reward, teacher_reward):
+    return jnp.mean(optax.squared_error(reward, teacher_reward))
+
+
 def reward_loss_fn(reward, teacher_reward):
-    teacher_reward = jnp.astype(teacher_reward, jnp.int32)
-    return jnp.mean(softmax_cross_entropy_with_integer_labels(reward, teacher_reward))
+    if Args().args.rewards == 1:
+        return mse_reward(reward, teacher_reward)
+    else:
+        return softmax_reward(reward, teacher_reward)
 
 
 def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):

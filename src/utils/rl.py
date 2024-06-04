@@ -2,6 +2,10 @@
 import jax
 from jax import vmap, jit
 import jax.numpy as jnp
+import flax.linen as nn
+
+from src.singletons.hyperparameters import Args
+
 
 @jit
 def tile_image(image: jax.Array) -> jax.Array:
@@ -51,3 +55,10 @@ def generalized_advantage_estimation(values, rewards, discounts, lambda_):
     _, advantages = jax.lax.scan(fold_left, jnp.zeros(td_errors.shape[1]), (td_errors, discounts, lambda_),
                                  reverse=True)
     return advantages, advantages + truncated_values
+
+
+def process_reward(reward):
+    if Args().args.rewards == 1:
+        return reward
+    else:
+        return jnp.squeeze(jnp.argmax(nn.softmax(reward), axis=-1))
