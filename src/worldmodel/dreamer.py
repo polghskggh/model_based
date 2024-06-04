@@ -1,3 +1,4 @@
+import time
 from typing import Tuple
 
 import jax
@@ -17,6 +18,7 @@ from src.trainer.dreamertrainer import DreamerTrainer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 import jax.random as jr
 import gymnasium as gym
+from src.singletons.writer import log
 
 import flax.linen as nn
 
@@ -104,11 +106,13 @@ class Dreamer(WorldModelInterface):
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
         print(self.prev_state.shape, action.shape, self.prev_belief.shape)
+        start_time = time.time()
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = jnp.argmax(nn.softmax(imagined_reward_logits), axis=-1)
 
+        log({"Step time": (time.time() - start_time) // action.shape[0]})
         return (self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape, dtype=bool),
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
 

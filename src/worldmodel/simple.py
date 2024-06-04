@@ -1,4 +1,4 @@
-from typing import Tuple
+import time
 
 import gym
 import jax
@@ -11,6 +11,7 @@ from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
+from src.singletons.writer import Writer, log
 from src.trainer.saetrainer import SAETrainer
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
@@ -34,12 +35,14 @@ class SimpleWorldModel(WorldModelInterface):
         self._time_step = 0
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
+        start_time = time.time()
         next_frames, rewards_logits = self._model.forward(self._frame_stack.frames, actions)
         next_frames = jnp.argmax(nn.softmax(next_frames), axis=-1, keepdims=True)
         rewards = jnp.argmax(nn.softmax(rewards_logits), axis=-1)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         rewards = rewards.squeeze()
+        log({"Step time": (time.time() - start_time) // actions.shape[0]})
         return (self._frame_stack.frames, rewards, jnp.zeros(rewards.shape, dtype=bool),
                 jnp.zeros(rewards.shape, dtype=bool), {})
 
