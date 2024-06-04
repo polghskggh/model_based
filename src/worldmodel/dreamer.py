@@ -113,7 +113,7 @@ class Dreamer(WorldModelInterface):
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = process_reward(imagined_reward_logits)
 
-        log({"Step time": (time.time() - start_time) // action.shape[0]})
+        log({"Step time": (time.time() - start_time) / action.shape[0]})
         return (self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape, dtype=bool),
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
 

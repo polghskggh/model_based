@@ -42,7 +42,7 @@ class SimpleWorldModel(WorldModelInterface):
         rewards = process_reward(rewards_logits)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
-        log({"Step time": (time.time() - start_time) // actions.shape[0]})
+        log({"Step time": (time.time() - start_time) / actions.shape[0]})
         return (self._frame_stack.frames, rewards, jnp.zeros(rewards.shape, dtype=bool),
                 jnp.zeros(rewards.shape, dtype=bool), {})
 
