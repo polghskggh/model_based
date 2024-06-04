@@ -19,6 +19,7 @@ from src.singletons.hyperparameters import Args
 
 from src.singletons.step_traceker import StepTracker
 from src.singletons.writer import Writer
+from src.test import test
 from src.worldmodel.dreamer import Dreamer
 from src.worldmodel.simple import SimpleWorldModel
 from src.worldmodel.worldmodelinterface import WorldModelInterface

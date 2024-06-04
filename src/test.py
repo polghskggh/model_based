@@ -1,4 +1,4 @@
-
+import gym_super_mario_bros
 import gymnasium as gym
 import jax.numpy as jnp
 from gymnasium.wrappers import ResizeObservation
@@ -193,12 +193,19 @@ def test_baseline():
     # ppo.learn(total_timesteps=25000)
     pass
 
+
+def test_mario_make():
+    env = gym_super_mario_bros.make("SuperMarioBros-v3", render_mode="rgb_array", apply_api_compatibility=True)
+    print(env.reset())
+
+
 def test():
     #test_baseline()
     #test_mario_env()
-    test_ppo()
+    # test_ppo()
     #test_dqn()
     #test_stochastic_autoencoder()
+    test_mario_make()
 
 
 if __name__ == '__main__':

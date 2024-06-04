@@ -3,7 +3,6 @@ from gym_super_mario_bros.actions import RIGHT_ONLY
 
 import gymnasium as gym
 
-from gymnasium.wrappers import RecordEpisodeStatistics, StepAPICompatibility
 from gymnasium.wrappers import FrameStack, ResizeObservation
 from gymnasium.wrappers import GrayScaleObservation
 from gymnasium.wrappers import TimeLimit
@@ -53,13 +52,13 @@ def make_breakout() -> gym.Env:
 
 
 def make_mario() -> gym.Env:
-    env = gym_super_mario_bros.make("SuperMarioBros-v0", render_mode='rgb', apply_api_compatibility=True)
-    env = FrameSkip(env, skip=4)
+    env = gym_super_mario_bros.make("SuperMarioBros-v3", render_mode="rgb_array", apply_api_compatibility=True)
     env = JoypadSpace(env, RIGHT_ONLY)
-    env = CompatibilityWrapper(env)
-    env = optional_grayscale(env)
 
-    env = ResizeObservation(env, shape=(84, 84))
+    env = CompatibilityWrapper(env)
+    env = FrameSkip(env, skip=4)
+    env = optional_grayscale(env)
+    env = ResizeObservation(env, shape=(105, 80))
     env = FrameStack(env, num_stack=Args().args.frame_stack)
     env = TimeLimit(env, max_episode_steps=Args().args.trajectory_length)
     env = ReshapeObservation(env)

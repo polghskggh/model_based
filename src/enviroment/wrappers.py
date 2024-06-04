@@ -1,8 +1,8 @@
-from typing import Any
+from typing import Any, SupportsFloat
 
 import gymnasium
 import numpy as np
-from gymnasium.core import WrapperObsType
+from gymnasium.core import WrapperObsType, WrapperActType
 from gymnasium.spaces import Box
 from gymnasium import ObservationWrapper, Wrapper
 import gymnasium as gym
@@ -31,7 +31,7 @@ class ReshapeObservation(ObservationWrapper):
         return np.array(observation).transpose(*self.transpose).reshape(self.new_shape)
 
 
-class FrameSkip(ObservationWrapper):
+class FrameSkip(Wrapper):
     def __init__(self, env: gym.Env, skip: int):
         """Return only every `skip`-th frame"""
         super().__init__(env)
@@ -61,3 +61,8 @@ class CompatibilityWrapper(Wrapper):
         self, *, seed: int | None = None, options: dict[str, Any] | None = None
     ) -> tuple[WrapperObsType, dict[str, Any]]:
         return self.env.reset()
+
+    def step(
+        self, action: WrapperActType
+    ) -> tuple[WrapperObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+        return self.env.step(action.item())
