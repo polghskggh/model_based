@@ -22,14 +22,15 @@ def softmax_reward(reward, teacher_reward):
 
 
 def mse_reward(reward, teacher_reward):
-    return jnp.mean(optax.squared_error(reward, teacher_reward))
+    return optax.squared_error(reward, teacher_reward)
 
 
 def reward_loss_fn(reward, teacher_reward):
     if Args().args.rewards == 1:
-        return mse_reward(reward, teacher_reward)
+        loss = mse_reward(reward, teacher_reward)
     else:
-        return softmax_reward(reward, teacher_reward)
+        loss = softmax_reward(reward, teacher_reward)
+    return jnp.mean(loss)
 
 
 def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):

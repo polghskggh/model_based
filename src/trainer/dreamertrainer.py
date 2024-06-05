@@ -84,14 +84,12 @@ class DreamerTrainer(Trainer):
             batch_slice = slice(start_idx, start_idx + batch_size)
             key = "observation"
             pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
-            print(pixels.shape, observations[batch_slice].shape)
 
             observation_loss += image_loss_fn(pixels, observations[batch_slice])
 
             key = "reward"
             reward_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
-            teacher_rewards = jnp.astype(rewards[batch_slice], jnp.int32)
-            reward_loss += reward_loss_fn(reward_logits, teacher_rewards)
+            reward_loss += reward_loss_fn(reward_logits, rewards[batch_slice])
 
         observation_loss /= num_batches
         reward_loss /= num_batches
