@@ -22,7 +22,7 @@ def softmax_reward(reward, teacher_reward):
 
 
 def mse_reward(reward, teacher_reward):
-    return optax.squared_error(reward, teacher_reward)
+    return optax.squared_error(reward.squeeze(), teacher_reward.squeeze())
 
 
 def reward_loss_fn(reward, teacher_reward):

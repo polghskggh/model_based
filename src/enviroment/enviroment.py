@@ -26,6 +26,7 @@ def make_env(env_name: str = "breakout") -> gym.Env:
     """
     if env_name == "mario":
         env = make_mario()
+        print(env.action_space)
     else:
         env = make_breakout()
     return env
@@ -54,7 +55,6 @@ def make_breakout() -> gym.Env:
 def make_mario() -> gym.Env:
     env = gym_super_mario_bros.make("SuperMarioBros-v3", render_mode="rgb_array", apply_api_compatibility=True)
     env = JoypadSpace(env, RIGHT_ONLY)
-
     env = CompatibilityWrapper(env)
     env = FrameSkip(env, skip=4)
     env = optional_grayscale(env)
