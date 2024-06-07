@@ -123,11 +123,11 @@ def parse_args():
 def make_env(env_id: string, idx: int, capture_video: bool, run_name: string):
     def thunk():
         if capture_video:
-            env = gym.make(env_id, render_mode='rgb_array')
+            env = gym.make(env_id, frameskip=1, render_mode='rgb_array')
             if idx == 0:
                 env = gym.wrappers.RecordVideo(env, f"videos/{env_id}")
         else:
-            env = gym.make(env_id)
+            env = gym.make(env_id, frameskip=1)
         env = gym.wrappers.RecordEpisodeStatistics(env)
         env = gym.wrappers.AtariPreprocessing(env, grayscale_newaxis=True, scale_obs=True)
         return env
