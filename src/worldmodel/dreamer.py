@@ -106,7 +106,6 @@ class Dreamer(WorldModelInterface):
                                       reward_model.model)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
-        print(self.prev_state.shape, action.shape, self.prev_belief.shape)
         start_time = time.time()
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
