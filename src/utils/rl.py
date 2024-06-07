@@ -59,6 +59,6 @@ def generalized_advantage_estimation(values, rewards, discounts, lambda_):
 
 def process_reward(reward):
     if Args().args.rewards == 1:
-        return reward
+        return jnp.squeeze(reward)
     else:
         return jnp.squeeze(jnp.argmax(nn.softmax(reward), axis=-1))
