@@ -106,7 +106,7 @@ def parse_args():
     parser.add_argument('--max-grad-norm', type=float, default=0.5, help='the maximum norm for the gradient clipping')
     parser.add_argument('--seed', type=int, default=1, help='seed for reproducible benchmarks')
     parser.add_argument('--exp-name', type=str, default='PPO Atari', help='unique experiment name')
-    parser.add_argument('--env-id', type=str, default='KungFuMasterNoFrameskip-v4', help='id of the environment')
+    parser.add_argument('--env-id', type=str, default='ALE/Breakout-v5', help='id of the environment')
     parser.add_argument('--capture-video', type=bool, default=False, help='whether to save video of agent gameplay')
     parser.add_argument('--track', type=bool, default=False, help='whether to track project with W&B')
     parser.add_argument("--wandb-project-name", type=str, default="RL-Flax", help="the wandb's project name")
