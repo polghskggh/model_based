@@ -64,7 +64,6 @@ class SimpleWorldModel(WorldModelInterface):
 
     def update(self, storage: TransitionStorage):
         print("Updating model")
-        print(storage.observations.shape, storage.actions.shape, storage.rewards.shape, storage.next_observations.shape)
         update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
         for _ in range(Args().args.num_epochs):
             update_fn(storage.observations, storage.actions, storage.rewards, storage.next_observations)
@@ -93,6 +92,10 @@ class SimpleWrapper(gym.Wrapper):
                                           rewards=jnp.zeros(batch_shape),
                                           next_observations=jnp.zeros(batch_shape + (Shape()[0][0], Shape()[0][1],
                                                                        self.n_channels)))
+
+    def reset(self):
+        self.last_observation, info = self.env.reset()
+        return self.last_observation, info
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)

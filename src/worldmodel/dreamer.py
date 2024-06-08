@@ -24,39 +24,6 @@ from src.singletons.writer import log
 import flax.linen as nn
 
 
-class DreamerWrapper(gym.Wrapper):
-    representation_model: ModelWrapper
-    prev_state: jax.Array
-    prev_belief: jax.Array
-
-    def __init__(self, env, representation_model: ModelWrapper):
-        super().__init__(env)
-        self.representation_model = representation_model
-        batch_shape = (Args().args.trajectory_length,
-                       Args().args.num_envs)
-        self.prev_belief = jnp.zeros((Args().args.num_envs, Args().args.belief_size))
-        self.prev_state = jnp.zeros((Args().args.num_envs, Args().args.state_size))
-        self.timestep = 0
-        self.storage = DreamerStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
-                                      actions=jnp.zeros(batch_shape),
-                                      rewards=jnp.zeros(batch_shape),
-                                      beliefs=jnp.zeros(batch_shape + (Args().args.belief_size,)),
-                                      states=jnp.zeros(batch_shape + (Args().args.state_size,)))
-
-    def step(self, action):
-        observation, reward, term, trunc, info = self.env.step(action)
-        belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
-                                                                      self.prev_belief, observation)
-        self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
-                             beliefs=self.prev_belief, states=self.prev_state)
-        self.prev_belief = belief
-        self.prev_state = state
-
-        self.timestep += 1
-        self._timestep %= Args().args.trajectory_length
-        return self.prev_state, reward, term, trunc, info
-
-
 class Dreamer(WorldModelInterface):
     def __init__(self, envs):
         self.num_agents = Args().args.num_agents
@@ -140,3 +107,37 @@ class Dreamer(WorldModelInterface):
 
     def wrap_env(self, envs):
         return DreamerWrapper(envs, self.models["representation"])
+
+
+class DreamerWrapper(gym.Wrapper):
+    representation_model: ModelWrapper
+    prev_state: jax.Array
+    prev_belief: jax.Array
+
+    def __init__(self, env, representation_model: ModelWrapper):
+        super().__init__(env)
+        self.representation_model = representation_model
+        batch_shape = (Args().args.trajectory_length,
+                       Args().args.num_envs)
+        self.prev_belief = jnp.zeros((Args().args.num_envs, Args().args.belief_size))
+        self.prev_state = jnp.zeros((Args().args.num_envs, Args().args.state_size))
+        self.timestep = 0
+        self.storage = DreamerStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
+                                      actions=jnp.zeros(batch_shape),
+                                      rewards=jnp.zeros(batch_shape),
+                                      beliefs=jnp.zeros(batch_shape + (Args().args.belief_size,)),
+                                      states=jnp.zeros(batch_shape + (Args().args.state_size,)))
+
+    def step(self, action):
+        observation, reward, term, trunc, info = self.env.step(action)
+        belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
+                                                                      self.prev_belief, observation)
+        self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
+                             beliefs=self.prev_belief, states=self.prev_state)
+        self.prev_belief = belief
+        self.prev_state = state
+
+        self.timestep += 1
+        self._timestep %= Args().args.trajectory_length
+        return self.prev_state, reward, term, trunc, info
+
