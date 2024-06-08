@@ -134,6 +134,6 @@ class DreamerWrapper(gym.Wrapper):
         self.prev_state = state
 
         self.timestep += 1
-        self._timestep %= Args().args.trajectory_length
+        self.timestep %= Args().args.trajectory_length
         return self.prev_state, reward, term, trunc, info
 
