@@ -44,8 +44,7 @@ class DreamerTrainer(Trainer):
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
-        return grads
-        ## This is all wrong, grads get overwritten in the loo
+        return self.models
 
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
@@ -68,6 +67,7 @@ class DreamerTrainer(Trainer):
             prior_std_devs = prior_std_devs.at[idx].set(data[3])
             posterior_means = posterior_means.at[idx].set(data[4])
             posterior_std_devs = posterior_std_devs.at[idx].set(data[5])
+            jax.debug.print("debug {done} {belief} {states}", done=dones[idx], belief=beliefs[idx].shape, states=states[idx].shape)
             belief = jnp.where(dones[idx], jnp.zeros_like(beliefs[idx], beliefs[idx]))
             state = jnp.where(dones[idx], jnp.zeros_like(states[idx]), states[idx])
 
