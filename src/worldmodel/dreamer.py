@@ -120,6 +120,10 @@ class DreamerWrapper(gym.Wrapper):
                                       beliefs=jnp.zeros(batch_shape + (Args().args.belief_size,)),
                                       states=jnp.zeros(batch_shape + (Args().args.state_size,)))
 
+    def reset(self):
+        _, info = self.env.reset()
+        return self.prev_state, info
+
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
         print(self.prev_state)
