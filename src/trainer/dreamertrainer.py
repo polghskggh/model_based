@@ -69,8 +69,9 @@ class DreamerTrainer(Trainer):
             posterior_means = posterior_means.at[idx].set(data[4])
             posterior_std_devs = posterior_std_devs.at[idx].set(data[5])
 
-            belief = jnp.where(jnp.astype(dones[idx], jnp.bool_), jnp.zeros_like(beliefs[idx]), beliefs[idx])
-            state = jnp.where(jnp.astype(dones[idx], jnp.bool_), jnp.zeros_like(beliefs[idx]), states[idx])
+            condition = jnp.expand_dims(jnp.astype(dones[idx], jnp.bool_), -1)
+            belief = jnp.where(condition, jnp.zeros_like(beliefs[idx]), beliefs[idx])
+            state = jnp.where(condition, jnp.zeros_like(beliefs[idx]), states[idx])
 
         beliefs = beliefs.reshape(-1, Args().args.belief_size)
         prior_means = prior_means.reshape(-1)
