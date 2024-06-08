@@ -109,6 +109,7 @@ class PPOStrategy(StrategyInterface):
                  "value_loss": value_loss})
 
     def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
+        print(states.shape, store_trajectories)
         logits, value_estimate = self._actor_critic.forward(states)
         logits = jnp.squeeze(logits)
         value_estimate = value_estimate.squeeze()
