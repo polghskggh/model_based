@@ -29,9 +29,11 @@ def world_model_factory(envs):
     args = Args().args
     match args.algorithm:
         case "simple":
-            return SimpleWorldModel(True)
+            world_model = SimpleWorldModel(True)
+            return world_model, world_model.wrap_env(envs)
         case "dreamer":
-            return Dreamer(envs)
+            world_model = Dreamer(envs)
+            return world_model, world_model.wrap_env(envs)
         case _:
             return None
 
@@ -40,7 +42,7 @@ def main():
     check_gpu()
     envs = make_envs()
     agent = Agent(Args().args.algorithm)
-    world_model = world_model_factory(envs)
+    world_model, envs = world_model_factory(envs)
     run_experiment(agent, envs, world_model)
 
 
@@ -73,9 +75,6 @@ def run_episode(agent: Agent, world_model: Optional[WorldModelInterface], envs: 
 
 if __name__ == '__main__':
     main()
-    # TODO: try gym = 0.23.1 for mario
     # presentation
     # slides 10 - 15
-    #
-    #
     #

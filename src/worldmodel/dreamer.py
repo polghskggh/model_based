@@ -43,17 +43,6 @@ class DreamerWrapper(gym.Wrapper):
                                       beliefs=jnp.zeros(batch_shape + (Args().args.belief_size,)),
                                       states=jnp.zeros(batch_shape + (Args().args.state_size,)))
 
-    def reset(self, **kwargs):
-        observation, info = self.env.reset(**kwargs)
-        batch = Args().args.num_envs
-        self.prev_belief, self.prev_state, _, _, _, _ = (
-            self.representation_model.forward(jnp.zeros((batch, self.representation_model.model.state_size)),
-                                              jnp.zeros(batch),
-                                              jnp.zeros((batch, self.representation_model.model.belief_size)),
-                                              observation))
-        self.timestep = 0
-        return self.prev_state, info
-
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
@@ -64,6 +53,7 @@ class DreamerWrapper(gym.Wrapper):
         self.prev_state = state
 
         self.timestep += 1
+        self._timestep %= Args().args.trajectory_length
         return self.prev_state, reward, term, trunc, info
 
 
@@ -148,5 +138,5 @@ class Dreamer(WorldModelInterface):
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
 
-    def wrap_env(self, env):
-        return DreamerWrapper(env, self.models["representation"])
+    def wrap_env(self, envs):
+        return DreamerWrapper(envs, self.models["representation"])

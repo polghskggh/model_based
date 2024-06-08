@@ -2,5 +2,6 @@ from src.singletons.hyperparameters import Args
 
 
 def linear_schedule(count):
-    frac = 1.0 - (count // Args().args.num_minibatches) / Args().args.num_episodes
-    return Args().args.learning_rate * frac
+    args = Args().args
+    fraction = 1.0 - (count // (args.num_minibatches * args.update_epochs)) / args.num_updates
+    return args.learning_rate * fraction

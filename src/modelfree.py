@@ -16,7 +16,8 @@ def write_returns(infos):
             writer.add_scalar("charts/episodic_length", info["episode"]["l"], int(StepTracker()))
 
 
-def model_free_train_loop(agent: Agent, envs: gym.Env, increment: bool = True, steps=Args().args.trajectory_length):
+def model_free_train_loop(agent: Agent, envs: gym.Env | WorldModelInterface, increment: bool = True,
+                          steps=Args().args.trajectory_length):
     for step in range(steps):
         reward, done, infos = interact(agent, envs)
 

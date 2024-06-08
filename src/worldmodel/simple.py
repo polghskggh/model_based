@@ -92,12 +92,6 @@ class SimpleWrapper(gym.Wrapper):
                                           next_observations=jnp.zeros(batch_shape + (Shape()[0][0], Shape()[0][1],
                                                                        self.n_channels)))
 
-    def reset(self, **kwargs):
-        observation, info = self.env.reset(**kwargs)
-        self.last_observation = observation
-        self._timestep = 0
-        return observation, info
-
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
 
@@ -108,6 +102,7 @@ class SimpleWrapper(gym.Wrapper):
         self._storage = store(self._storage, store_slice, observations=self.last_observation, actions=action,
                               rewards=reward, next_observations=next_observations)
         self._timestep += 1
+        self._timestep %= Args().args.trajectory_length
         self.last_observation = observation
         return observation, reward, term, trunc, info
 
