@@ -12,38 +12,44 @@ from src.trainer.trainer import Trainer
 
 
 class DreamerTrainer(Trainer):
-    def __init__(self, representation_model, observation_model, reward_model):
-        self.batch_size = Args().args.batch_size
+    def __init__(self, models: dict):
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
-        self.init_belief = jnp.zeros((Args().args.num_envs, self.belief_size))
-        self.init_state = jnp.zeros((Args().args.num_envs, self.state_size))
 
-        self.models = {"representation": representation_model,
-                       "observation": observation_model,
-                       "reward": reward_model}
+        self.last_belief = jnp.zeros((Args().args.num_envs, self.belief_size))
+        self.last_state = jnp.zeros((Args().args.num_envs, self.state_size))
 
-        initializer = ModelStrategy()
-        self.optims = {key: initializer.init_optim() for key in self.models.keys()}
+        self.models = models
 
-    def train_step(self, observations, actions, rewards, params: dict):
-        belief = jnp.zeros((observations.shape[1], self.belief_size))
-        state = jnp.zeros((observations.shape[1], self.state_size))
+    def apply_grads(self, grads):
+        for key in grads.keys():
+            self.models[key].apply_grads(grads[key])
 
+    def train_step(self, observations, actions, rewards, dones):
         rng = {"normal": Key().key()}
+
+        keys_to_select = ['representation', 'observation', 'reward']
+        params = {key: self.models[key].params for key, in keys_to_select}
+        models = {key: self.models[key].model for key in keys_to_select}
 
         batch_size = Args().args.batch_size
         for start_idx in range(0, observations.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
-            data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], state, belief)
-            (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(self.models, params, data, rng)
-            belief, state = aux["data"]
+            data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], dones[batch_slice],
+                    self.last_state, self.last_belief)
+            (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
+            self.apply_grads(grads)
+            self.last_belief, self.last_state = aux["data"]
             log(aux["info"])
+
+        new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
+        self.models["transition"].params = new_params
         return grads
+        ## This is all wrong, grads get overwritten in the loo
 
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
-        observations, actions, rewards, state, belief = data
+        observations, actions, rewards, dones, state, belief = data
 
         beliefs = jnp.zeros((observations.shape[0], Args().args.num_envs, Args().args.belief_size))
         state_shape = (observations.shape[0], Args().args.num_envs, Args().args.state_size)
@@ -62,8 +68,8 @@ class DreamerTrainer(Trainer):
             prior_std_devs = prior_std_devs.at[idx].set(data[3])
             posterior_means = posterior_means.at[idx].set(data[4])
             posterior_std_devs = posterior_std_devs.at[idx].set(data[5])
-            belief = beliefs[idx]
-            state = states[idx]
+            belief = jnp.where(dones[idx], jnp.zeros_like(beliefs[idx], beliefs[idx]))
+            state = jnp.where(dones[idx], jnp.zeros_like(states[idx]), states[idx])
 
         beliefs = beliefs.reshape(-1, Args().args.belief_size)
         prior_means = prior_means.reshape(-1)

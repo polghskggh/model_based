@@ -59,8 +59,7 @@ class Dreamer(WorldModelInterface):
                        "reward": reward_model,
                        "transition": transition_model}
 
-        self.trainer = DreamerTrainer(representation_model.model, observation_model.model,
-                                      reward_model.model)
+        self.trainer = DreamerTrainer(self.models)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
         start_time = time.time()
@@ -91,19 +90,11 @@ class Dreamer(WorldModelInterface):
     def update(self, data):
         observations, actions, rewards, dones = data.observations, data.actions, data.rewards, data.dones
 
-        params = {key: model.params for key, model in self.models.items()}
-        grads = self.trainer.train_step(observations, actions, rewards, params)
+        self.models = self.trainer.train_step(observations, actions, rewards, dones)
 
         self.initial_beliefs = data.beliefs.reshape(-1, self.belief_size)
         self.initial_states = data.states.reshape(-1, self.state_size)
-        for key, model in self.models.items():
-            if key == "transition":
-                continue
 
-            model.apply_grads(grads[key])
-
-        new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
-        self.models["transition"].params = new_params
 
     def wrap_env(self, envs):
         return DreamerWrapper(envs, self.models["representation"])
