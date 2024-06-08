@@ -8,26 +8,24 @@ from src.singletons.writer import Writer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
-def model_free_train_loop(agent: Agent, envs: gym.Env, increment: bool = True):
-    observation, _ = envs.reset()
-    agent.receive_state(observation)
+def write_returns(infos):
     writer = Writer().writer
-    args = Args().args
+    for info in infos["final_info"]:
+        if info is not None:
+            writer.add_scalar("charts/episodic_return", info["episode"]["r"], int(StepTracker()))
+            writer.add_scalar("charts/episodic_length", info["episode"]["l"], int(StepTracker()))
 
-    returns = jnp.zeros(observation.shape[0])
-    for step in range(args.trajectory_length):
-        if increment:
-            StepTracker().increment(args.num_agents)
 
+def model_free_train_loop(agent: Agent, envs: gym.Env, increment: bool = True, steps=Args().args.trajectory_length):
+    for step in range(steps):
         reward, done, infos = interact(agent, envs)
-        returns += reward
+
+        if increment:
+            StepTracker().increment(Args().args.num_agents)
 
         # Only print when at least 1 env is done
-        if not any(done) or not increment:
-            continue
-
-        for ret in returns:
-            writer.add_scalar("charts/episodic_return", ret, int(StepTracker()))
+        if increment and jnp.any(done):
+            write_returns(infos)
 
 
 def interact(agent: Agent, environment: WorldModelInterface | gym.Env):

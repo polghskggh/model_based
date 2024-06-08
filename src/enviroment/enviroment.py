@@ -3,7 +3,7 @@ from gym_super_mario_bros.actions import RIGHT_ONLY
 
 import gymnasium as gym
 
-from gymnasium.wrappers import FrameStack, ResizeObservation
+from gymnasium.wrappers import FrameStack, ResizeObservation, RecordEpisodeStatistics
 from gymnasium.wrappers import GrayScaleObservation
 from gymnasium.wrappers import TimeLimit
 from nes_py.wrappers import JoypadSpace
@@ -33,7 +33,12 @@ def make_env(env_name: str = "breakout") -> gym.Env:
 
 
 def apply_common_wrappers(env: gym.Env):
-
+    env = RecordEpisodeStatistics(env)
+    env = ResizeObservation(env, shape=(105, 80))
+    env = optional_grayscale(env)
+    env = FrameStack(env, num_stack=Args().args.frame_stack)
+    env = ReshapeObservation(env)
+    Shape.initialize(env)
     return env
 
 
@@ -42,13 +47,7 @@ def make_breakout() -> gym.Env:
     Create the Breakout environment
     """
     env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="rgb_array")
-    env = ResizeObservation(env, shape=(105, 80))
-    env = optional_grayscale(env)
-    env = FrameStack(env, num_stack=Args().args.frame_stack)
-    env = TimeLimit(env, max_episode_steps=Args().args.trajectory_length)
-    env = ReshapeObservation(env)
-    print(type(env.action_space))
-    Shape.initialize(env)
+    env = apply_common_wrappers(env)
     return env
 
 
@@ -57,12 +56,7 @@ def make_mario() -> gym.Env:
     env = JoypadSpace(env, RIGHT_ONLY)
     env = CompatibilityWrapper(env)
     env = FrameSkip(env, skip=4)
-    env = optional_grayscale(env)
-    env = ResizeObservation(env, shape=(105, 80))
-    env = FrameStack(env, num_stack=Args().args.frame_stack)
-    env = TimeLimit(env, max_episode_steps=Args().args.trajectory_length)
-    env = ReshapeObservation(env)
-    Shape.initialize(env)
+    env = apply_common_wrappers(env)
     return env
 
 

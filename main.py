@@ -47,11 +47,12 @@ def main():
 def run_experiment(agent: Agent, envs: gym.Env, world_model: Optional[WorldModelInterface] = None):
     start_time = time.time()
     writer = Writer().writer
+
     initial_observation, _ = envs.reset(seed=Args().args.seed)
     agent.receive_state(initial_observation)
 
     try:
-        for _ in tqdm(range(1, Args().args.num_episodes + 1)):
+        for _ in tqdm(range(1, Args().args.num_updates + 1)):
             run_episode(agent, world_model, envs)
             global_step = int(StepTracker())
             writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
@@ -61,9 +62,6 @@ def run_experiment(agent: Agent, envs: gym.Env, world_model: Optional[WorldModel
     finally:
         envs.close()
         writer.close()
-        # agent.save()
-        # if world_model is not None:
-            # world_model.save()
 
 
 def run_episode(agent: Agent, world_model: Optional[WorldModelInterface], envs: gym.Env):

@@ -54,17 +54,18 @@ class PPOStrategy(StrategyInterface):
             self.update(new_state)
             self._iteration = 0
 
-    def update(self, term_state):
-        _, term_value = self._actor_critic.forward(term_state)
+    def update(self, last_state):
+        _, last_value = self._actor_critic.forward(last_state)
         advantages = self.generalized_advantage_estimation(self._trajectory_storage.values,
                                                             self._trajectory_storage.rewards,
-                                                            self._trajectory_storage.dones, term_value.squeeze(),
+                                                            self._trajectory_storage.dones, last_value.squeeze(),
                                                             Args().args.discount_factor, Args().args.gae_lambda)
         batch_observations = self._trajectory_storage.observations.reshape(-1, *self.state_shape)
         batch_actions = self._trajectory_storage.actions.reshape(-1)
         batch_log_probs = self._trajectory_storage.log_probs.reshape(-1)
         batch_advantages = advantages.reshape(-1)
-        batch_returns = (advantages + self._trajectory_storage.values).reshape(-1)
+        batch_values = self._trajectory_storage.values.reshape(-1)
+        batch_returns = batch_advantages + batch_values
         batch_size = Args().args.batch_size
 
         grad_fn = jit(value_and_grad(PPOStrategy.ppo_loss, 1, has_aux=True))
@@ -76,15 +77,17 @@ class PPOStrategy(StrategyInterface):
                                              batch_observations[batch_slice],
                                              batch_actions[batch_slice],
                                              batch_log_probs[batch_slice],
+                                             batch_values[batch_slice],
                                              batch_advantages[batch_slice],
                                              batch_returns[batch_slice])
                 log(aux)
                 self._actor_critic.apply_grads(grads)
 
     @staticmethod
-    def ppo_loss(state, params, states: jax.Array, actions, old_log_probs: jax.Array, advantages: jax.Array,
-                 returns: jax.Array, args=Args().args):
-        action_logits, values = state.apply_fn(params, states)
+    def ppo_loss(state, params, states: jax.Array, actions, old_log_probs: jax.Array, values: jax.Array,
+                 advantages: jax.Array, returns: jax.Array, args=Args().args):
+        action_logits, new_values = state.apply_fn(params, states)
+        new_values = new_values.squeeze()
         policy = distrax.Categorical(action_logits)
         log_probs = policy.log_prob(actions)
         log_ratio = log_probs - old_log_probs
@@ -92,13 +95,17 @@ class PPOStrategy(StrategyInterface):
 
         approx_kl = ((ratio - 1) - log_ratio).mean()
 
-        loss = rlax.clipped_surrogate_pg_loss(ratio, advantages, args.clip_threshold)
-        entropy_loss = policy.entropy().mean()
+        policy_loss = rlax.clipped_surrogate_pg_loss(ratio, advantages, args.clip_threshold)
+        entropy_loss = jnp.mean(policy.entropy())
 
-        value_loss = jnp.mean(optax.squared_error(values.squeeze(), returns))
+        value_loss_unclipped = optax.squared_error(new_values, returns)
+        value_clipped = values + jnp.clip(new_values - values, args.value_clip_coef, args.value_clip_coef)
+        value_loss_clipped = optax.squared_error(value_clipped, returns)
+        value_loss_max = jnp.maximum(value_loss_clipped, value_loss_unclipped)
+        value_loss = 0.5 * jnp.mean(value_loss_max)
 
-        return (loss - args.regularization * entropy_loss + args.value_weight * value_loss,
-                {"policy_loss": loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl,
+        return (policy_loss - args.regularization * entropy_loss + args.value_weight * value_loss,
+                {"policy_loss": policy_loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl,
                  "value_loss": value_loss})
 
     def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
@@ -116,10 +123,10 @@ class PPOStrategy(StrategyInterface):
     @staticmethod
     @jit
     def generalized_advantage_estimation(values, rewards, dones, term_value, discount_factor, lambda_):
-        def fold_left(accumulator, rest):
-            td_error, discount = rest
-            accumulator = td_error + discount * lambda_ * accumulator
-            return accumulator, accumulator
+        def fold_left(last_gae, rest):
+            td_error, discount = rest   
+            last_gae = td_error + discount * lambda_ * last_gae
+            return last_gae, last_gae
 
         discounts = jnp.where(dones, 0, discount_factor)
         td_errors = rewards + discounts * jnp.append(values[1:], jnp.expand_dims(term_value, 0), axis=0) - values

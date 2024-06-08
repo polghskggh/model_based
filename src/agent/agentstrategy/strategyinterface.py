@@ -9,7 +9,7 @@ class StrategyInterface:
         pass
 
     @abstractmethod
-    def select_action(self, states: jnp.ndarray, store_trajectories: bool = True):
+    def select_action(self, states: jnp.ndarray, store_trajectories: bool = True) -> int:
         pass
 
     @abstractmethod

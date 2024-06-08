@@ -108,7 +108,7 @@ class SimpleWrapper(gym.Wrapper):
         self._storage = store(self._storage, store_slice, observations=self.last_observation, actions=action,
                               rewards=reward, next_observations=next_observations)
         self._timestep += 1
-        self.last_obs = observation
+        self.last_observation = observation
         return observation, reward, term, trunc, info
 
     @property

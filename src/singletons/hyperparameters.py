@@ -73,11 +73,12 @@ def parse_ppo(parser):
     parser.add_argument('--clip_threshold', type=float, default=0.1, help='PPO: clipping threshold')
     parser.add_argument('--regularization', type=float, default=0.01, help='PPO: regularization coefficient')
     parser.add_argument('--value_weight', type=float, default=0.5, help='PPO: coefficient of the value function')
+    parser.add_argument('--value_clip_coef', type=float, default=0.5, help='PPO: coefficient of the value clipping')
     return parser
 
 
 def parse_simple(parser):
-    parser.add_argument('--sim_trajectory_length', type=int, default=50,
+    parser.add_argument('--sim-trajectory-length', type=int, default=50,
                         help='Model_based: length of simulated trajectory')
     parser.add_argument('--pixel_reward', type=int, default=0.5, help='pixel loss weight')
     parser.add_argument('--kl_loss', type=int, default=0.8, help='KL divergence weight')
@@ -117,7 +118,7 @@ class Args:
         parser.add_argument('--algorithm', type=str, default='ppo',
                             help='the algorithm to use [simple, dreamer, dqn, ppo]')
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
-        parser.add_argument('--num_episodes', type=int, default=1000, help='number of episodes to train')
+        parser.add_argument('--num-updates', type=int, default=1000, help='number of updates to train')
         parser.add_argument('--batch_size', type=int, default=30, help='the batch size for training')
         parser.add_argument('--num_envs', type=int, default=8, help='the number of parallel environments')
         parser.add_argument('--num_agents', type=int, default=8,
