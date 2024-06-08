@@ -68,7 +68,7 @@ class DreamerTrainer(Trainer):
             prior_std_devs = prior_std_devs.at[idx].set(data[3])
             posterior_means = posterior_means.at[idx].set(data[4])
             posterior_std_devs = posterior_std_devs.at[idx].set(data[5])
-            jax.debug.print("debug {done} {belief} {states}", done=jnp.astype(dones[idx], jnp.bool_), belief=beliefs[idx].shape, states=jnp.zeros_like(states[idx].shape))
+
             belief = jnp.where(jnp.astype(dones[idx], jnp.bool_), 0, beliefs[idx])
             state = jnp.where(jnp.astype(dones[idx], jnp.bool_), 0, states[idx])
 
