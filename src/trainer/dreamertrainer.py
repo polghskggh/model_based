@@ -29,7 +29,7 @@ class DreamerTrainer(Trainer):
         rng = {"normal": Key().key()}
 
         keys_to_select = ['representation', 'observation', 'reward']
-        params = {key: self.models[key].params for key, in keys_to_select}
+        params = {key: self.models[key].params for key in keys_to_select}
         models = {key: self.models[key].model for key in keys_to_select}
 
         batch_size = Args().args.batch_size
