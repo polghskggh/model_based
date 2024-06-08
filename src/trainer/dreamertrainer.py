@@ -16,6 +16,8 @@ class DreamerTrainer(Trainer):
         self.batch_size = Args().args.batch_size
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
+        self.init_belief = jnp.zeros((Args().args.num_envs, self.belief_size))
+        self.init_state = jnp.zeros((Args().args.num_envs, self.state_size))
 
         self.models = {"representation": representation_model,
                        "observation": observation_model,
@@ -25,17 +27,17 @@ class DreamerTrainer(Trainer):
         self.optims = {key: initializer.init_optim() for key in self.models.keys()}
 
     def train_step(self, observations, actions, rewards, params: dict):
-        init_belief = jnp.zeros((observations.shape[1], self.belief_size))
-        init_state = jnp.zeros((observations.shape[1], self.state_size))
+        belief = jnp.zeros((observations.shape[1], self.belief_size))
+        state = jnp.zeros((observations.shape[1], self.state_size))
 
         rng = {"normal": Key().key()}
 
         batch_size = Args().args.batch_size
         for start_idx in range(0, observations.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
-            data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], init_state, init_belief)
+            data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], state, belief)
             (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(self.models, params, data, rng)
-            init_belief, init_state = aux["data"]
+            belief, state = aux["data"]
             log(aux["info"])
         return grads
 

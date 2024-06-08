@@ -89,7 +89,7 @@ class Dreamer(WorldModelInterface):
             model.load(key)
 
     def update(self, data):
-        observations, actions, rewards = data.observations, data.actions, data.rewards
+        observations, actions, rewards, dones = data.observations, data.actions, data.rewards, data.dones
 
         params = {key: model.params for key, model in self.models.items()}
         grads = self.trainer.train_step(observations, actions, rewards, params)
@@ -125,6 +125,7 @@ class DreamerWrapper(gym.Wrapper):
         self.storage = DreamerStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
                                       actions=jnp.zeros(batch_shape),
                                       rewards=jnp.zeros(batch_shape),
+                                      dones=jnp.zeros(batch_shape),
                                       beliefs=jnp.zeros(batch_shape + (Args().args.belief_size,)),
                                       states=jnp.zeros(batch_shape + (Args().args.state_size,)))
 
@@ -133,7 +134,7 @@ class DreamerWrapper(gym.Wrapper):
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
                                                                       self.prev_belief, observation)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
-                             beliefs=self.prev_belief, states=self.prev_state)
+                             dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
         self.prev_belief = belief
         self.prev_state = state
 

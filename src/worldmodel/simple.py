@@ -93,8 +93,8 @@ class SimpleWrapper(gym.Wrapper):
                                           next_observations=jnp.zeros(batch_shape + (Shape()[0][0], Shape()[0][1],
                                                                        self.n_channels)))
 
-    def reset(self):
-        self.last_observation, info = self.env.reset()
+    def reset(self, **kwargs):
+        self.last_observation, info = self.env.reset(**kwargs)
         return self.last_observation, info
 
     def step(self, action):
