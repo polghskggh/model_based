@@ -32,6 +32,7 @@ class DreamerStorage:
     observations: jnp.array
     actions: jnp.array
     rewards: jnp.array
+    dones: jnp.array
     beliefs: jnp.array
     states: jnp.array
 
