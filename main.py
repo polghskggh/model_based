@@ -35,7 +35,7 @@ def world_model_factory(envs):
             world_model = Dreamer(envs)
             return world_model, world_model.wrap_env(envs)
         case _:
-            return None
+            return None, envs
 
 
 def main():
