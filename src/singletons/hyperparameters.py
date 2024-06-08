@@ -2,62 +2,6 @@ import argparse
 
 from singleton_decorator import singleton
 
-hyperparameters = {
-    'max_episode_length': 1024,
-    'grayscale': False,
-    'dropout': True,
-    'max_grad_norm': 0.5,
-    'simple': {
-        'deterministic_lr': 0.0001,
-        'stochastic_lr': 0.0001,
-        'lstm_lr': 0.0001,
-        'kl_loss_weight': 2,
-        'batch_size': 5,
-        'data_size': 10,
-        'rollout_length': 3,
-        'kl_loss': 0.8,
-        'pixel_reward': 0.5,
-        'agent_updates': 4
-    },
-    'dqn': {
-        'batch_size': 100,
-        'batches_per_update': 5,
-        'discount_factor': 0.95,
-        'target_update_period': 10,
-        'start_steps': 100,
-        'update_every': 50,
-        'epsilon': 0.2
-    },
-    'ppo': {
-        'batch_size': 300,
-        'number_of_trajectories': 10,
-        'discount_factor': 0.99,
-        'lambda': 0.95,
-        'clip_threshold': 0.2,
-        'trajectory_length': 1024,
-        'regularization': 0.3,
-        'actor_lr': 1e-4,
-    },
-    'dreamer': {
-        'belief_size': 200,
-        'state_size': 30,
-        'hidden_size': 200,
-        'min_std_dev': 0.1,
-        'gradient_steps': 100,
-        'batch_size': 100,
-        'loss_weights': (0.25, 0.5, 0.25),
-    },
-    'rng': {
-        'dropout': 0,
-        'normal': 0,
-        'carry': 0,
-        'params': 0,
-        'action': 0,
-    },
-    'frame_stack': 4,
-    'save_path': '/tmp/flax_ckpt',
-}
-
 
 def parse_dqn(parser):
     parser.add_argument('--target_update_period', type=int, default=10, help='DQN: period of target network update')
@@ -69,15 +13,15 @@ def parse_dqn(parser):
 
 
 def parse_ppo(parser):
-    parser.add_argument('--gae-lambda', type=float, default=0.95, help='PPO: lambda for GAE')
-    parser.add_argument('--clip-threshold', type=float, default=0.1, help='PPO: clipping threshold')
+    parser.add_argument('--gae_lambda', type=float, default=0.95, help='PPO: lambda for GAE')
+    parser.add_argument('--clip_threshold', type=float, default=0.1, help='PPO: clipping threshold')
     parser.add_argument('--regularization', type=float, default=0.01, help='PPO: regularization coefficient')
-    parser.add_argument('--value-weight', type=float, default=0.5, help='PPO: coefficient of the value function')
+    parser.add_argument('--value_weight', type=float, default=0.5, help='PPO: coefficient of the value function')
     return parser
 
 
 def parse_simple(parser):
-    parser.add_argument('--sim-trajectory-length', type=int, default=50,
+    parser.add_argument('--sim_trajectory_length', type=int, default=50,
                         help='Model_based: length of simulated trajectory')
     parser.add_argument('--pixel_reward', type=int, default=0.5, help='pixel loss weight')
     parser.add_argument('--kl_loss', type=int, default=0.8, help='KL divergence weight')
@@ -131,12 +75,12 @@ class Args:
 
         parser.add_argument('--seed', type=int, default=1, help='seed for reproducible benchmarks')
         parser.add_argument('--dropout', type=bool, default=False, help='whether to use dropout')
-        parser.add_argument('--frame-stack', type=int, default=4, help='number of frames to stack')
-        parser.add_argument('--frame-skip', type=int, default=4, help='number of frames to skip')
+        parser.add_argument('--frame_stack', type=int, default=4, help='number of frames to stack')
+        parser.add_argument('--frame_skip', type=int, default=4, help='number of frames to skip')
         parser.add_argument('--grayscale', type=bool, default=True, help='whether to use grayscale')
-        parser.add_argument('--num-epochs', type=int, default=4,
+        parser.add_argument('--num_epochs', type=int, default=4,
                             help='number of epochs to train during each update')
-        parser.add_argument('--model-updates', type=int, default=4,
+        parser.add_argument('--model_updates', type=int, default=4,
                             help='number of updates of agent on the model in model-based RL')
 
         parse_dqn(parser)
