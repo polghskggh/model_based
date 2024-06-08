@@ -99,7 +99,7 @@ class PPOStrategy(StrategyInterface):
         entropy_loss = jnp.mean(policy.entropy())
 
         value_loss_unclipped = optax.squared_error(new_values, returns)
-        value_clipped = values + jnp.clip(new_values - values, args.value_clip_coef, args.value_clip_coef)
+        value_clipped = values + jnp.clip(new_values - values, -args.clip_threshold, args.value_clip_coef)
         value_loss_clipped = optax.squared_error(value_clipped, returns)
         value_loss_max = jnp.maximum(value_loss_clipped, value_loss_unclipped)
         value_loss = 0.5 * jnp.mean(value_loss_max)
