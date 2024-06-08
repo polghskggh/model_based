@@ -63,6 +63,8 @@ class SimpleWorldModel(WorldModelInterface):
         self._model.params = self._trainer.train_step(self._model.params, stack, actions, rewards, next_frame)
 
     def update(self, storage: TransitionStorage):
+        print("Updating model")
+        print(storage.observations.shape, storage.actions.shape, storage.rewards.shape, storage.next_observations.shape)
         update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
         for _ in range(Args().args.num_epochs):
             update_fn(storage.observations, storage.actions, storage.rewards, storage.next_observations)
