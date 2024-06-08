@@ -10,6 +10,7 @@ from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.trainer import Trainer
 
+import jax
 
 class DreamerTrainer(Trainer):
     def __init__(self, models: dict):
