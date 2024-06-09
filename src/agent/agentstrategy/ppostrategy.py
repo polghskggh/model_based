@@ -84,6 +84,8 @@ class PPOStrategy(StrategyInterface):
                                              batch_advantages[batch_slice],
                                              batch_returns[batch_slice])
                 log(aux)
+                for key, value in grads.items():
+                    print(key, value)
                 self._actor_critic.apply_grads(grads)
 
     @staticmethod
