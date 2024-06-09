@@ -21,7 +21,10 @@ def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env):
     storage = sample_env(agent, env)
     world_model.update(storage)
 
+    saved_state = agent.last_transition()[3]
+
     for update in range(Args().args.model_updates):
         interact_world_model(agent, world_model)
 
+    agent.receive_state(saved_state)
 
