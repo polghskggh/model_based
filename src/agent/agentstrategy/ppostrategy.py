@@ -58,6 +58,7 @@ class PPOStrategy(StrategyInterface):
 
     def update(self, last_state):
         _, last_value = self._actor_critic.forward(last_state)
+        print(self._trajectory_storage.rewards)
         advantages = self.generalized_advantage_estimation(self._trajectory_storage.values,
                                                             self._trajectory_storage.rewards,
                                                             self._trajectory_storage.dones, last_value.squeeze(),

@@ -34,8 +34,8 @@ def make_env(env_name: str = "breakout") -> gym.Env:
 def apply_common_wrappers(env: gym.Env):
     env = RecordEpisodeStatistics(env)
     env = AtariPreprocessing(env, grayscale_newaxis=True, scale_obs=True)
-    env = FrameStack(env, 4)
-    env = ReshapeObservation(env)
+    #env = FrameStack(env, 4)
+    #env = ReshapeObservation(env)
     Shape.initialize(env)
     return env
 
