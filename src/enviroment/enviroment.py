@@ -3,7 +3,8 @@ from gym_super_mario_bros.actions import RIGHT_ONLY
 
 import gymnasium as gym
 
-from gymnasium.wrappers import FrameStack, ResizeObservation, RecordEpisodeStatistics, AtariPreprocessing
+from gymnasium.wrappers import FrameStack, ResizeObservation, RecordEpisodeStatistics, AtariPreprocessing, \
+    TransformObservation
 from gymnasium.wrappers import GrayScaleObservation
 from gymnasium.wrappers import TimeLimit
 from nes_py.wrappers import JoypadSpace
@@ -33,7 +34,8 @@ def make_env(env_name: str = "breakout") -> gym.Env:
 
 def apply_common_wrappers(env: gym.Env):
     env = RecordEpisodeStatistics(env)
-    env = AtariPreprocessing(env, grayscale_newaxis=True, scale_obs=True)
+    env = ResizeObservation(env, (84, 84))
+    env = optional_grayscale(env)
     env = FrameStack(env, 4)
     env = ReshapeObservation(env)
     Shape.initialize(env)
@@ -44,8 +46,7 @@ def make_breakout() -> gym.Env:
     """
     Create the Breakout environment
     """
-    env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="rgb_array", frameskip=1)
-    env = apply_common_wrappers(env)
+    env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="rgb_array", frameskip=4)
     return env
 
 
@@ -53,6 +54,7 @@ def make_mario() -> gym.Env:
     env = gym_super_mario_bros.make("SuperMarioBros-v3", render_mode="rgb_array", apply_api_compatibility=True)
     env = JoypadSpace(env, RIGHT_ONLY)
     env = CompatibilityWrapper(env)
+    env = FrameSkip(env, 4)
     env = apply_common_wrappers(env)
     return env
 

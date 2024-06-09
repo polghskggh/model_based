@@ -2,11 +2,12 @@ from typing import Any, SupportsFloat
 
 import gymnasium
 import numpy as np
-from gymnasium.core import WrapperObsType, WrapperActType
+from gymnasium.core import WrapperObsType, WrapperActType, ObsType, ActType
 from gymnasium.spaces import Box
-from gymnasium import ObservationWrapper, Wrapper
+from gymnasium import ObservationWrapper, Wrapper, Env
 import gymnasium as gym
 from gymnasium.spaces.discrete import Discrete
+from gymnasium.utils import seeding
 
 
 class ReshapeObservation(ObservationWrapper):
