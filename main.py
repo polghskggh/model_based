@@ -1,25 +1,18 @@
-import os
-import shutil
 import time
-
 from typing import Optional
 
-import jax.random as jr
 import gymnasium as gym
 from termcolor import colored
 from tqdm import tqdm
 
-from altmodel import make_env
 from src.agent.agent import Agent
 from src.enviroment import make_envs
 from src.gpu import check_gpu
 from src.modelbased import model_based_train_loop
 from src.modelfree import model_free_train_loop
 from src.singletons.hyperparameters import Args
-
 from src.singletons.step_traceker import StepTracker
 from src.singletons.writer import Writer
-from src.test import test
 from src.worldmodel.dreamer import Dreamer
 from src.worldmodel.simple import SimpleWorldModel
 from src.worldmodel.worldmodelinterface import WorldModelInterface

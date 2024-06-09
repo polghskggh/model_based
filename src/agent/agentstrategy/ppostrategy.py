@@ -9,6 +9,7 @@ from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment import Shape
 from src.models.agent.actorcritic import ActorCritic, ActorCriticDreamer
 from src.models.modelwrapper import ModelWrapper
+from src.models.test.testae import Network
 from src.pod.storage import store, PPOStorage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
@@ -22,7 +23,8 @@ class PPOStrategy(StrategyInterface):
             model = ActorCriticDreamer(self.state_shape, (Shape()[1], 1))
         else:
             self.state_shape = Shape()[0]
-            model = ActorCritic(Shape()[0], (Shape()[1], 1))
+            model = Network(Shape()[0], (Shape()[1], 1))
+            # model = ActorCritic(Shape()[0], (Shape()[1], 1))
 
         self._actor_critic = ModelWrapper(model, "actor_critic")
 
@@ -109,16 +111,13 @@ class PPOStrategy(StrategyInterface):
                  "value_loss": value_loss})
 
     def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
-        print(states.shape, store_trajectories)
         logits, value_estimate = self._actor_critic.forward(states)
-        logits = jnp.squeeze(logits)
-        value_estimate = value_estimate.squeeze()
-        policy = distrax.Categorical(logits)
+        policy = distrax.Categorical(logits.squeeze())
         action = policy.sample(seed=Key().key(1))
-        print("debug", action, policy.log_prob(action))
+
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
-                                             log_probs=policy.log_prob(action), values=value_estimate)
+                                             log_probs=policy.log_prob(action), values=value_estimate.squeeze())
         return action.squeeze()
 
     @staticmethod

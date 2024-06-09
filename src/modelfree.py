@@ -22,7 +22,7 @@ def model_free_train_loop(agent: Agent, envs: gym.Env | WorldModelInterface, inc
         reward, done, infos = interact(agent, envs)
 
         if increment:
-            StepTracker().increment(Args().args.num_agents)
+            StepTracker().increment(Args().args.num_envs)
 
         # Only print when at least 1 env is done
         if increment and jnp.any(done):
