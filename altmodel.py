@@ -27,7 +27,7 @@ from jax.lax import stop_gradient
 from jax import value_and_grad
 
 
-class Network(nn.Module):
+class   Network(nn.Module):
     @nn.compact
     def __call__(self, x: Array):
         x = nn.Sequential([
