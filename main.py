@@ -6,7 +6,7 @@ from termcolor import colored
 from tqdm import tqdm
 
 from src.agent.agent import Agent
-from src.enviroment import make_envs
+from src.enviroment import make_envs, Shape
 from src.gpu import check_gpu
 from src.modelbased import model_based_train_loop
 from src.modelfree import model_free_train_loop
