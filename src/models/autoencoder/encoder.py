@@ -18,6 +18,7 @@ class Encoder(nn.Module):
         skip = []
         for layer_id in range(self.layers):
             skip.append(x)
+            print(x.shape)
             features = self.scaled_features(layer_id)
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
             x = nn.LayerNorm()(x)

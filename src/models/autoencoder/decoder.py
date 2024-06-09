@@ -12,12 +12,13 @@ class Decoder(nn.Module):
     deterministic: bool = True
     dropout: float = 0.15
 
+    def setup(self):
+        self.shape_list = [(3, 3), (6, 6), (11, 11), (21, 21), (42, 42), (84, 84)]
+
     @nn.compact
     def __call__(self, x: Array, skip: list[Array] | None) -> Array:
         if skip is not None:
             skip.reverse()
-
-        shape_list = [skip_layer.shape for skip_layer in skip]
 
         for layer_id in range(self.layers):
             features = self.scaled_features(layer_id) # first 2 layers more features
@@ -25,7 +26,7 @@ class Decoder(nn.Module):
             x = nn.LayerNorm()(x)
             x = nn.ConvTranspose(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = nn.relu(x)
-            x = self.scale_image(x, shape_list[layer_id])
+            x = self.scale_image(x, self.shape_list[layer_id])
             if skip is not None:
                 x = nn.LayerNorm()(x + skip[layer_id])
         return x
