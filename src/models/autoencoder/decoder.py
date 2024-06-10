@@ -13,7 +13,7 @@ class Decoder(nn.Module):
     dropout: float = 0.15
 
     def setup(self):
-        self.shape_list = [(3, 3), (6, 6), (11, 11), (21, 21), (42, 42), (84, 84)]
+        self.shape_list = [(5, 5), (8, 8), (19, 19), (41, 41), (84, 84)]
 
     @nn.compact
     def __call__(self, x: Array, skip: list[Array] | None) -> Array:
