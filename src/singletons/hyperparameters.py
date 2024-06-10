@@ -66,7 +66,7 @@ class Args:
         parser.add_argument('--num_envs', type=int, default=8, help='the number of parallel environments')
         parser.add_argument('--num_agents', type=int, default=8,
                             help='the number of parallel agents. Should equal num_envs, unless using model-based RL')
-        parser.add_argument('--trajectory_length', type=int, default=512, help='the length of trajectory')
+        parser.add_argument('--trajectory_length', type=int, default=100, help='the length of trajectory')
         parser.add_argument('--learning_rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
         parser.add_argument('--discount_factor', type=float, default=0.99, help='the discount factor')
 
