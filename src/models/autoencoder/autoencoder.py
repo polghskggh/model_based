@@ -42,4 +42,3 @@ class AutoEncoder(nn.Module):
         logits = self.logits(decoded)
         reward_logits = self.reward_predictor(injected, logits)
         return logits, reward_logits
-
