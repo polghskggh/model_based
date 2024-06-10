@@ -18,7 +18,7 @@ class Encoder(nn.Module):
     @nn.compact
     def __call__(self, x: Array) -> tuple:
         skip = []
-        for layer_id in range(self.layers):
+        for layer_id in range(5):
             skip.append(x)
             features = self.scaled_features(layer_id)
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
