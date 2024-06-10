@@ -125,6 +125,7 @@ class DreamerWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
+        print(self.prev_state.shape, action.shape, self.prev_belief.shape, observation.shape)
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
                                                                       self.prev_belief, observation)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
