@@ -9,8 +9,8 @@ from src.models.helpers import convolution_layer_init
 # encoder
 class Encoder(nn.Module):
     features: int = 256
-    kernel: tuple = (4, 4)
-    strides: tuple = (2, 2)
+    kernel: tuple = 4
+    strides: tuple = 2
     layers: int = 6
     deterministic: bool = True
     dropout: float = 0.15
