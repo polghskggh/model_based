@@ -24,7 +24,7 @@ class Encoder(nn.Module):
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
             x = nn.LayerNorm()(x)
             print("encoder", x.shape)
-            strides = self.strides if layer_id < self.layers - 2 else 1
+            strides = self.strides if layer_id < self.layers - 3 else 1
             print("encoder strides", strides)
             x = convolution_layer_init(features=features, kernel_size=self.kernel, strides=strides)(x)
             x = nn.relu(x)
