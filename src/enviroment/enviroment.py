@@ -47,6 +47,7 @@ def make_breakout() -> gym.Env:
     Create the Breakout environment
     """
     env: gym.Env = gym.make("ALE/Breakout-v5", render_mode="rgb_array", frameskip=4)
+    apply_common_wrappers(env)
     return env
 
 
