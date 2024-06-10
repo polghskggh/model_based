@@ -15,7 +15,7 @@ from src.models.initalizer.modelstrategyfactory import model_initializer_factory
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.step_traceker import StepTracker
-from src.singletons.writer import Writer
+from src.singletons.writer import Writer, log
 from src.utils.modelhelperfuns import transform_to_batch
 from src.utils.save_name import save_name
 
@@ -77,6 +77,7 @@ class ModelWrapper:
         :param grads: the gradients to apply
         """
         self.state = self.state.apply_gradients(grads=grads)
+        log("learning_rate", self.state.opt_state[1].hyperparams["learning_rate"].item())
 
     @property
     def model(self):
