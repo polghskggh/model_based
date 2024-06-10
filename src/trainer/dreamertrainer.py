@@ -3,14 +3,12 @@ import jax.numpy as jnp
 from jax import value_and_grad, lax
 
 from src.enviroment import Shape
-from src.models.initalizer.modelstrategy import ModelStrategy
 from src.models.lossfuns import reward_loss_fn, image_loss_fn
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.trainer import Trainer
 
-import jax
 
 class DreamerTrainer(Trainer):
     def __init__(self, models: dict):
@@ -24,6 +22,7 @@ class DreamerTrainer(Trainer):
 
     def apply_grads(self, grads):
         for key in grads.keys():
+            print("grad_key", key)
             self.models[key].apply_grads(grads[key])
 
     def train_step(self, observations, actions, rewards, dones):

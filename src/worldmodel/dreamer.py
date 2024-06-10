@@ -95,7 +95,6 @@ class Dreamer(WorldModelInterface):
         self.initial_beliefs = data.beliefs.reshape(-1, self.belief_size)
         self.initial_states = data.states.reshape(-1, self.state_size)
 
-
     def wrap_env(self, envs):
         return DreamerWrapper(envs, self.models["representation"])
 
