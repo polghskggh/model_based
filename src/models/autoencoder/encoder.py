@@ -23,7 +23,7 @@ class Encoder(nn.Module):
             features = self.scaled_features(layer_id)
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
             x = nn.LayerNorm()(x)
-            strides = self.strides if layer_id < self.layers - 4 else 1
+            strides = self.strides if layer_id < self.layers - 3 else 1
             print("encoder strides", strides)
             x = convolution_layer_init(features=features, kernel_size=self.kernel, strides=strides)(x)
             print("encoder", x.shape)
