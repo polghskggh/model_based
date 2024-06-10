@@ -10,6 +10,7 @@ from gymnasium.spaces.discrete import Discrete
 from gymnasium.utils import seeding
 
 
+# TODO: Mario limit to only right and right + A
 class ReshapeObservation(ObservationWrapper):
     def __init__(self, env) -> gym.Env:
         super().__init__(env)

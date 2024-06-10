@@ -21,6 +21,7 @@ class DreamerTrainer(Trainer):
         self.models = models
 
     def apply_grads(self, grads):
+        # TODO: there are nan values (probably due to the reward)
         for key in grads.keys():
             print("grad_key", key)
             self.models[key].apply_grads(grads[key])

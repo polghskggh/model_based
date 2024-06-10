@@ -3,6 +3,8 @@ from flax import linen as nn
 from jax import Array
 import jax.numpy as jnp
 
+from src.models.helpers import convolution_layer_init
+
 
 # encoder
 class Encoder(nn.Module):
@@ -18,11 +20,10 @@ class Encoder(nn.Module):
         skip = []
         for layer_id in range(self.layers):
             skip.append(x)
-            print(x.shape)
             features = self.scaled_features(layer_id)
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
             x = nn.LayerNorm()(x)
-            x = nn.Conv(features=features, kernel_size=self.kernel, strides=self.strides)(x)
+            x = convolution_layer_init(features=features, kernel_size=self.kernel, strides=self.strides)(x)
             x = nn.relu(x)
         return x, skip
 
