@@ -1,6 +1,8 @@
 import flax.linen as nn
+import jax
 from jax import Array, vmap
 from rlax import one_hot
+import jax.numpy as jnp
 
 from src.models.autoencoder.decoder import Decoder
 from src.models.autoencoder.encoder import Encoder
@@ -8,6 +10,8 @@ from src.models.autoencoder.injector import Injector
 from src.models.autoencoder.logitslayer import LogitsLayer
 from src.models.autoencoder.middlenetwork import MiddleNetwork
 from src.models.autoencoder.rewardpredictor import RewardPredictor
+from src.models.helpers import linear_layer_init
+from src.singletons.hyperparameters import Args
 
 
 class AutoEncoder(nn.Module):
@@ -43,5 +47,14 @@ class AutoEncoder(nn.Module):
 
         decoded = self.decoder(hidden, skip)
         logits = self.logits(decoded)
+
         reward_logits = self.reward_predictor(injected, logits)
-        return logits, reward_logits
+
+        if not Args().args.categorical_image:
+            pixels = linear_layer_init(1 if Args().args.grayscale else 3)(logits)
+            pixels = nn.relu(pixels)
+        else
+            pixels = logits
+
+        jax.debug.print("max={mx}, min={mn}", mx=jnp.max(pixels), mn=jnp.min(pixels))
+        return pixels, reward_logits

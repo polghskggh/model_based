@@ -27,6 +27,8 @@ def parse_simple(parser):
     parser.add_argument('--kl_loss', type=int, default=0.8, help='KL divergence weight')
     parser.add_argument('--rewards', type=int, default=2, help='Simple: number of possible reward values')
     parser.add_argument('--pixel_loss_const', type=int, default=0.03, help='Simple: minimum pixel loss')
+    parser.add_argument('--categorical_image', type=bool, default=False, help='Whether to use categorical distribution '
+                                                                              'for images or mse')
     return parser
 
 

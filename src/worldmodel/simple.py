@@ -39,8 +39,8 @@ class SimpleWorldModel(WorldModelInterface):
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         start_time = time.time()
         next_frames, rewards_logits = self._model.forward(self._frame_stack.frames, actions)
-        np.save("last_predict", next_frames)
         next_frames = jnp.argmax(nn.softmax(next_frames), axis=-1, keepdims=True)
+        np.save("last_predict", next_frames)
         rewards = process_reward(rewards_logits)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1

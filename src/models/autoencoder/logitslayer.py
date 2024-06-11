@@ -1,6 +1,8 @@
 from flax import linen as nn
 from jax import Array, lax
 import jax.numpy as jnp
+
+from src.models.helpers import linear_layer_init
 from src.singletons.hyperparameters import Args
 
 
@@ -8,10 +10,10 @@ from src.singletons.hyperparameters import Args
 class LogitsLayer(nn.Module):
     def setup(self):
         self.features = 256
-        self.red = nn.Dense(features=self.features, name="red_logits")
-        self.green = nn.Dense(features=self.features, name="greed_logits")
-        self.blue = nn.Dense(features=self.features, name="blue_logits")
-        self.grayscale = nn.Dense(features=self.features, name="grayscale_logits")
+        self.red = linear_layer_init(features=self.features)
+        self.green = linear_layer_init(features=self.features)
+        self.blue = linear_layer_init(features=self.features)
+        self.grayscale = linear_layer_init(features=self.features)
 
     def rgb(self, x: Array) -> Array:
         return jnp.stack((self.red(x), self.green(x), self.blue(x)), axis=jnp.ndim(x) - 1)
