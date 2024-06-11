@@ -32,7 +32,6 @@ class Decoder(nn.Module):
             x = nn.relu(x)
             x = self.scale_image(x, self.shape_list[layer_id])
             if skip is not None:
-                print(skip[layer_id].shape, x.shape)
                 x = nn.LayerNorm()(x + skip[layer_id])
         return x
 
