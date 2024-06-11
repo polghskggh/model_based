@@ -53,7 +53,7 @@ class AutoEncoder(nn.Module):
         if not Args().args.categorical_image:
             pixels = linear_layer_init(1 if Args().args.grayscale else 3)(logits)
             pixels = nn.relu(pixels)
-        else
+        else:
             pixels = logits
 
         jax.debug.print("max={mx}, min={mn}", mx=jnp.max(pixels), mn=jnp.min(pixels))
