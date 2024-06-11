@@ -54,7 +54,7 @@ class ModelWrapper:
 
         loss, grads = grad_fun(self.state, self.state.params, y, *x, rngs=self._rngs)
         self._model_writer.add_scalar(f"losses/{self._name}_loss", loss, int(StepTracker()))
-
+        print("loss:", loss)
         return grads
 
     # forward pass

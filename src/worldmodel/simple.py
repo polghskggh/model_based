@@ -70,7 +70,7 @@ class SimpleWorldModel(WorldModelInterface):
     def update(self, storage: TransitionStorage):
         print("Updating model")
         update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
-        for _ in range(Args().args.num_epochs):
+        for _ in range(Args().args.num_epochs ** 2):
             update_fn(storage.observations, storage.actions, storage.rewards, storage.next_observations)
 
         self._frame_stack = FrameStack(storage)
