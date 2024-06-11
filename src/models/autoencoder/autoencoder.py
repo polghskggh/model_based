@@ -6,6 +6,7 @@ from src.models.autoencoder.decoder import Decoder
 from src.models.autoencoder.encoder import Encoder
 from src.models.autoencoder.injector import Injector
 from src.models.autoencoder.logitslayer import LogitsLayer
+from src.models.autoencoder.middlenetwork import MiddleNetwork
 from src.models.autoencoder.rewardpredictor import RewardPredictor
 
 
@@ -17,14 +18,15 @@ class AutoEncoder(nn.Module):
 
     def setup(self):
         self.features = 256
-        self.kernel = (4, 4)
-        self.strides = (2, 2)
+        self.kernel = 4
+        self.strides = 2
         self.layers = 6
         self.pixel_embedding = nn.Dense(features=self.features // 4, name="embedding")
-        self.encoder = Encoder(self.features, self.kernel[0], self.strides[0], self.layers, self.deterministic)
+        self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
         self.decoder = Decoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
         self.action_injector = Injector(self.features)
         self.latent_injector = Injector(self.features)
+        self.middle_network = MiddleNetwork(self.features, self.kernel, self.deterministic)
         self.logits = LogitsLayer()
         self.reward_predictor = RewardPredictor()
 
@@ -37,8 +39,9 @@ class AutoEncoder(nn.Module):
 
         if latent is not None:
             injected = self.latent_injector(injected, latent)
+        hidden = self.middle_network(injected)
 
-        decoded = self.decoder(injected, skip)
+        decoded = self.decoder(hidden, skip)
         logits = self.logits(decoded)
         reward_logits = self.reward_predictor(injected, logits)
         return logits, reward_logits

@@ -54,9 +54,7 @@ class ModelWrapper:
 
         loss, grads = grad_fun(self.state, self.state.params, y, *x, rngs=self._rngs)
         self._model_writer.add_scalar(f"losses/{self._name}_loss", loss, int(StepTracker()))
-        self._model_writer.add_scalar("charts/learning_rate",
-                                      self.state.opt_state[1].hyperparams["learning_rate"].item(),
-                                      int(StepTracker()))
+
         return grads
 
     # forward pass
@@ -77,7 +75,9 @@ class ModelWrapper:
         :param grads: the gradients to apply
         """
         self.state = self.state.apply_gradients(grads=grads)
-        log({"learning_rate": self.state.opt_state[1].hyperparams["learning_rate"].item()})
+        self._model_writer.add_scalar("charts/learning_rate",
+                                      self.state.opt_state[1].hyperparams["learning_rate"].item(),
+                                      int(StepTracker()))
 
     @property
     def model(self):
