@@ -74,8 +74,9 @@ class Dreamer(WorldModelInterface):
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
         key = Key().key(1)
-        self.prev_belief = jr.choice(key, self.initial_beliefs, (self.num_agents,))
-        self.prev_state = jr.choice(key, self.initial_states, (self.num_agents,))
+        idx = jr.choice(key, self.initial_beliefs.shape[0], (self.num_agents,), False)
+        self.prev_state = self.initial_states[idx]
+        self.prev_belief = self.initial_beliefs[idx]
 
         return self.prev_state, {}
 

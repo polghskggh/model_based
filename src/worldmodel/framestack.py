@@ -10,15 +10,15 @@ from src.singletons.rng import Key
 
 class FrameStack:
     def __init__(self, data: TransitionStorage):
-        self._initial_states = data
-        self._frames = jnp.zeros(self._initial_states.shape, dtype=jnp.float32)
+        self._initial_states = data.observations
+        self._frames = None
         self.n_channels = Shape()[0][2] // Args().args.frame_stack
         self.reset()
 
     @staticmethod
-    def sample_initial(data: TransitionStorage, parallel_envs: int):
-        idx = jr.choice(Key().key(1), data.observations.shape[0], (parallel_envs,), False)
-        return data.observations[idx]
+    def sample_initial(initial_observations: jnp.ndarray, parallel_envs: int):
+        idx = jr.choice(Key().key(1), initial_observations.shape[0], (parallel_envs,), False)
+        return initial_observations[idx]
 
     def reset(self):
         self._frames = self.sample_initial(self._initial_states, Args().args.num_agents)
