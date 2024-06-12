@@ -91,7 +91,7 @@ class Dreamer(WorldModelInterface):
     def update(self, data):
         observations, actions, rewards, dones = data.observations, data.actions, data.rewards, data.dones
 
-        self.models = self.trainer.train_step(observations, actions, rewards, dones)
+        self.models = self.trainer.train_step(data.beliefs[0], data.states[0], observations, actions, rewards, dones)
 
         self.initial_beliefs = data.beliefs.reshape(-1, self.belief_size)
         self.initial_states = data.states.reshape(-1, self.state_size)

@@ -28,7 +28,7 @@ def parse_simple(parser):
     parser.add_argument('--rewards', type=int, default=2, help='Simple: number of possible reward values')
     parser.add_argument('--pixel_loss_const', type=int, default=0.03, help='Simple: minimum pixel loss')
     parser.add_argument('--categorical_image', type=bool, default=True, help='Whether to use categorical distribution '
-                                                                              'for images or mse')
+                                                                             'for images or mse')
     return parser
 
 
@@ -42,6 +42,8 @@ def parse_dreamer(parser):
                         help='Dreamer: minimum standard deviation of the policy')
     parser.add_argument('--gradient_steps', type=int, default=100, help='Dreamer: number of gradient steps')
     parser.add_argument('--loss_weights', type=float, nargs=3, default=[0.25, 0.5, 0.25], help='Dreamer: loss weights')
+    parser.add_argument('--predict_dones', type=bool, default=False, help='whether to predict dones or just default '
+                                                                          'to false')
     return parser
 
 

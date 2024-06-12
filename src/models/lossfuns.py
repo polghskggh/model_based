@@ -46,12 +46,27 @@ def reward_loss_fn(reward, teacher_reward):
     return jnp.mean(loss)
 
 
-def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):
-    teach_pixels, teach_reward = teacher_outputs
-    teach_reward = jnp.astype(teach_reward, jnp.int32)
-    pixels, reward = state.apply_fn(params, *inputs, **kwargs)
+def cross_entropy_with_dones(output, target):
+    teach_pixels, teach_reward, teach_dones = target
+    pixels, rewards, dones = output
+    return (cross_entropy_with_reward((pixels, rewards), (teach_pixels, teach_reward)) +
+            jnp.mean(softmax_reward(dones, teach_dones)))
+
+
+def cross_entropy_with_reward(output, target):
+    teach_pixels, teach_reward = target
+    pixels, rewards = output
     alpha = Args().args.pixel_reward
-    return alpha * image_loss_fn(pixels, teach_pixels) + (1 - alpha) * reward_loss_fn(reward, teach_reward)
+    return alpha * image_loss_fn(pixels, teach_pixels) + (1 - alpha) * reward_loss_fn(rewards, teach_reward)
+
+
+def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):
+    output = state.apply_fn(params, *inputs, **kwargs)
+    if Args().args.predict_dones:
+        loss = cross_entropy_with_dones(output, teacher_outputs)
+    else:
+        loss = cross_entropy_with_reward(output, teacher_outputs)
+    return loss
 
 
 def cross_entropy_with_kl_loss(state, params, teacher_outputs, *inputs, **kwargs):

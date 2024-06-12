@@ -20,7 +20,6 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 import flax.linen as nn
 
 
-
 class SimpleWorldModel(WorldModelInterface):
     def __init__(self, deterministic: bool = False):
         self._deterministic = deterministic
@@ -36,35 +35,44 @@ class SimpleWorldModel(WorldModelInterface):
 
         self._frame_stack = None
         self._time_step = 0
+        self.predict_dones = Args().args.predict_dones
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         start_time = time.time()
-        next_frames, rewards_logits = self._model.forward(self._frame_stack.frames, actions)
+        prediction = self._model.forward(self._frame_stack.frames, actions)
+        dones = None
+        if self.predict_dones:
+            next_frames, rewards_logits, dones = prediction
+        else:
+            next_frames, rewards_logits = prediction
 
         if Args().args.categorical_image:
             next_frames = jnp.argmax(next_frames, axis=-1, keepdims=True)
 
         np.save("last_predict", next_frames)
         rewards = process_reward(rewards_logits)
+        dones = jnp.squeeze(jnp.argmax(dones, axis=-1)) if dones is not None else jnp.zeros_like(rewards, dtype=bool)
         self._frame_stack.add_frame(next_frames)
         self._time_step += 1
         log({"Step time": (time.time() - start_time) / actions.shape[0]})
-        return (self._frame_stack.frames, rewards, jnp.zeros(rewards.shape, dtype=bool),
-                jnp.zeros(rewards.shape, dtype=bool), {})
+        return self._frame_stack.frames, rewards, dones, jnp.zeros_like(rewards, dtype=bool), {}
 
     def reset(self):
         self._frame_stack.reset()
         self._time_step = 0
         return self._frame_stack.frames, {}
 
-    def _deterministic_update(self, stack, actions, rewards, next_frame):
+    def _deterministic_update(self, stack, actions, rewards, dones, next_frame):
         batch_size = Args().args.batch_size
         for start_idx in range(0, stack.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
 
             np.save("teach_frame", next_frame[batch_slice])
-            grads = self._model.train_step((next_frame[batch_slice], rewards[batch_slice]),
-                                           stack[batch_slice], actions[batch_slice])
+            target = (next_frame[batch_slice], rewards[batch_slice])
+            if Args().args.predict_dones:
+                target += (dones[batch_slice], )
+
+            grads = self._model.train_step(target, stack[batch_slice], actions[batch_slice])
             self._model.apply_grads(grads)
 
     def _stochastic_update(self, stack, actions, rewards, next_frame):
@@ -72,17 +80,11 @@ class SimpleWorldModel(WorldModelInterface):
 
     def update(self, storage: TransitionStorage):
         print("Updating model")
+        self._frame_stack = FrameStack(storage.observations)
+
         update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
-        for _ in range(Args().args.num_epochs ** 2):
-            update_fn(storage.observations, storage.actions, storage.rewards, storage.next_observations)
-
-        self._frame_stack = FrameStack(storage)
-
-    def save(self):
-        self._model.save()
-
-    def load(self):
-        self._model.load("stochastic_autoencoder")
+        for _ in range(Args().args.num_epochs):
+            update_fn(storage.observations, storage.actions, storage.rewards, storage.dones, storage.next_observations)
 
     def wrap_env(self, env):
         return SimpleWrapper(env)
@@ -98,6 +100,7 @@ class SimpleWrapper(gym.Wrapper):
         self._storage = TransitionStorage(observations=jnp.zeros(batch_shape + Shape()[0]),
                                           actions=jnp.zeros(batch_shape),
                                           rewards=jnp.zeros(batch_shape),
+                                          dones=jnp.zeros(batch_shape),
                                           next_observations=jnp.zeros(batch_shape + (Shape()[0][0], Shape()[0][1],
                                                                        self.n_channels)))
 
@@ -107,16 +110,12 @@ class SimpleWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
-
         next_observations = lax.slice_in_dim(observation, (Args().args.frame_stack - 1) * self.n_channels,
                                              None, axis=-1)
 
-
-
-
         store_slice = slice(self._timestep * Args().args.num_envs, (self._timestep + 1) * Args().args.num_envs)
         self._storage = store(self._storage, store_slice, observations=self.last_observation, actions=action,
-                              rewards=reward, next_observations=next_observations)
+                              rewards=reward, dones=term | trunc, next_observations=next_observations)
         self._timestep += 1
         self._timestep %= Args().args.trajectory_length
         self.last_observation = observation

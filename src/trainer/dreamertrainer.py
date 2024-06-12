@@ -15,20 +15,15 @@ class DreamerTrainer(Trainer):
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
 
-        self.last_belief = jnp.zeros((Args().args.num_envs, self.belief_size))
-        self.last_state = jnp.zeros((Args().args.num_envs, self.state_size))
-
         self.models = models
 
     def apply_grads(self, grads):
-        # TODO: there are nan values (probably due to the reward)
         for key in grads.keys():
-            print("grad_key", key)
             self.models[key].apply_grads(grads[key])
 
-    def train_step(self, observations, actions, rewards, dones):
+    def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
         rng = {"normal": Key().key()}
-
+        last_belief, last_state = initial_belief, initial_state
         keys_to_select = ['representation', 'observation', 'reward']
         params = {key: self.models[key].params for key in keys_to_select}
         models = {key: self.models[key].model for key in keys_to_select}
@@ -37,10 +32,10 @@ class DreamerTrainer(Trainer):
         for start_idx in range(0, observations.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
             data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], dones[batch_slice],
-                    self.last_state, self.last_belief)
+                    last_state, last_belief)
             (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
             self.apply_grads(grads)
-            self.last_belief, self.last_state = aux["data"]
+            last_belief, last_state = aux["data"]
             log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}

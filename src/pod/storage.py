@@ -17,6 +17,7 @@ class TransitionStorage:
     observations: jnp.array
     actions: jnp.array
     rewards: jnp.array
+    dones: jnp.ndarray
     next_observations: jnp.array
 
 

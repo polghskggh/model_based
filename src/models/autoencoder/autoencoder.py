@@ -9,7 +9,7 @@ from src.models.autoencoder.encoder import Encoder
 from src.models.autoencoder.injector import Injector
 from src.models.autoencoder.logitslayer import LogitsLayer
 from src.models.autoencoder.middlenetwork import MiddleNetwork
-from src.models.autoencoder.rewardpredictor import RewardPredictor
+from src.models.autoencoder.rewardpredictor import Predictor
 from src.models.helpers import linear_layer_init
 from src.singletons.hyperparameters import Args
 
@@ -32,10 +32,11 @@ class AutoEncoder(nn.Module):
         self.latent_injector = Injector(self.features)
         self.middle_network = MiddleNetwork(self.features, self.kernel, self.deterministic)
         self.logits = LogitsLayer()
-        self.reward_predictor = RewardPredictor()
+        self.reward_predictor = Predictor(Args().args.rewards)
+        self.done_predictor = Predictor(2)
 
     @nn.compact
-    def __call__(self, image: Array, action: Array, latent: Array = None) -> Array:
+    def __call__(self, image: Array, action: Array, latent: Array = None):
         embedded_image = self.pixel_embedding(image)
         encoded, skip = self.encoder(embedded_image)
         encoded_action = one_hot(action, self.second_input)
@@ -55,5 +56,8 @@ class AutoEncoder(nn.Module):
             pixels = nn.relu(pixels)
         else:
             pixels = logits
+
+        if Args().args.predict_dones:
+            return pixels, reward_logits, self.done_predictor(injected, logits)
 
         return pixels, reward_logits

@@ -1,16 +1,12 @@
 from typing import Any, SupportsFloat
 
-import gymnasium
-import numpy as np
-from gymnasium.core import WrapperObsType, WrapperActType, ObsType, ActType
-from gymnasium.spaces import Box
-from gymnasium import ObservationWrapper, Wrapper, Env
 import gymnasium as gym
+import numpy as np
+from gymnasium import ObservationWrapper, Wrapper
+from gymnasium.core import WrapperObsType, WrapperActType
+from gymnasium.spaces import Box
 from gymnasium.spaces.discrete import Discrete
-from gymnasium.utils import seeding
-from jax import lax
-
-from src.singletons.hyperparameters import Args
+import jax.numpy as jnp
 
 
 # TODO: Mario limit to only right and right + A
@@ -33,7 +29,12 @@ class ReshapeObservation(ObservationWrapper):
         :param observation: observation from the environment
         :return: reshaped observation
         """
-        return np.array(observation).transpose(*self.transpose).reshape(self.new_shape)
+        serve = jnp.array(observation).transpose(*self.transpose).reshape(self.new_shape)
+        # np.save("f1", serve[:, :, 0])
+        # np.save("f2", serve[:, :, 1])
+        # np.save("f3", serve[:, :, 2])
+        # np.save("f4", serve[:, :, 3])
+        return serve
 
 
 class FrameSkip(Wrapper):
