@@ -13,14 +13,12 @@ def mean_squared_error(state, params, teacher_outputs, *inputs, **kwargs):
 
 def softmax_image_loss(pixels, teacher_pixels):
     teacher_pixels = jnp.squeeze(jnp.astype(teacher_pixels, jnp.int32))
-    return jnp.mean(jnp.maximum(softmax_cross_entropy_with_integer_labels(pixels, teacher_pixels),
-                                Args().args.pixel_loss_const))
+    return jnp.maximum(softmax_cross_entropy_with_integer_labels(pixels, teacher_pixels),
+                       Args().args.pixel_loss_const)
 
 
 def mse_image_loss(pixels, teacher_pixels):
-    jax.debug.print("maxs {pmax} {tmax}, mins {pmin} {tmin}", pmax=jnp.max(pixels), tmax=jnp.max(teacher_pixels),
-                    pmin=jnp.min(teacher_pixels), tmin=jnp.min(pixels))
-    return jnp.mean(optax.squared_error(pixels / 255, teacher_pixels / 255))
+    return optax.squared_error(pixels, teacher_pixels)
 
 
 def image_loss_fn(pixels, teacher_pixels):
@@ -28,7 +26,7 @@ def image_loss_fn(pixels, teacher_pixels):
         loss = softmax_image_loss(pixels, teacher_pixels)
     else:
         loss = mse_image_loss(pixels, teacher_pixels)
-    return loss
+    return jnp.mean(loss)
 
 
 def softmax_reward(reward, teacher_reward):

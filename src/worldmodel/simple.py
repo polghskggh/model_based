@@ -20,6 +20,7 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 import flax.linen as nn
 
 
+
 class SimpleWorldModel(WorldModelInterface):
     def __init__(self, deterministic: bool = False):
         self._deterministic = deterministic
@@ -41,7 +42,7 @@ class SimpleWorldModel(WorldModelInterface):
         next_frames, rewards_logits = self._model.forward(self._frame_stack.frames, actions)
 
         if Args().args.categorical_image:
-            next_frames = jnp.argmax(nn.softmax(next_frames), axis=-1, keepdims=True)
+            next_frames = jnp.argmax(next_frames, axis=-1, keepdims=True)
 
         np.save("last_predict", next_frames)
         rewards = process_reward(rewards_logits)
@@ -60,6 +61,8 @@ class SimpleWorldModel(WorldModelInterface):
         batch_size = Args().args.batch_size
         for start_idx in range(0, stack.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
+
+            np.save("teach_frame", next_frame[batch_slice])
             grads = self._model.train_step((next_frame[batch_slice], rewards[batch_slice]),
                                            stack[batch_slice], actions[batch_slice])
             self._model.apply_grads(grads)
@@ -108,6 +111,9 @@ class SimpleWrapper(gym.Wrapper):
         next_observations = lax.slice_in_dim(observation, (Args().args.frame_stack - 1) * self.n_channels,
                                              None, axis=-1)
 
+
+
+
         store_slice = slice(self._timestep * Args().args.num_envs, (self._timestep + 1) * Args().args.num_envs)
         self._storage = store(self._storage, store_slice, observations=self.last_observation, actions=action,
                               rewards=reward, next_observations=next_observations)
@@ -119,3 +125,8 @@ class SimpleWrapper(gym.Wrapper):
     @property
     def storage(self):
         return self._storage
+
+
+def debug_show(image):
+    plt.imshow(image[1], cmap='gray')
+    plt.savefig("debug.png")

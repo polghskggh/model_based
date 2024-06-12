@@ -56,5 +56,4 @@ class AutoEncoder(nn.Module):
         else:
             pixels = logits
 
-        jax.debug.print("max={mx}, min={mn}", mx=jnp.max(pixels), mn=jnp.min(pixels))
         return pixels, reward_logits

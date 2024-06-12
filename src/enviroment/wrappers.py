@@ -8,6 +8,9 @@ from gymnasium import ObservationWrapper, Wrapper, Env
 import gymnasium as gym
 from gymnasium.spaces.discrete import Discrete
 from gymnasium.utils import seeding
+from jax import lax
+
+from src.singletons.hyperparameters import Args
 
 
 # TODO: Mario limit to only right and right + A
