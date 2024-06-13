@@ -15,6 +15,7 @@ class FrameStack:
         self._frames = None
         self.n_channels = Shape()[0][2] // Args().args.frame_stack
         self.reset()
+        print(self.n_channels)
 
     @staticmethod
     def sample_initial(initial_observations: jnp.ndarray, parallel_envs: int):
@@ -23,10 +24,7 @@ class FrameStack:
 
     def reset(self):
         self._frames = self.sample_initial(self._initial_states, Args().args.num_agents)
-        np.save("f1", self._frames[:, :, :, 0])
-        np.save("f2", self._frames[:, :, :, 1])
-        np.save("f3", self._frames[:, :, :, 2])
-        np.save("f4", self._frames[:, :, :, 3])
+
         return self._frames
 
     def add_frame(self, next_frame):

@@ -3,28 +3,29 @@ import jax.numpy as jnp
 
 from matplotlib import pyplot as plt
 
-img_array = np.load('last_predict.npy')
 
-plt.imshow(img_array[1], cmap='gray')
-plt.savefig("predict.png")
-
+idx = 7
 img_array = np.load('f1.npy')
-idx = 1
-plt.imshow(img_array[idx], cmap='gray')
+print(jnp.mean(img_array))
+plt.imshow(img_array[idx], cmap='gray', vmin=0, vmax=255)
 plt.savefig("im1.png")
 
 
 img_array = np.load('f2.npy')
 
-plt.imshow(img_array[idx], cmap='gray')
+plt.imshow(img_array[idx], cmap='gray', vmin=0, vmax=255)
 plt.savefig("im2.png")
 
 img_array = np.load('f3.npy')
 
-plt.imshow(img_array[idx], cmap='gray')
+plt.imshow(img_array[idx], cmap='gray', vmin=0, vmax=255)
 plt.savefig("im3.png")
 
 img_array = np.load('f4.npy')
 
-plt.imshow(img_array[idx], cmap='gray')
+plt.imshow(img_array[idx], cmap='gray', vmin=0, vmax=255)
 plt.savefig("im4.png")
+img_array = np.load('f5.npy')
+
+plt.imshow(img_array[idx], cmap='gray', vmin=0, vmax=255)
+plt.savefig("im5.png")

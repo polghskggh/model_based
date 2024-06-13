@@ -30,11 +30,13 @@ class ReshapeObservation(ObservationWrapper):
         :return: reshaped observation
         """
         serve = jnp.array(observation).transpose(*self.transpose).reshape(self.new_shape)
-        # np.save("f1", serve[:, :, 0])
-        # np.save("f2", serve[:, :, 1])
-        # np.save("f3", serve[:, :, 2])
-        # np.save("f4", serve[:, :, 3])
         return serve
+
+
+class ObservationToInt(ObservationWrapper):
+    def observation(self, observation: jnp.ndarray) -> jnp.ndarray:
+        print(jnp.max(observation))
+        return observation.astype(jnp.unit8)
 
 
 class FrameSkip(Wrapper):

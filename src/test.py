@@ -198,6 +198,25 @@ def test_mario_make():
     env = gym_super_mario_bros.make("SuperMarioBros-v3", render_mode="rgb_array", apply_api_compatibility=True)
     print(env.reset())
 
+import numpy as np
+
+
+def test_frame_stack():
+    frames = jnp.zeros((8, 84, 84, 4)) + 200
+    frames = frames.at[:, :, :, -1:].set(jnp.zeros((8, 84, 84, 1)) + 100)
+    frames = frames.at[:, :, :, -2:-1].set(jnp.zeros((8, 84, 84, 1)) + 150)
+    next_frame = jnp.zeros((8, 84, 84, 1))
+    np.save("bf1.npy", frames[:, :, :, 0])
+    np.save("bf2.npy", frames[:, :, :, 1])
+    np.save("bf3.npy", frames[:, :, :, 2])
+    np.save("bf4.npy", frames[:, :, :, 3])
+    print(frames[0, 0, 0, 0])
+    frames = jnp.roll(frames, -1, axis=-1)
+    frames = frames.at[:, :, :, -1:].set(next_frame)
+    np.save("f1.npy", frames[:, :, :, 0])
+    np.save("f2.npy", frames[:, :, :, 1])
+    np.save("f3.npy", frames[:, :, :, 2])
+    np.save("f4.npy", frames[:, :, :, 3])
 
 def test():
     #test_baseline()
@@ -205,7 +224,8 @@ def test():
     # test_ppo()
     #test_dqn()
     #test_stochastic_autoencoder()
-    test_mario_make()
+    #test_mario_make()
+    test_frame_stack()
 
 
 if __name__ == '__main__':

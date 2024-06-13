@@ -35,7 +35,6 @@ class SimpleWorldModel(WorldModelInterface):
             self._trainer = SAETrainer(self._model)
 
         self._frame_stack = None
-        self._time_step = 0
         self.predict_dones = Args().args.predict_dones
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
@@ -50,25 +49,27 @@ class SimpleWorldModel(WorldModelInterface):
         if Args().args.categorical_image:
             next_frames = jnp.argmax(next_frames, axis=-1, keepdims=True)
 
-        np.save("last_predict", next_frames)
         rewards = process_reward(rewards_logits)
         dones = jnp.squeeze(jnp.argmax(dones, axis=-1)) if dones is not None else jnp.zeros_like(rewards, dtype=bool)
+        np.save("f1.npy", self._frame_stack.frames[:, :, :, 0])
+        np.save("f2.npy", self._frame_stack.frames[:, :, :, 1])
+        np.save("f3.npy", self._frame_stack.frames[:, :, :, 2])
+        np.save("f4.npy", self._frame_stack.frames[:, :, :, 3])
+        print("actions", actions)
+        np.save("f5.npy", next_frames)
         self._frame_stack.add_frame(next_frames)
-        self._time_step += 1
+
         log({"Step time": (time.time() - start_time) / actions.shape[0]})
         return self._frame_stack.frames, rewards, dones, jnp.zeros_like(rewards, dtype=bool), {}
 
     def reset(self):
         self._frame_stack.reset()
-        self._time_step = 0
         return self._frame_stack.frames, {}
 
     def _deterministic_update(self, stack, actions, rewards, dones, next_frame):
         batch_size = Args().args.batch_size
         for start_idx in range(0, stack.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
-
-            np.save("teach_frame", next_frame[batch_slice])
             target = (next_frame[batch_slice], rewards[batch_slice])
             if Args().args.predict_dones:
                 target += (dones[batch_slice], )
@@ -82,7 +83,6 @@ class SimpleWorldModel(WorldModelInterface):
     def update(self, storage: TransitionStorage):
         print("Updating model")
         self._frame_stack = FrameStack(storage.observations)
-
         update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
         for _ in range(Args().args.num_epochs):
             update_fn(storage.observations, storage.actions, storage.rewards, storage.dones, storage.next_observations)
@@ -119,6 +119,7 @@ class SimpleWrapper(gym.Wrapper):
                               rewards=reward, dones=term | trunc, next_observations=next_observations)
         self._timestep += 1
         self._timestep %= Args().args.trajectory_length
+
         self.last_observation = observation
         return observation, reward, term, trunc, info
 
