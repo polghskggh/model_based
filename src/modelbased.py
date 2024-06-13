@@ -13,16 +13,16 @@ def sample_env(agent, envs):
 
 
 def interact_world_model(agent, world_model):
-    init_state, _ = world_model.reset()
-    print(jnp.mean(init_state))
-    agent.receive_state(init_state)
-    model_free_train_loop(agent, world_model, False, Args().args.sim_trajectory_length)
+
 
 
 def update_agent(agent, world_model):
     saved_state = agent.last_transition()[3]
     for _ in range(Args().args.model_updates):
-        interact_world_model(agent, world_model)
+        init_state, _ = world_model.reset()
+        agent.receive_state(init_state)
+        model_free_train_loop(agent, world_model, False, Args().args.sim_trajectory_length)
+
     agent.receive_state(saved_state)
 
 
