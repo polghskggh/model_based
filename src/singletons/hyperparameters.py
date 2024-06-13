@@ -66,11 +66,11 @@ class Args:
                             help='the algorithm to use [simple, dreamer, dqn, ppo]')
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
         parser.add_argument('--num-updates', type=int, default=1000, help='number of updates to train')
-        parser.add_argument('--batch_size', type=int, default=30, help='the batch size for training')
+        parser.add_argument('--batch_size', type=int, default=50, help='the batch size for training')
         parser.add_argument('--num_envs', type=int, default=8, help='the number of parallel environments')
         parser.add_argument('--num_agents', type=int, default=8,
                             help='the number of parallel agents. Should equal num_envs, unless using model-based RL')
-        parser.add_argument('--trajectory_length', type=int, default=100, help='the length of trajectory')
+        parser.add_argument('--trajectory_length', type=int, default=400, help='the length of trajectory')
         parser.add_argument('--learning_rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
         parser.add_argument('--discount_factor', type=float, default=0.99, help='the discount factor')
 
@@ -78,7 +78,7 @@ class Args:
                             help='the maximum norm for the gradient clipping')
 
         parser.add_argument('--seed', type=int, default=1, help='seed for reproducible benchmarks')
-        parser.add_argument('--dropout', type=bool, default=False, help='whether to use dropout')
+        parser.add_argument('--dropout', type=bool, default=True, help='whether to use dropout')
         parser.add_argument('--frame_stack', type=int, default=4, help='number of frames to stack')
         parser.add_argument('--frame_skip', type=int, default=4, help='number of frames to skip')
         parser.add_argument('--grayscale', type=bool, default=True, help='whether to use grayscale')

@@ -18,7 +18,7 @@ class AutoEncoder(nn.Module):
     input_dimensions: tuple
     second_input: int
     latent: int = 128
-    deterministic: bool = False
+    deterministic: bool = True
 
     def setup(self):
         self.features = 256

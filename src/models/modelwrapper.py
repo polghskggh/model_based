@@ -50,10 +50,10 @@ class ModelWrapper:
         x = self.batch(x, in_dim)
         y = self.batch(y, out_dim)
 
-        grad_fun = value_and_grad(self._loss_fun, 1)
+        grad_fun = value_and_grad(self._loss_fun, 1, has_aux=True)
 
-        loss, grads = grad_fun(self.state, self.state.params, y, *x, rngs=self._rngs)
-        self._model_writer.add_scalar(f"losses/{self._name}_loss", loss, int(StepTracker()))
+        (loss, aux), grads = grad_fun(self.state, self.state.params, y, *x, rngs=self._rngs)
+        log(aux)
         return grads
 
     # forward pass

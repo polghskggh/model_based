@@ -28,7 +28,8 @@ class SimpleWorldModel(WorldModelInterface):
         self._rollout_length = Args().args.sim_trajectory_length
 
         if self._deterministic:
-            self._model: ModelWrapper = ModelWrapper(AutoEncoder(*Shape()), "autoencoder")
+            self._model: ModelWrapper = ModelWrapper(AutoEncoder(*Shape(), deterministic=True), "autoencoder",
+                                                     AutoEncoder(*Shape(), deterministic=False))
         else:
             self._model: ModelWrapper = ModelWrapper(StochasticAutoencoder(*Shape()), "autoencoder")
             self._trainer = SAETrainer(self._model)
