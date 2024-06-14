@@ -12,10 +12,6 @@ def sample_env(agent, envs):
     return envs.storage
 
 
-def interact_world_model(agent, world_model):
-
-
-
 def update_agent(agent, world_model):
     saved_state = agent.last_transition()[3]
     for _ in range(Args().args.model_updates):

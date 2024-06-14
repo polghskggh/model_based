@@ -33,12 +33,6 @@ class ReshapeObservation(ObservationWrapper):
         return serve
 
 
-class ObservationToInt(ObservationWrapper):
-    def observation(self, observation: jnp.ndarray) -> jnp.ndarray:
-        print(jnp.max(observation))
-        return observation.astype(jnp.unit8)
-
-
 class FrameSkip(Wrapper):
     def __init__(self, env: gym.Env, skip: int):
         """Return only every `skip`-th frame"""

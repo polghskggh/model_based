@@ -25,7 +25,7 @@ def world_model_factory(envs):
             world_model = SimpleWorldModel(True)
             return world_model, world_model.wrap_env(envs)
         case "dreamer":
-            world_model = Dreamer(envs)
+            world_model = Dreamer()
             return world_model, world_model.wrap_env(envs)
         case _:
             return None, envs

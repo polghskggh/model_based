@@ -25,7 +25,7 @@ import flax.linen as nn
 
 
 class Dreamer(WorldModelInterface):
-    def __init__(self, envs):
+    def __init__(self):
         self.num_agents = Args().args.num_agents
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
@@ -79,14 +79,6 @@ class Dreamer(WorldModelInterface):
         self.prev_belief = self.initial_beliefs[idx]
 
         return self.prev_state, {}
-
-    def save(self):
-        for model in self.models.values():
-            model.save()
-
-    def load(self):
-        for key, model in self.models.items():
-            model.load(key)
 
     def update(self, data):
         observations, actions, rewards, dones = data.observations, data.actions, data.rewards, data.dones

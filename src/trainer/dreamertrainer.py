@@ -47,6 +47,7 @@ class DreamerTrainer(Trainer):
         observations, actions, rewards, dones, state, belief = data
 
         beliefs = jnp.zeros((observations.shape[0], Args().args.num_envs, Args().args.belief_size))
+
         state_shape = (observations.shape[0], Args().args.num_envs, Args().args.state_size)
         prior_means = jnp.zeros(state_shape)
         prior_std_devs = jnp.zeros(state_shape)
@@ -56,13 +57,13 @@ class DreamerTrainer(Trainer):
 
         key = "representation"
         for idx in range(len(states)):
-            data = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
-            beliefs = beliefs.at[idx].set(data[0])
-            states = states.at[idx].set(data[1])
-            prior_means = prior_means.at[idx].set(data[2])
-            prior_std_devs = prior_std_devs.at[idx].set(data[3])
-            posterior_means = posterior_means.at[idx].set(data[4])
-            posterior_std_devs = posterior_std_devs.at[idx].set(data[5])
+            output = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
+            beliefs = beliefs.at[idx].set(output[0])
+            states = states.at[idx].set(output[1])
+            prior_means = prior_means.at[idx].set(output[2])
+            prior_std_devs = prior_std_devs.at[idx].set(output[3])
+            posterior_means = posterior_means.at[idx].set(output[4])
+            posterior_std_devs = posterior_std_devs.at[idx].set(output[5])
 
             condition = jnp.expand_dims(jnp.astype(dones[idx], jnp.bool_), -1)
             belief = jnp.where(condition, jnp.zeros_like(beliefs[idx]), beliefs[idx])

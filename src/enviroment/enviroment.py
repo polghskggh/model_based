@@ -9,7 +9,7 @@ from gymnasium.wrappers import GrayScaleObservation
 from gymnasium.wrappers import TimeLimit
 from nes_py.wrappers import JoypadSpace
 
-from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, ObservationToInt
+from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper
 from src.enviroment.shape import Shape
 from src.singletons.hyperparameters import Args
 
