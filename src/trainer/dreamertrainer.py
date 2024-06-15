@@ -25,6 +25,9 @@ class DreamerTrainer(Trainer):
         rng = {"normal": Key().key()}
         last_belief, last_state = initial_belief, initial_state
         keys_to_select = ['representation', 'observation', 'reward']
+        if Args().args.predict_dones:
+            keys_to_select.append('dones')
+
         params = {key: self.models[key].params for key in keys_to_select}
         models = {key: self.models[key].model for key in keys_to_select}
 
@@ -82,7 +85,7 @@ class DreamerTrainer(Trainer):
         rewards = rewards.reshape(-1)
 
         batch_size = Args().args.batch_size
-        observation_loss, reward_loss = 0, 0
+        observation_loss, reward_loss, dones_loss = 0, 0, 0
         num_batches = 0
 
         for start_idx in range(0, observations.shape[0], Args().args.batch_size):
@@ -97,16 +100,23 @@ class DreamerTrainer(Trainer):
             reward_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
             reward_loss += reward_loss_fn(reward_logits, rewards[batch_slice])
 
+            if Args().args.predict_dones:
+                key = "dones"
+                dones_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+                dones_loss += reward_loss_fn(reward_logits, rewards[batch_slice])
+
         observation_loss /= num_batches
         reward_loss /= num_batches
+        dones_loss /= num_batches
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
         kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
-        return (alpha * observation_loss + beta * reward_loss + gamma * kl_loss,
+        return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
                 {
-                    "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss},
+                    "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
+                             "dones_loss": dones_loss},
                     "data": (belief, state)
                 })

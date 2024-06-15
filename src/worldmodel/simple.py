@@ -2,9 +2,9 @@ import time
 
 import gym
 import jax
-import numpy as np
-from jax import vmap, lax
 import jax.numpy as jnp
+import numpy as np
+from jax import lax
 
 from src.enviroment import Shape
 from src.models.autoencoder.autoencoder import AutoEncoder
@@ -12,12 +12,11 @@ from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
-from src.singletons.writer import Writer, log
+from src.singletons.writer import log
 from src.trainer.saetrainer import SAETrainer
 from src.utils.rl import process_reward
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
-import flax.linen as nn
 
 
 class SimpleWorldModel(WorldModelInterface):
@@ -126,8 +125,3 @@ class SimpleWrapper(gym.Wrapper):
     @property
     def storage(self):
         return self._storage
-
-
-def debug_show(image):
-    plt.imshow(image[1], cmap='gray')
-    plt.savefig("debug.png")

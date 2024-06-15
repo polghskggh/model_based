@@ -23,7 +23,6 @@ class FrameStack:
 
     def reset(self):
         self._frames = self.sample_initial(self._initial_states, Args().args.num_agents)
-
         return self._frames
 
     def add_frame(self, next_frame):

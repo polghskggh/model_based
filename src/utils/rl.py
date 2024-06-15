@@ -61,4 +61,5 @@ def process_reward(reward):
     if Args().args.rewards == 1:
         return jnp.squeeze(reward)
     else:
-        return jnp.squeeze(jnp.argmax(nn.softmax(reward), axis=-1))
+        return jnp.squeeze(jnp.argmax(reward, axis=-1))
+

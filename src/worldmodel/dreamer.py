@@ -1,8 +1,9 @@
 import time
-from typing import Tuple
 
+import gymnasium as gym
 import jax
 import jax.numpy as jnp
+import jax.random as jr
 
 from src.enviroment import Shape
 from src.models.dreamer.observation import ObservationModel
@@ -10,18 +11,13 @@ from src.models.dreamer.representation import RepresentationModel
 from src.models.dreamer.reward import RewardModel
 from src.models.dreamer.transition import TransitionModel
 from src.models.modelwrapper import ModelWrapper
-
-from src.pod.storage import store, TrajectoryStorage, DreamerStorage
+from src.pod.storage import store, DreamerStorage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
+from src.singletons.writer import log
 from src.trainer.dreamertrainer import DreamerTrainer
 from src.utils.rl import process_reward
 from src.worldmodel.worldmodelinterface import WorldModelInterface
-import jax.random as jr
-import gymnasium as gym
-from src.singletons.writer import log
-
-import flax.linen as nn
 
 
 class Dreamer(WorldModelInterface):
@@ -59,6 +55,9 @@ class Dreamer(WorldModelInterface):
                        "reward": reward_model,
                        "transition": transition_model}
 
+        if Args().args.predict_dones:
+            dones_model = ModelWrapper(RewardModel(self.belief_size, self.state_size, self.hidden_size), "reward")
+            self.models["dones"] = dones_model
         self.trainer = DreamerTrainer(self.models)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
@@ -68,8 +67,14 @@ class Dreamer(WorldModelInterface):
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = process_reward(imagined_reward_logits)
 
+        if Args().args.predict_dones:
+            dones = self.models["dones"].forward(self.prev_belief, self.prev_state)
+            dones = jnp.squeeze(jnp.argmax(dones, axis=1))
+        else:
+            dones = jnp.zeros(imagined_reward.shape, dtype=bool)
+
         log({"Step time": (time.time() - start_time) / action.shape[0]})
-        return (self.prev_state, imagined_reward, jnp.zeros(imagined_reward.shape, dtype=bool),
+        return (self.prev_state, imagined_reward, dones,
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):

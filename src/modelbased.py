@@ -1,9 +1,8 @@
 from src.agent.agent import Agent
 from src.modelfree import model_free_train_loop
 from src.singletons.hyperparameters import Args
-from src.singletons.step_traceker import StepTracker
 from src.worldmodel.worldmodelinterface import WorldModelInterface
-import jax.numpy as jnp
+
 
 def sample_env(agent, envs):
     agent.store_trajectories = False
