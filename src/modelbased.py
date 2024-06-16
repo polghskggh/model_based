@@ -25,7 +25,7 @@ def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env, 
     storage = sample_env(agent, env)
     world_model.update(storage)
 
-    if update_idx > 10:
+    if update_idx > -1:
         update_agent(agent, world_model)
 
 

@@ -77,7 +77,8 @@ class PPOStrategy(StrategyInterface):
         _, last_value = self._actor_critic.forward(last_state)
 
         print("reward mean", jnp.mean(storage.rewards))
-        print("obs means", jnp.mean(storage.observations), jnp.mean(storage.observations[0]))
+        print("obs means", jnp.mean(storage.observations), jnp.mean(storage.observations[0][0]),
+              jnp.mean(storage.observations[0][1]))
         print("dones mean", jnp.mean(storage.dones))
         advantages = self.generalized_advantage_estimation(storage.values, storage.rewards,
                                                            storage.dones, last_value.squeeze(),
@@ -120,7 +121,8 @@ class PPOStrategy(StrategyInterface):
 
         policy_loss = rlax.clipped_surrogate_pg_loss(ratio, advantages, args.clip_threshold)
         entropy_loss = jnp.mean(policy.entropy())
-
+        jax.debug.print("policy aux (action, advantage, log_odds) {act}, {adv}, {log}", act=actions, adv=advantages,
+                        log=log_probs)
         value_loss_unclipped = optax.squared_error(new_values, returns)
         value_clipped = values + jnp.clip(new_values - values, -args.clip_threshold, args.clip_threshold)
         value_loss_clipped = optax.squared_error(value_clipped, returns)
