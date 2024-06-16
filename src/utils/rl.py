@@ -59,9 +59,9 @@ def generalized_advantage_estimation(values, rewards, discounts, lambda_):
     return advantages, advantages + truncated_values
 
 
-def process_reward(reward):
-    if Args().args.rewards == 1:
-        return jnp.squeeze(reward)
+def process_output(output):
+    if output.shape[-1] == 1:
+        return jnp.squeeze(output)
     else:
-        return jnp.squeeze(jr.choice(Key().key(), nn.softmax(reward)))
+        return jnp.squeeze(jr.choice(Key().key(), nn.softmax(output), shape=output.shape[0]))
 

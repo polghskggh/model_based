@@ -14,7 +14,7 @@ from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
 from src.singletons.writer import log
 from src.trainer.saetrainer import SAETrainer
-from src.utils.rl import process_reward
+from src.utils.rl import process_output
 from src.worldmodel.framestack import FrameStack
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
@@ -48,8 +48,8 @@ class SimpleWorldModel(WorldModelInterface):
         if Args().args.categorical_image:
             next_frames = jnp.argmax(next_frames, axis=-1, keepdims=True)
 
-        rewards = process_reward(rewards_logits)
-        dones = jnp.squeeze(jnp.argmax(dones, axis=-1)) if dones is not None else jnp.zeros_like(rewards, dtype=bool)
+        rewards = process_output(rewards_logits)
+        dones = process_output(dones) if dones is not None else jnp.zeros_like(rewards, dtype=bool)
         np.save("f1.npy", self._frame_stack.frames[:, :, :, 0])
         np.save("f2.npy", self._frame_stack.frames[:, :, :, 1])
         np.save("f3.npy", self._frame_stack.frames[:, :, :, 2])
