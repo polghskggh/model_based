@@ -37,7 +37,7 @@ def main():
     agent = Agent(Args().args.algorithm)
     world_model, envs = world_model_factory(envs)
     if world_model is not None:
-        world_model = initial_training(envs, world_model)
+        initial_training(envs, world_model)
     run_experiment(agent, envs, world_model)
 
 
@@ -49,8 +49,8 @@ def run_experiment(agent: Agent, envs: gym.Env, world_model: Optional[WorldModel
     agent.receive_state(initial_observation)
 
     try:
-        for update in tqdm(range(1, Args().args.num_updates + 1)):
-            run_episode(agent, world_model, envs, update)
+        for _ in tqdm(range(1, Args().args.num_updates + 1)):
+            run_episode(agent, world_model, envs)
             global_step = int(StepTracker())
             writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
         print(colored('Training complete!', 'green'))
@@ -61,11 +61,11 @@ def run_experiment(agent: Agent, envs: gym.Env, world_model: Optional[WorldModel
         writer.close()
 
 
-def run_episode(agent: Agent, world_model: Optional[WorldModelInterface], envs: gym.Env, update: int):
+def run_episode(agent: Agent, world_model: Optional[WorldModelInterface], envs: gym.Env):
     if world_model is None:
         model_free_train_loop(agent, envs)
     else:
-        model_based_train_loop(agent, world_model, envs, update)
+        model_based_train_loop(agent, world_model, envs)
 
 
 if __name__ == '__main__':

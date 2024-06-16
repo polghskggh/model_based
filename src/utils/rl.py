@@ -4,7 +4,9 @@ from jax import vmap, jit
 import jax.numpy as jnp
 import flax.linen as nn
 
+import jax.random as jr
 from src.singletons.hyperparameters import Args
+from src.singletons.rng import Key
 
 
 @jit
@@ -61,5 +63,5 @@ def process_reward(reward):
     if Args().args.rewards == 1:
         return jnp.squeeze(reward)
     else:
-        return jnp.squeeze(jnp.argmax(reward, axis=-1))
+        return jnp.squeeze(jr.choice(Key().key(), nn.softmax(reward)))
 

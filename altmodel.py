@@ -101,7 +101,7 @@ def parse_args():
     parser.add_argument('--num-minibatches', type=int, default=4, help='the number of mini batches')
     parser.add_argument('--update-epochs', type=int, default=4, help='the K epochs to update the policy')
     parser.add_argument('--clip-coef', type=float, default=0.1, help='the surrogate clipping coefficient')
-    parser.add_argument('--ent-coef', type=float, default=0.01, help='coefficient of the entropy')
+    parser.add_argument('--ent-coef', type=float, default=0.1, help='coefficient of the entropy')
     parser.add_argument('--vf-coef', type=float, default=0.5, help='coefficient of the value function')
     parser.add_argument('--max-grad-norm', type=float, default=0.5, help='the maximum norm for the gradient clipping')
     parser.add_argument('--seed', type=int, default=1, help='seed for reproducible benchmarks')
