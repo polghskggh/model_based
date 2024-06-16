@@ -16,7 +16,7 @@ from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.dreamertrainer import DreamerTrainer
-from src.utils.rl import process_reward
+from src.utils.rl import process_output
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
@@ -65,11 +65,11 @@ class Dreamer(WorldModelInterface):
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
-        imagined_reward = process_reward(imagined_reward_logits)
+        imagined_reward = process_output(imagined_reward_logits)
 
         if Args().args.predict_dones:
             dones = self.models["dones"].forward(self.prev_belief, self.prev_state)
-            dones = jnp.squeeze(jnp.argmax(dones, axis=1))
+            dones = process_output(dones)
         else:
             dones = jnp.zeros(imagined_reward.shape, dtype=bool)
 
