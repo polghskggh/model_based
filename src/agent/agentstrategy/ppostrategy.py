@@ -121,8 +121,6 @@ class PPOStrategy(StrategyInterface):
 
         policy_loss = rlax.clipped_surrogate_pg_loss(ratio, advantages, args.clip_threshold)
         entropy_loss = jnp.mean(policy.entropy())
-        jax.debug.print("policy aux (action, advantage, log_odds) {act}, {adv}, {log}", act=actions, adv=advantages,
-                        log=log_probs)
         value_loss_unclipped = optax.squared_error(new_values, returns)
         value_clipped = values + jnp.clip(new_values - values, -args.clip_threshold, args.clip_threshold)
         value_loss_clipped = optax.squared_error(value_clipped, returns)

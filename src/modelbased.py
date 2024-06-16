@@ -28,6 +28,8 @@ def update_agent(agent, world_model):
 
 def model_based_train_loop(agent: Agent, world_model: WorldModelInterface, env, update_idx):
     storage = sample_env(agent, env)
+    print("Updating model")
+    print(jnp.unique(storage.actions, return_counts=True))
     world_model.update(storage)
     update_agent(agent, world_model)
 

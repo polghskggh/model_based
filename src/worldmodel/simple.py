@@ -80,8 +80,7 @@ class SimpleWorldModel(WorldModelInterface):
         self._model.params = self._trainer.train_step(self._model.params, stack, actions, rewards, next_frame)
 
     def update(self, storage: TransitionStorage):
-        print("Updating model")
-        print(jnp.unique(storage.actions, return_counts=True))
+
         self._frame_stack = FrameStack(storage.observations)
         update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
         for _ in range(Args().args.num_epochs):
