@@ -62,6 +62,7 @@ class SimpleWorldModel(WorldModelInterface):
 
     def reset(self):
         self._frame_stack.reset()
+        self._iteration = 0
         for i in range(4):
             np.save(f"f{self._iteration}.npy",  self._frame_stack.frames[:, :, :, i])
             self._iteration += 1
