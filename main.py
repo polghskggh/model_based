@@ -8,7 +8,7 @@ from tqdm import tqdm
 from src.agent.agent import Agent
 from src.enviroment import make_envs, Shape
 from src.gpu import check_gpu
-from src.modelbased import model_based_train_loop
+from src.modelbased import model_based_train_loop, initial_training
 from src.modelfree import model_free_train_loop
 from src.singletons.hyperparameters import Args
 from src.singletons.step_traceker import StepTracker
@@ -36,6 +36,8 @@ def main():
     envs = make_envs()
     agent = Agent(Args().args.algorithm)
     world_model, envs = world_model_factory(envs)
+    if world_model is not None:
+        world_model = initial_training(envs, world_model)
     run_experiment(agent, envs, world_model)
 
 

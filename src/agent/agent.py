@@ -25,7 +25,6 @@ class Agent:
         self._strategy.timestep_callback(self._old_state, self._selected_action, self._reward, self._new_state,
                                          self._done, self.store_trajectories)
 
-
     def select_action(self) -> jax.Array:
         self._selected_action = self._strategy.select_action(self._new_state, self.store_trajectories)
         return self._selected_action
@@ -39,12 +38,6 @@ class Agent:
 
     def receive_done(self, done):
         self._done = done
-
-    def save(self):
-        self._strategy.save()
-
-    def load(self):
-        self._strategy.load()
 
     @property
     def store_trajectories(self):

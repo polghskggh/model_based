@@ -88,7 +88,8 @@ class Args:
                             help='number of updates of agent on the model in model-based RL')
         parser.add_argument('--hybrid_learning', type=bool, default=False, help='whether to train both with '
                                                                                 'the model and with the environment')
-
+        parser.add_argument('--initial_updates', type=int, default=10, help='number of updates of the model '
+                                                                            'before starting to train the model')
         parse_dqn(parser)
         parse_ppo(parser)
         parse_simple(parser)

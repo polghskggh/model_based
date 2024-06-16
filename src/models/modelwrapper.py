@@ -74,7 +74,7 @@ class ModelWrapper:
         :param grads: the gradients to apply
         """
         self.state = self.state.apply_gradients(grads=grads)
-        self._model_writer.add_scalar("charts/learning_rate",
+        self._model_writer.add_scalar("charts/learning_rate_" + self._name,
                                       self.state.opt_state[1].hyperparams["learning_rate"].item(),
                                       int(StepTracker()))
 
