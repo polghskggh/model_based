@@ -32,9 +32,6 @@ def make_env(env_name: str = "breakout") -> gym.Env:
     return env
 
 
-
-
-
 def apply_common_wrappers(env: gym.Env):
     env = RecordEpisodeStatistics(env)
     env = ResizeObservation(env, (84, 84))

@@ -48,7 +48,7 @@ class PPOStrategy(StrategyInterface):
                           dones=jnp.zeros(batch_shape),
                           values=jnp.zeros(batch_shape))
 
-    def timestep_callback(self, old_state: jax.Array, selected_action: jax.Array, reward: jax.Array,
+    def timestep_callback(self, old_state: jax.Array, reward: jax.Array,
                           new_state: jax.Array, done: jax.Array, store_trajectory: jax.Array):
         if not store_trajectory and not Args().args.hybrid_learning:
             return
@@ -60,8 +60,9 @@ class PPOStrategy(StrategyInterface):
             storage = self._trajectory_storage
             update_time = self.trajectory_length
 
+        print(reward.shape, done.shape)
         storage = store(storage, self._iteration, observations=old_state,
-                        actions=selected_action, rewards=reward, dones=done)
+                        rewards=reward, dones=done)
         self._iteration += 1
 
         if self._iteration == update_time:
@@ -83,7 +84,6 @@ class PPOStrategy(StrategyInterface):
         advantages = self.generalized_advantage_estimation(storage.values, storage.rewards,
                                                            storage.dones, last_value.squeeze(),
                                                            Args().args.discount_factor, Args().args.gae_lambda)
-        print(advantages)
         batch_observations = storage.observations.reshape(-1, *self.state_shape)
         batch_actions = storage.actions.reshape(-1)
         batch_log_probs = storage.log_probs.reshape(-1)
@@ -134,14 +134,18 @@ class PPOStrategy(StrategyInterface):
     def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
         logits, value_estimate = self._actor_critic.forward(states)
         policy = distrax.Categorical(logits.squeeze())
-        action = policy.sample(seed=Key().key())
+        action = policy.sample(seed=Key().key()).squeeze()
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
-                                             log_probs=policy.log_prob(action), values=value_estimate.squeeze())
+                                             log_probs=policy.log_prob(action),
+                                             actions=action,
+                                             values=value_estimate.squeeze())
         elif Args().args.hybrid_learning:
             self._hybrid_trajectory_storage = store(self._hybrid_trajectory_storage, self._iteration,
-                                                    log_probs=policy.log_prob(action), values=value_estimate.squeeze())
-        return action.squeeze()
+                                                    log_probs=policy.log_prob(action),
+                                                    actions=action,
+                                                    values=value_estimate.squeeze())
+        return action
 
     @staticmethod
     @jit

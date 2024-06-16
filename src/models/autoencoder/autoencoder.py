@@ -42,6 +42,9 @@ class AutoEncoder(nn.Module):
         encoded_action = one_hot(action, self.second_input)
         injected = self.action_injector(encoded, encoded_action)
 
+        jax.debug.print("action: {action}, before: {before}, after: {after}", action=action[0],
+                        before=jnp.mean(embedded_image[0]), after=jnp.mean(injected[0]))
+
         if latent is not None:
             injected = self.latent_injector(injected, latent)
         hidden = self.middle_network(injected)
@@ -49,7 +52,7 @@ class AutoEncoder(nn.Module):
         decoded = self.decoder(hidden, skip)
         logits = self.logits(decoded)
 
-        reward_logits = self.reward_predictor(injected, logits)
+        reward_logits = self.reward_predictor(hidden, logits)
 
         if not Args().args.categorical_image:
             pixels = linear_layer_init(1 if Args().args.grayscale else 3)(logits)
@@ -58,6 +61,6 @@ class AutoEncoder(nn.Module):
             pixels = logits
 
         if Args().args.predict_dones:
-            return pixels, reward_logits, self.done_predictor(injected, logits)
+            return pixels, reward_logits, self.done_predictor(hidden, logits)
 
         return pixels, reward_logits

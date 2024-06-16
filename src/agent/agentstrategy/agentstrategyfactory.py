@@ -31,6 +31,6 @@ class RandomStrategy(StrategyInterface):
     def select_action(self, *args, **kwargs):
         return jr.randint(Key().key(), shape=(Args().args.num_envs,), minval=0, maxval=Shape()[1])
 
-    def timestep_callback(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray,
+    def timestep_callback(self, old_state: jnp.ndarray, reward: float, new_state: jnp.ndarray,
                           done: bool, store_trajectory: bool):
         pass

@@ -1,4 +1,4 @@
-
+import distrax
 import jax
 from jax import vmap, jit
 import jax.numpy as jnp
@@ -60,8 +60,10 @@ def generalized_advantage_estimation(values, rewards, discounts, lambda_):
 
 
 def process_output(output):
+    output = jnp.squeeze(output)
+    print(output.shape)
     if output.shape[-1] == 1:
         return jnp.squeeze(output)
     else:
-        return jnp.squeeze(jr.choice(Key().key(), nn.softmax(output), shape=output.shape[0]))
-
+        distribution = distrax.Categorical(output)
+        return distribution.sample(seed=Key().key()).squeeze()

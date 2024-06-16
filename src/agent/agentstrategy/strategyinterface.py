@@ -4,7 +4,7 @@ import jax.numpy as jnp
 
 class StrategyInterface:
     @abstractmethod
-    def timestep_callback(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray,
+    def timestep_callback(self, old_state: jnp.ndarray, reward: float, new_state: jnp.ndarray,
                           done: bool, store_trajectory: bool):
         pass
 

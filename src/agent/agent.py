@@ -22,7 +22,7 @@ class Agent:
         self._strategy: StrategyInterface = agent_strategy_factory(strategy)
 
     def update_policy(self):
-        self._strategy.timestep_callback(self._old_state, self._selected_action, self._reward, self._new_state,
+        self._strategy.timestep_callback(self._old_state, self._reward, self._new_state,
                                          self._done, self.store_trajectories)
 
     def select_action(self) -> jax.Array:

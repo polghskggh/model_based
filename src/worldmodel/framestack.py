@@ -14,7 +14,6 @@ class FrameStack:
         self._initial_states = data
         self._frames = None
         self.n_channels = Shape()[0][2] // Args().args.frame_stack
-        self.reset()
 
     @staticmethod
     def sample_initial(initial_observations: jnp.ndarray, parallel_envs: int):
