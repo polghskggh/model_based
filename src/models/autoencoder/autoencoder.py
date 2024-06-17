@@ -42,9 +42,6 @@ class AutoEncoder(nn.Module):
         encoded_action = one_hot(action, self.second_input)
         injected = self.action_injector(encoded, encoded_action)
 
-        jax.debug.print("action: {action}, before: {before}, after: {after}", action=action[0],
-                        before=jnp.mean(embedded_image[0]), after=jnp.mean(injected[0]))
-
         if latent is not None:
             injected = self.latent_injector(injected, latent)
         hidden = self.middle_network(injected)
