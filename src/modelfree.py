@@ -3,7 +3,7 @@ import jax.numpy as jnp
 
 from src.agent.agent import Agent
 from src.singletons.hyperparameters import Args
-from src.singletons.step_traceker import StepTracker
+from src.singletons.step_traceker import StepTracker, ModelEnvTracker
 from src.singletons.writer import Writer
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
@@ -23,6 +23,9 @@ def model_free_train_loop(agent: Agent, envs: gym.Env | WorldModelInterface, inc
 
         if increment:
             StepTracker().increment(Args().args.num_envs)
+        else:
+            ModelEnvTracker().increment(Args().args.num_agents)
+            Writer().writer.add_scalar("charts/interactions", int(ModelEnvTracker()), int(StepTracker()))
 
         # Only print when at least 1 env is done
         if increment and jnp.any(done):
