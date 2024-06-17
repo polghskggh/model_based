@@ -65,7 +65,7 @@ class Args:
         parser.add_argument('--algorithm', type=str, default='ppo',
                             help='the algorithm to use [simple, dreamer, dqn, ppo]')
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
-        parser.add_argument('--num-updates', type=int, default=1000, help='number of updates to train')
+        parser.add_argument('--num-updates', type=int, default=8000, help='number of updates to train')
         parser.add_argument('--batch_size', type=int, default=50, help='the batch size for training')
         parser.add_argument('--num_envs', type=int, default=8, help='the number of parallel environments')
         parser.add_argument('--num_agents', type=int, default=8,
@@ -88,8 +88,8 @@ class Args:
                             help='number of updates of agent on the model in model-based RL')
         parser.add_argument('--hybrid_learning', type=bool, default=False, help='whether to train both with '
                                                                                 'the model and with the environment')
-        parser.add_argument('--initial_updates', type=int, default=10, help='number of updates of the model '
-                                                                            'before starting to train the model')
+        parser.add_argument('--initial_updates', type=int, default=100, help='number of updates of the model '
+                                                                             'before starting to train the model')
         parse_dqn(parser)
         parse_ppo(parser)
         parse_simple(parser)
