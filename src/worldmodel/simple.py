@@ -35,7 +35,6 @@ class SimpleWorldModel(WorldModelInterface):
 
         self._frame_stack = None
         self.predict_dones = Args().args.predict_dones
-        self._iteration = 0
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         start_time = time.time()
@@ -51,10 +50,7 @@ class SimpleWorldModel(WorldModelInterface):
 
         rewards = process_output(rewards_logits)
         dones = process_output(dones) if dones is not None else jnp.zeros_like(rewards, dtype=bool)
-        np.save(f"f{self._iteration}.npy", next_frames)
-        print("iteration:", self._iteration, "actions:", actions)
 
-        self._iteration += 1
         self._frame_stack.add_frame(next_frames)
 
         log({"Step time": (time.time() - start_time) / actions.shape[0]})
@@ -62,11 +58,6 @@ class SimpleWorldModel(WorldModelInterface):
 
     def reset(self):
         self._frame_stack.reset()
-        self._iteration = 0
-        for i in range(4):
-            np.save(f"f{self._iteration}.npy",  self._frame_stack.frames[:, :, :, i])
-            self._iteration += 1
-
         return self._frame_stack.frames, {}
 
     def _deterministic_update(self, stack, actions, rewards, dones, next_frame):
