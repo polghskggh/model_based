@@ -1,9 +1,10 @@
 import distrax
+import jax
 import jax.numpy as jnp
 from jax import value_and_grad, lax
 
 from src.enviroment import Shape
-from src.models.lossfuns import reward_loss_fn, image_loss_fn
+from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
@@ -18,6 +19,7 @@ class DreamerTrainer(Trainer):
         self.models = models
 
     def apply_grads(self, grads):
+        print(grads.keys())
         for key in grads.keys():
             self.models[key].apply_grads(grads[key])
 
@@ -103,7 +105,7 @@ class DreamerTrainer(Trainer):
             if Args().args.predict_dones:
                 key = "dones"
                 dones_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
-                dones_loss += reward_loss_fn(reward_logits, rewards[batch_slice])
+                dones_loss += softmax_loss(dones_logits, dones[batch_slice])
 
         observation_loss /= num_batches
         reward_loss /= num_batches
@@ -112,7 +114,8 @@ class DreamerTrainer(Trainer):
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
         kl_loss /= posterior_std_devs.shape[0]
-
+        jax.debug.print("observation loss: {obs}, reward_loss: {rew}, kl loss: {kl}",
+                        obs=observation_loss, rew=reward_loss, kl=kl_loss)
         alpha, beta, gamma = Args().args.loss_weights
         return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
                 {

@@ -6,7 +6,7 @@ import jax.numpy as jnp
 from matplotlib import pyplot as plt
 
 
-idx = 7
+idx = int(argv[2])
 
 for i in range(int(argv[1])):
     img_array = np.load(f"f{i}.npy")
