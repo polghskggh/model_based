@@ -30,16 +30,15 @@ class RepresentationModel(nn.Module):
         self.rnn = nn.GRUCell(self.belief_size, self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
         self.transition_model = TransitionModel(self.belief_size, self.state_size, self.action_size,
-                                                 self.hidden_size)
+                                                self.hidden_size)
         self.posterior_dense = nn.Dense(self.belief_size + self.embedding_size, self.hidden_size)
-        self.encoder = Encoder()
+        self.encoder = Encoder(64)
 
     def posterior_update(self, belief, observation):
-
         # Compute state posterior by applying transition dynamics and using current observation
-        state, _ = self.encoder(observation)
-        state = state.reshape(state.shape[0], -1)
-        x = jnp.append(belief, state, axis=-1)
+        encoded_obs, _ = self.encoder(observation)
+        encoded_obs = encoded_obs.reshape(encoded_obs.shape[0], -1)
+        x = jnp.append(belief, encoded_obs, axis=-1)
         hidden = self.posterior_dense(x)
         hidden = self.activation_fun(hidden)
 

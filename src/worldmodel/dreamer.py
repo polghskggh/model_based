@@ -25,7 +25,7 @@ class Dreamer(WorldModelInterface):
         self.num_agents = Args().args.num_agents
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
-        self.embedding_size = 4 * 256
+        self.embedding_size = 4 * 64
         self.hidden_size = Args().args.hidden_size
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]

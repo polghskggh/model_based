@@ -19,7 +19,6 @@ class DreamerTrainer(Trainer):
         self.models = models
 
     def apply_grads(self, grads):
-        print(grads.keys())
         for key in grads.keys():
             self.models[key].apply_grads(grads[key])
 
@@ -81,9 +80,7 @@ class DreamerTrainer(Trainer):
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
         observations = observations.reshape(-1, *observations.shape[2:])
-        n_channels = Shape()[0][2] // Args().args.frame_stack
-        observations = lax.slice_in_dim(observations, (Args().args.frame_stack - 1) * n_channels,
-                                        None, axis=-1)
+
         rewards = rewards.reshape(-1)
         dones = dones.reshape(-1)
 
@@ -115,6 +112,7 @@ class DreamerTrainer(Trainer):
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
         kl_loss /= posterior_std_devs.shape[0]
+
         alpha, beta, gamma = Args().args.loss_weights
         return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
                 {

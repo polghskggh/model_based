@@ -60,7 +60,6 @@ class PPOStrategy(StrategyInterface):
             storage = self._trajectory_storage
             update_time = self.trajectory_length
 
-        print(reward.shape, done.shape)
         storage = store(storage, self._iteration, observations=old_state,
                         rewards=reward, dones=done)
         self._iteration += 1
@@ -76,6 +75,7 @@ class PPOStrategy(StrategyInterface):
 
     def update(self, last_state, storage):
         _, last_value = self._actor_critic.forward(last_state)
+        print(jnp.unique(storage.actions, return_counts=True))
 
         print("reward mean", jnp.mean(storage.rewards))
         print("obs means", jnp.mean(storage.observations), jnp.mean(storage.observations[0][0]),
