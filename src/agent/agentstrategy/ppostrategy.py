@@ -39,6 +39,7 @@ class PPOStrategy(StrategyInterface):
 
         self._trajectory_storage = self._init_storage((self.trajectory_length, Args().args.num_agents))
         self._iteration: int = 0
+        self._action_repetitions = 0
 
     def _init_storage(self, batch_shape):
         return PPOStorage(observations=jnp.zeros((batch_shape) + self.state_shape),
@@ -134,7 +135,17 @@ class PPOStrategy(StrategyInterface):
     def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
         logits, value_estimate = self._actor_critic.forward(states)
         policy = distrax.Categorical(logits.squeeze())
-        action = policy.sample(seed=Key().key()).squeeze()
+
+        if (self._action_repetitions + 1) == Args().args.max_action_repetitions:
+            action = self._trajectory_storage.actions[self._iteration - 1]
+        else:
+            action = policy.sample(seed=Key().key()).squeeze()
+
+        if action == self._trajectory_storage.actions[self._iteration - 1]:
+            self._action_repetitions += 1
+        else:
+            self._action_repetitions = 0
+
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
                                              log_probs=policy.log_prob(action),
