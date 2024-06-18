@@ -126,6 +126,7 @@ class DreamerWrapper(gym.Wrapper):
                                                                       self.prev_belief, observation)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
                              dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
+
         self.prev_belief = belief
         self.prev_state = state
 

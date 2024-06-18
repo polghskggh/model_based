@@ -105,6 +105,7 @@ class DreamerTrainer(Trainer):
                 dones_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
                 dones_loss += jnp.mean(softmax_loss(dones_logits, dones[batch_slice]))
 
+        num_batches = jnp.minimum(num_batches, 1)
         observation_loss /= num_batches
         reward_loss /= num_batches
         dones_loss /= num_batches
