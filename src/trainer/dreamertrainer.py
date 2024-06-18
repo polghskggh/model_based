@@ -85,6 +85,7 @@ class DreamerTrainer(Trainer):
         observations = lax.slice_in_dim(observations, (Args().args.frame_stack - 1) * n_channels,
                                         None, axis=-1)
         rewards = rewards.reshape(-1)
+        dones = dones.reshape(-1)
 
         batch_size = Args().args.batch_size
         observation_loss, reward_loss, dones_loss = 0, 0, 0
@@ -105,7 +106,7 @@ class DreamerTrainer(Trainer):
             if Args().args.predict_dones:
                 key = "dones"
                 dones_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
-                dones_loss += softmax_loss(dones_logits.squeeze(), dones[batch_slice])
+                dones_loss += softmax_loss(dones_logits, dones[batch_slice])
 
         observation_loss /= num_batches
         reward_loss /= num_batches
