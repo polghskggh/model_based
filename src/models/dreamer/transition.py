@@ -16,7 +16,6 @@ from src.utils.modelhelperfuns import sample_normal
 class TransitionModel(nn.Module):
     belief_size: int
     state_size: int
-    action_size: int
     hidden_size: int
 
     def setup(self):
