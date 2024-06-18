@@ -5,6 +5,7 @@ from flax.training.common_utils import onehot
 
 from src.enviroment import Shape
 from src.models.dreamer.variationalencoder import VariationalEncoder
+from src.models.helpers import linear_layer_init
 from src.utils.activationfuns import activation_function_dict
 import jax
 import jax.numpy as jnp
@@ -24,19 +25,8 @@ class TransitionModel(nn.Module):
         self.rnn = nn.GRUCell(features=self.belief_size)
         self.variational_encoder = VariationalEncoder(2 * self.state_size)
         self.embedding_size = 100
-        self.belief_dense = nn.Dense(self.state_size + self.action_size, self.belief_size)
+        self.belief_dense = linear_layer_init(self.belief_size)
 
-    # Operates over (previous) state, (previous) actions, (previous) belief, (previous) nonterminals (mask), and (current) observations
-    # Diagram of expected inputs and outputs for T = 5 (-x- signifying beginning of output belief/state that gets sliced off):
-    # t :  0  1  2  3  4  5
-    # o :    -X--X--X--X--X-
-    # a : -X--X--X--X--X-
-    # n : -X--X--X--X--X-
-    # pb: -X-
-    # ps: -X-
-    # b : -x--X--X--X--X--X-
-    # s : -x--X--X--X--X--X-
-    # d
     def update_belief(self, belief, state, action):
         state_action = jnp.append(state, action, axis=-1)
         state_action = self.belief_dense(state_action)
@@ -46,7 +36,7 @@ class TransitionModel(nn.Module):
 
     def prior_update(self, belief):
         # Compute state prior by applying transition dynamics
-        hidden = nn.Dense(self.belief_size, self.hidden_size)(belief)
+        hidden = linear_layer_init(self.hidden_size)(belief)
         hidden = self.activation_fun(hidden)
         return self.variational_encoder(hidden)
 
