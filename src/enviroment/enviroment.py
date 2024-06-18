@@ -9,7 +9,7 @@ from gymnasium.wrappers import GrayScaleObservation
 from gymnasium.wrappers import TimeLimit
 from nes_py.wrappers import JoypadSpace
 
-from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper
+from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, LimitActions
 from src.enviroment.shape import Shape
 from src.singletons.hyperparameters import Args
 
@@ -36,7 +36,7 @@ def apply_common_wrappers(env: gym.Env):
     env = RecordEpisodeStatistics(env)
     env = ResizeObservation(env, (84, 84))
     env = optional_grayscale(env)
-    env = FrameStack(env, 4)
+    env = FrameStack(env, 1 if Args().args.algorithm == "dreamer" else 4)
     env = ReshapeObservation(env)
     Shape.initialize(env)
     return env
@@ -55,6 +55,7 @@ def make_mario() -> gym.Env:
     env = gym_super_mario_bros.make("SuperMarioBros-v3", render_mode="rgb_array", apply_api_compatibility=True)
     env = JoypadSpace(env, RIGHT_ONLY)
     env = CompatibilityWrapper(env)
+    env = LimitActions(env)
     env = FrameSkip(env, 4)
     env = apply_common_wrappers(env)
     return env

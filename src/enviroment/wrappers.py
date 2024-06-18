@@ -3,13 +3,21 @@ from typing import Any, SupportsFloat
 import gymnasium as gym
 import numpy as np
 from gymnasium import ObservationWrapper, Wrapper
-from gymnasium.core import WrapperObsType, WrapperActType
+from gymnasium.core import WrapperObsType, WrapperActType, ActionWrapper
 from gymnasium.spaces import Box
 from gymnasium.spaces.discrete import Discrete
 import jax.numpy as jnp
 
 
-# TODO: Mario limit to only right and right + A
+class LimitActions(ActionWrapper):
+    def __init__(self, env) -> gym.Env:
+        super().__init__(env)
+        self.action_space = Discrete(n=2)
+
+    def action(self, action: jnp.ndarray) -> jnp.ndarray:
+        return action + 1
+
+
 class ReshapeObservation(ObservationWrapper):
     def __init__(self, env) -> gym.Env:
         super().__init__(env)
