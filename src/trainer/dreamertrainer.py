@@ -112,7 +112,7 @@ class DreamerTrainer(Trainer):
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
-        kl_loss /= posterior_std_devs.shape[0]
+        kl_loss /= jnp.minimum(posterior_std_devs.shape[0], 1)
 
         alpha, beta, gamma = Args().args.loss_weights
         return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
