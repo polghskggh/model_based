@@ -105,7 +105,7 @@ class DreamerTrainer(Trainer):
             if Args().args.predict_dones:
                 key = "dones"
                 dones_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
-                dones_loss += softmax_loss(dones_logits, dones[batch_slice])
+                dones_loss += softmax_loss(dones_logits.squeeze(), dones[batch_slice])
 
         observation_loss /= num_batches
         reward_loss /= num_batches

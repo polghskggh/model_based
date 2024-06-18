@@ -8,7 +8,7 @@ import jax.random as jr
 from src.enviroment import Shape
 from src.models.dreamer.observation import ObservationModel
 from src.models.dreamer.representation import RepresentationModel
-from src.models.dreamer.reward import RewardModel
+from src.models.dreamer.reward import RewardModel, DonesModel
 from src.models.dreamer.transition import TransitionModel
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import store, DreamerStorage
@@ -56,7 +56,7 @@ class Dreamer(WorldModelInterface):
                        "transition": transition_model}
 
         if Args().args.predict_dones:
-            dones_model = ModelWrapper(RewardModel(self.belief_size, self.state_size, self.hidden_size), "reward")
+            dones_model = ModelWrapper(DonesModel(self.belief_size, self.state_size, self.hidden_size), "reward")
             self.models["dones"] = dones_model
         self.trainer = DreamerTrainer(self.models)
 
@@ -82,7 +82,6 @@ class Dreamer(WorldModelInterface):
         idx = jr.choice(key, self.initial_beliefs.shape[0], (self.num_agents,), False)
         self.prev_state = self.initial_states[idx]
         self.prev_belief = self.initial_beliefs[idx]
-
         return self.prev_state, {}
 
     def update(self, data):
