@@ -6,6 +6,7 @@ import jax.numpy as jnp
 import jax.random as jr
 
 from src.enviroment import Shape
+from src.models.autoencoder.encoder import Encoder
 from src.models.dreamer.observation import ObservationModel
 from src.models.dreamer.representation import RepresentationModel
 from src.models.dreamer.reward import RewardModel, DonesModel
@@ -47,16 +48,20 @@ class Dreamer(WorldModelInterface):
                                                           self.embedding_size, self.observation_size),
                                          "observation")
 
-        reward_model = ModelWrapper(RewardModel(self.belief_size, self.state_size, self.hidden_size), "reward")
+        encoder_model = ModelWrapper(Encoder(64), "encoder")
+
+        reward_model = ModelWrapper(RewardModel(self.hidden_size), "reward")
 
         self.models = {"representation": representation_model,
                        "observation": observation_model,
                        "reward": reward_model,
-                       "transition": transition_model}
+                       "transition": transition_model,
+                       "encoder": encoder_model}
 
         if Args().args.predict_dones:
-            dones_model = ModelWrapper(DonesModel(self.belief_size, self.state_size, self.hidden_size), "reward")
+            dones_model = ModelWrapper(DonesModel(self.hidden_size), "reward")
             self.models["dones"] = dones_model
+
         self.trainer = DreamerTrainer(self.models)
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
@@ -92,7 +97,7 @@ class Dreamer(WorldModelInterface):
         self.initial_states = data.states.reshape(-1, self.state_size)
 
     def wrap_env(self, envs):
-        return DreamerWrapper(envs, self.models["representation"])
+        return DreamerWrapper(envs, self.models["representation"], self.models["encoder"])
 
 
 class DreamerWrapper(gym.Wrapper):
@@ -100,9 +105,10 @@ class DreamerWrapper(gym.Wrapper):
     prev_state: jax.Array
     prev_belief: jax.Array
 
-    def __init__(self, env, representation_model: ModelWrapper):
+    def __init__(self, env, representation_model: ModelWrapper, encoder_model: ModelWrapper):
         super().__init__(env)
         self.representation_model = representation_model
+        self.encoder_model = encoder_model
         batch_shape = (Args().args.trajectory_length,
                        Args().args.num_envs)
         self.prev_belief = jnp.zeros((Args().args.num_envs, Args().args.belief_size))
@@ -121,8 +127,10 @@ class DreamerWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
+
+        encoded_observation, _ = self.encoder_model.forward(observation)
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
-                                                                      self.prev_belief, observation)
+                                                                      self.prev_belief, encoded_observation)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
                              dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
 

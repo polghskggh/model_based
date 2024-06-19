@@ -15,7 +15,6 @@ class DreamerTrainer(Trainer):
     def __init__(self, models: dict):
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
-
         self.models = models
 
     def apply_grads(self, grads):
@@ -25,7 +24,8 @@ class DreamerTrainer(Trainer):
     def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
         rng = {"normal": Key().key()}
         last_belief, last_state = initial_belief, initial_state
-        keys_to_select = ['representation', 'observation', 'reward']
+        keys_to_select = ['representation', 'observation', 'reward', 'encoder']
+
         if Args().args.predict_dones:
             keys_to_select.append('dones')
 
@@ -49,9 +49,9 @@ class DreamerTrainer(Trainer):
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, dones, state, belief = data
+        batch_size = Args().args.batch_size
 
         beliefs = jnp.zeros((observations.shape[0], Args().args.num_envs, Args().args.belief_size))
-
         state_shape = (observations.shape[0], Args().args.num_envs, Args().args.state_size)
         prior_means = jnp.zeros(state_shape)
         prior_std_devs = jnp.zeros(state_shape)
@@ -59,9 +59,19 @@ class DreamerTrainer(Trainer):
         posterior_means = jnp.zeros(state_shape)
         posterior_std_devs = jnp.zeros(state_shape)
 
+        old_shape = observations.shape
+        observations = observations.reshape(-1, *observations.shape[2:])
+        encoded_observations = observations
+        key = "encoder"
+        for start_idx in range(0, observations.shape[0], batch_size):
+            batch_slice = slice(start_idx, start_idx + batch_size)
+            encoded_batch = models[key].apply(params[key], observations[batch_slice], rngs=rng)
+            encoded_observations = encoded_observations.at[batch_slice].set(encoded_batch)
+        encoded_observations = encoded_observations.reshape(old_shape)
+
         key = "representation"
         for idx in range(len(states)):
-            output = models[key].apply(params[key], state, actions[idx], belief, observations[idx], rngs=rng)
+            output = models[key].apply(params[key], state, actions[idx], belief, encoded_observations[idx], rngs=rng)
             beliefs = beliefs.at[idx].set(output[0])
             states = states.at[idx].set(output[1])
             prior_means = prior_means.at[idx].set(output[2])
@@ -78,12 +88,10 @@ class DreamerTrainer(Trainer):
         states = states.reshape(-1, Args().args.state_size)
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
-        observations = observations.reshape(-1, *observations.shape[2:])
 
         rewards = rewards.reshape(-1)
         dones = dones.reshape(-1)
 
-        batch_size = Args().args.batch_size
         observation_loss, reward_loss, dones_loss = 0, 0, 0
         num_batches = 0
 

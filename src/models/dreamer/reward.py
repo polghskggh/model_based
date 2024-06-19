@@ -7,8 +7,6 @@ from src.utils.activationfuns import activation_function_dict
 
 
 class RewardModel(nn.Module):
-    belief_size: int
-    state_size: int
     embedding_size: int
     activation_function: str = 'relu'
 
@@ -31,8 +29,6 @@ class RewardModel(nn.Module):
 
 
 class DonesModel(nn.Module):
-    belief_size: int
-    state_size: int
     embedding_size: int
     activation_function: str = 'relu'
 
