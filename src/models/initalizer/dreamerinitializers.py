@@ -52,4 +52,4 @@ class EncoderInitializer(ModelStrategy):
         return (jnp.ones(Shape()[0]), )
 
     def batch_dims(self) -> tuple:
-        return 4, None
+        return (4, ) , None
