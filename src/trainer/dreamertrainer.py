@@ -65,7 +65,7 @@ class DreamerTrainer(Trainer):
         key = "encoder"
         for start_idx in range(0, observations.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
-            encoded_batch = models[key].apply(params[key], observations[batch_slice], rngs=rng)
+            encoded_batch, _ = models[key].apply(params[key], observations[batch_slice], rngs=rng)
             encoded_observations = encoded_observations.at[batch_slice].set(encoded_batch)
         encoded_observations = encoded_observations.reshape(old_shape)
 
