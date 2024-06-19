@@ -41,8 +41,7 @@ class Dreamer(WorldModelInterface):
                                                                 self.action_size, self.hidden_size,
                                                                 self.embedding_size, Shape()[0]),
                                             "representation")
-        transition_model = ModelWrapper(TransitionModel(self.belief_size, self.state_size,
-                                                        self.action_size, self.hidden_size),
+        transition_model = ModelWrapper(TransitionModel(self.belief_size, self.state_size, self.hidden_size),
                                         "transition")
         observation_model = ModelWrapper(ObservationModel(self.belief_size, self.state_size,
                                                           self.embedding_size, self.observation_size),
