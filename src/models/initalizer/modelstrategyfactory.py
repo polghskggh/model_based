@@ -1,5 +1,6 @@
-from src.models.initalizer.dreamerinitializers import TransitionInitializer, RepresentationInitializer, ObservationInitializer, \
-    RewardInitializer
+from src.models.initalizer.dreamerinitializers import TransitionInitializer, RepresentationInitializer, \
+    ObservationInitializer, \
+    RewardInitializer, EncoderInitializer
 from src.models.initalizer.modelfreeinitializers import ActorCriticInitializer, CriticInitializer, DQNInitializer
 from src.models.initalizer.autoencoderinitializer import AutoEncoderInitializer
 from src.models.initalizer.modelstrategy import ModelStrategy
