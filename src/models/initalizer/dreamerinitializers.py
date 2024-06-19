@@ -3,6 +3,7 @@ import flax.linen as nn
 
 from src.enviroment import Shape
 from src.models.initalizer.modelstrategy import ModelStrategy
+from src.singletons.hyperparameters import Args
 
 
 class TransitionInitializer(ModelStrategy):
@@ -10,7 +11,7 @@ class TransitionInitializer(ModelStrategy):
         super().__init__()
 
     def init_params(self, model: nn.Module) -> tuple:
-        return jnp.ones((model.state_size,)), jnp.ones(1), jnp.ones((model.belief_size, ))
+        return jnp.ones((Args().args.state_size,)), jnp.ones(1), jnp.ones((Args().args.belief_size, ))
 
     def batch_dims(self) -> tuple:
         return (2, 1, 2), None
@@ -21,7 +22,7 @@ class RepresentationInitializer(ModelStrategy):
         super().__init__()
 
     def init_params(self, model: nn.Module) -> tuple:
-        return (jnp.ones((model.state_size, )), jnp.ones(1), jnp.ones((model.belief_size, )),
+        return (jnp.ones((Args().args.state_size, )), jnp.ones(1), jnp.ones((Args().args.belief_size, )),
                 jnp.ones((2, 2, 64)))
 
     def batch_dims(self) -> tuple:
@@ -33,7 +34,7 @@ class ObservationInitializer(ModelStrategy):
         super().__init__()
 
     def init_params(self, model: nn.Module) -> tuple:
-        return jnp.ones((model.state_size, )), jnp.ones((model.belief_size, ))
+        return jnp.ones((Args().args.state_size, )), jnp.ones((Args().args.belief_size, ))
 
     def batch_dims(self) -> tuple:
         return (2, 2), None
@@ -41,7 +42,7 @@ class ObservationInitializer(ModelStrategy):
 
 class RewardInitializer(ModelStrategy):
     def init_params(self, model: nn.Module) -> tuple:
-        return jnp.ones((model.state_size, )), jnp.ones((model.belief_size, ))
+        return jnp.ones((Args().args.state_size, )), jnp.ones((Args().args.belief_size, ))
 
     def batch_dims(self) -> tuple:
         return (2, 2), None
@@ -52,4 +53,4 @@ class EncoderInitializer(ModelStrategy):
         return (jnp.ones(Shape()[0]), )
 
     def batch_dims(self) -> tuple:
-        return (4, ) , None
+        return (4, ), None
