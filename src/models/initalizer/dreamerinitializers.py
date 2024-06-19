@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 import flax.linen as nn
 
+from src.enviroment import Shape
 from src.models.initalizer.modelstrategy import ModelStrategy
 
 
@@ -21,7 +22,7 @@ class RepresentationInitializer(ModelStrategy):
 
     def init_params(self, model: nn.Module) -> tuple:
         return (jnp.ones((model.state_size, )), jnp.ones(1), jnp.ones((model.belief_size, )),
-                jnp.ones(model.observation_shape))
+                jnp.ones((2, 2, 64)))
 
     def batch_dims(self) -> tuple:
         return (2, 1, 2, 4), None
@@ -39,12 +40,16 @@ class ObservationInitializer(ModelStrategy):
 
 
 class RewardInitializer(ModelStrategy):
-    def __init__(self):
-        super().__init__()
-
     def init_params(self, model: nn.Module) -> tuple:
         return jnp.ones((model.state_size, )), jnp.ones((model.belief_size, ))
 
     def batch_dims(self) -> tuple:
         return (2, 2), None
 
+
+class EncoderInitializer(ModelStrategy):
+    def init_params(self, model: nn.Module) -> tuple:
+        return (jnp.ones(Shape()[0]), )
+
+    def batch_dims(self) -> tuple:
+        return 4, None

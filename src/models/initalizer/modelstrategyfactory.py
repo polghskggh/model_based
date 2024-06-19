@@ -35,5 +35,7 @@ def model_initializer_factory(strategy_type: str) -> ModelStrategy:
             return ObservationInitializer()
         case "reward":
             return RewardInitializer()
+        case "encoder":
+            return EncoderInitializer()
         case _:
             raise ValueError(f"Initalizetion {strategy_type} not found")
