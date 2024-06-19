@@ -7,13 +7,14 @@ from jax import jit, value_and_grad
 
 from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment import Shape
-from src.models.agent.actorcritic import ActorCritic, ActorCriticDreamer
+from src.models.agent.actorcritic import ActorCriticDreamer
 from src.models.modelwrapper import ModelWrapper
 from src.models.test.testae import Network
 from src.pod.storage import store, PPOStorage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
+import jax.random as jr
 
 
 class PPOStrategy(StrategyInterface):
@@ -137,11 +138,12 @@ class PPOStrategy(StrategyInterface):
         policy = distrax.Categorical(logits.squeeze())
 
         action = jnp.where(self._action_repetitions == Args().args.max_action_repetitions - 1,
-                           self._trajectory_storage.actions[self._iteration - 1],
+                           self.different_action(self._trajectory_storage.actions[self._iteration - 1]),
                            policy.sample(seed=Key().key()).squeeze())
-
+        print(self._action_repetitions == Args().args.max_action_repetitions - 1, action)
         self._action_repetitions = jnp.where(action == self._trajectory_storage.actions[self._iteration - 1],
                                              self._action_repetitions + 1, 0)
+        print(action == self._trajectory_storage.actions[self._iteration - 1], self._action_repetitions)
 
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
@@ -174,3 +176,8 @@ class PPOStrategy(StrategyInterface):
 
     def load(self):
         pass
+
+    def different_action(self, action):
+        new_action = jr.randint(Key().key(), shape=(action.shape[0], ), minval=0, maxval=Shape()[1] - 1)
+        return jnp.where(new_action >= action, new_action + 1, new_action)
+
