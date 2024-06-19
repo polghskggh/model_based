@@ -1,4 +1,6 @@
+import operator
 import time
+from functools import reduce
 
 import gymnasium as gym
 import jax
@@ -23,10 +25,11 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 class Dreamer(WorldModelInterface):
     def __init__(self):
+        Args().args.bottleneck_dims = (2, 2, 64)
         self.num_agents = Args().args.num_agents
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
-        self.embedding_size = 4 * 64
+        self.embedding_size = reduce(operator.mul, Args().args.bottleneck_dims)
         self.hidden_size = Args().args.hidden_size
         self.observation_size = Shape()[0]
         self.action_size = Shape()[1]

@@ -61,7 +61,7 @@ class DreamerTrainer(Trainer):
 
         old_shape = observations.shape
         observations = observations.reshape(-1, *observations.shape[2:])
-        encoded_observations = observations
+        encoded_observations = jnp.zeros((observations[0], ) + Args().args.bottleneck_dims)
         key = "encoder"
         for start_idx in range(0, observations.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)

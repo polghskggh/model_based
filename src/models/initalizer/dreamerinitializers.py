@@ -23,7 +23,7 @@ class RepresentationInitializer(ModelStrategy):
 
     def init_params(self, model: nn.Module) -> tuple:
         return (jnp.ones((Args().args.state_size, )), jnp.ones(1), jnp.ones((Args().args.belief_size, )),
-                jnp.ones((2, 2, 64)))
+                jnp.ones(Args().args.bottleneck_dims))
 
     def batch_dims(self) -> tuple:
         return (2, 1, 2, 4), None
