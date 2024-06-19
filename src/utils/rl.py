@@ -61,9 +61,11 @@ def generalized_advantage_estimation(values, rewards, discounts, lambda_):
 
 def process_output(output):
     output = jnp.squeeze(output)
-    print(output.shape)
     if output.shape[-1] == 1:
         return jnp.squeeze(output)
     else:
-        distribution = distrax.Categorical(output)
-        return distribution.sample(seed=Key().key()).squeeze()
+        if Args().args.sample_output:
+            distribution = distrax.Categorical(output)
+            return distribution.sample(seed=Key().key()).squeeze()
+        else:
+            return jnp.argmax(output, axis=-1).squeeze()

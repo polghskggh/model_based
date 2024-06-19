@@ -92,6 +92,8 @@ class Args:
                                                                                 'the model and with the environment')
         parser.add_argument('--initial_updates', type=int, default=100, help='number of updates of the model '
                                                                              'before starting to train the model')
+        parser.add_argument('--sample_output', type=bool, default=False,
+                            help='whether to sample the output of the model')
         parse_dqn(parser)
         parse_ppo(parser)
         parse_simple(parser)
