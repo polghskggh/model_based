@@ -58,8 +58,8 @@ class DreamerTrainer(Trainer):
         states = jnp.zeros(state_shape)
         posterior_means = jnp.zeros(state_shape)
         posterior_std_devs = jnp.zeros(state_shape)
-
         old_shape = observations.shape
+
         observations = observations.reshape(-1, *observations.shape[2:])
         encoded_observations = jnp.zeros((observations.shape[0], ) + Args().args.bottleneck_dims)
         key = "encoder"
@@ -67,7 +67,8 @@ class DreamerTrainer(Trainer):
             batch_slice = slice(start_idx, start_idx + batch_size)
             encoded_batch, _ = models[key].apply(params[key], observations[batch_slice], rngs=rng)
             encoded_observations = encoded_observations.at[batch_slice].set(encoded_batch)
-        encoded_observations = encoded_observations.reshape(old_shape)
+
+        encoded_observations = encoded_observations.reshape(old_shape[:2] + Args().args.bottleneck_dims)
 
         key = "representation"
         for idx in range(len(states)):
