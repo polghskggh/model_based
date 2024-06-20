@@ -94,16 +94,17 @@ class PPOStrategy(StrategyInterface):
 
         grad_fn = jit(value_and_grad(PPOStrategy.ppo_loss, 1, has_aux=True))
         for _ in range(Args().args.num_epochs):
+            batch_indices = jr.permutation(Key().key(), batch_size, independent=True)
             for start_idx in range(0, storage.rewards.shape[0], batch_size):
-                batch_slice = slice(start_idx, start_idx + batch_size)
+                mini_batch_indices = batch_indices[start_idx, start_idx + batch_size]
                 (loss, aux), grads = grad_fn(self._actor_critic.state,
                                              self._actor_critic.params,
-                                             batch_observations[batch_slice],
-                                             batch_actions[batch_slice],
-                                             batch_log_probs[batch_slice],
-                                             batch_values[batch_slice],
-                                             batch_advantages[batch_slice],
-                                             batch_returns[batch_slice])
+                                             batch_observations[mini_batch_indices],
+                                             batch_actions[mini_batch_indices],
+                                             batch_log_probs[mini_batch_indices],
+                                             batch_values[mini_batch_indices],
+                                             batch_advantages[mini_batch_indices],
+                                             batch_returns[mini_batch_indices])
                 log(aux)
                 self._actor_critic.apply_grads(grads)
 
