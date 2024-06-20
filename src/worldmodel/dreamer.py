@@ -81,7 +81,7 @@ class Dreamer(WorldModelInterface):
             dones = jnp.zeros(imagined_reward.shape, dtype=bool)
 
         log({"Step time": (time.time() - start_time) / action.shape[0]})
-        return (self.prev_state, imagined_reward, dones,
+        return (jnp.append(self.prev_belief, self.prev_state, -1), imagined_reward, dones,
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
@@ -89,7 +89,7 @@ class Dreamer(WorldModelInterface):
         idx = jr.choice(key, self.initial_beliefs.shape[0], (self.num_agents,), False)
         self.prev_state = self.initial_states[idx]
         self.prev_belief = self.initial_beliefs[idx]
-        return self.prev_state, {}
+        return jnp.append(self.prev_belief, self.prev_state, axis=-1), {}
 
     def update(self, data):
         observations, actions, rewards, dones = data.observations, data.actions, data.rewards, data.dones
@@ -126,7 +126,7 @@ class DreamerWrapper(gym.Wrapper):
 
     def reset(self, **kwargs):
         _, info = self.env.reset(**kwargs)
-        return self.prev_state, info
+        return jnp.append(self.prev_belief, self.prev_state, axis=-1), info
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
