@@ -39,7 +39,6 @@ class PPOStrategy(StrategyInterface):
 
         self._trajectory_storage = self._init_storage((self.trajectory_length, Args().args.num_agents))
         self._iteration: int = 0
-        self._action_repetitions = jnp.zeros(Args().args.num_agents, dtype=jnp.uint16)
 
     def _init_storage(self, batch_shape):
         return PPOStorage(observations=jnp.zeros((batch_shape) + self.state_shape),
@@ -122,11 +121,7 @@ class PPOStrategy(StrategyInterface):
 
         policy_loss = rlax.clipped_surrogate_pg_loss(ratio, advantages, args.clip_threshold)
         entropy_loss = jnp.mean(policy.entropy())
-        value_loss_unclipped = optax.squared_error(new_values, returns)
-        value_clipped = values + jnp.clip(new_values - values, -args.clip_threshold, args.clip_threshold)
-        value_loss_clipped = optax.squared_error(value_clipped, returns)
-        value_loss_max = jnp.maximum(value_loss_clipped, value_loss_unclipped)
-        value_loss = 0.5 * jnp.mean(value_loss_max)
+        value_loss = optax.squared_error(new_values, returns)
 
         return (policy_loss - args.regularization * entropy_loss + args.value_weight * value_loss,
                 {"policy_loss": policy_loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl,
