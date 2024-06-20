@@ -122,7 +122,7 @@ class PPOStrategy(StrategyInterface):
 
         policy_loss = rlax.clipped_surrogate_pg_loss(ratio, advantages, args.clip_threshold)
         entropy_loss = jnp.mean(policy.entropy())
-        value_loss = optax.squared_error(new_values, returns)
+        value_loss = jnp.mean(optax.squared_error(new_values, returns))
 
         return (policy_loss - args.regularization * entropy_loss + args.value_weight * value_loss,
                 {"policy_loss": policy_loss, "entropy_loss": entropy_loss, "kl_divergence": approx_kl,
