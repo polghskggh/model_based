@@ -11,7 +11,7 @@ from src.enviroment import Shape
 from src.models.autoencoder.encoder import Encoder
 from src.models.dreamer.observation import ObservationModel
 from src.models.dreamer.representation import RepresentationModel
-from src.models.dreamer.reward import RewardModel, DonesModel
+from src.models.dreamer.reward import PredictModel
 from src.models.dreamer.transition import TransitionModel
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import store, DreamerStorage
@@ -53,7 +53,7 @@ class Dreamer(WorldModelInterface):
 
         encoder_model = ModelWrapper(Encoder(64), "encoder")
 
-        reward_model = ModelWrapper(RewardModel(self.hidden_size), "reward")
+        reward_model = ModelWrapper(PredictModel(self.hidden_size, Args().args.rewards), "reward")
 
         self.models = {"representation": representation_model,
                        "observation": observation_model,
@@ -62,7 +62,7 @@ class Dreamer(WorldModelInterface):
                        "encoder": encoder_model}
 
         if Args().args.predict_dones:
-            dones_model = ModelWrapper(DonesModel(self.hidden_size), "reward")
+            dones_model = ModelWrapper(PredictModel(self.hidden_size, 2), "reward")
             self.models["dones"] = dones_model
 
         self.trainer = DreamerTrainer(self.models)
