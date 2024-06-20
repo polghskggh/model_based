@@ -142,5 +142,5 @@ class DreamerWrapper(gym.Wrapper):
 
         self.timestep += 1
         self.timestep %= Args().args.trajectory_length
-        return self.prev_state, reward, term, trunc, info
+        return jnp.append(belief, state, axis=-1), reward, term, trunc, info
 
