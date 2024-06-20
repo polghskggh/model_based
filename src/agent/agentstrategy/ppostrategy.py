@@ -97,7 +97,7 @@ class PPOStrategy(StrategyInterface):
         for _ in range(Args().args.num_epochs):
             batch_indices = jr.permutation(Key().key(), epoch_size, independent=True)
             for start_idx in range(0, epoch_size, batch_size):
-                mini_batch_indices = batch_indices[start_idx, start_idx + batch_size]
+                mini_batch_indices = batch_indices[start_idx: start_idx + batch_size]
                 (loss, aux), grads = grad_fn(self._actor_critic.state,
                                              self._actor_critic.params,
                                              batch_observations[mini_batch_indices],
