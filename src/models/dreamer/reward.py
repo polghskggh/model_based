@@ -11,18 +11,17 @@ class RewardModel(nn.Module):
     activation_function: str = 'relu'
 
     def setup(self):
-        self.hidden_size = 256
+        self.hidden_size = 500
         self.activation_fun = activation_function_dict[self.activation_function]
 
     @nn.compact
     def __call__(self, belief, state):
         x = jnp.append(belief, state, axis=1)
 
-        hidden = linear_layer_init(features=self.hidden_size)(x)
-        hidden = self.activation_fun(hidden)
-
-        hidden = linear_layer_init(features=self.hidden_size)(hidden)
-        hidden = self.activation_fun(hidden)
+        hidden = x
+        for _ in range(3):
+            hidden = linear_layer_init(features=self.hidden_size)(x)
+            hidden = self.activation_fun(hidden)
 
         output = linear_layer_init(features=Args().args.rewards)(hidden)
         return output
@@ -33,18 +32,17 @@ class DonesModel(nn.Module):
     activation_function: str = 'relu'
 
     def setup(self):
-        self.hidden_size = 256
+        self.hidden_size = 500
         self.activation_fun = activation_function_dict[self.activation_function]
 
     @nn.compact
     def __call__(self, belief, state):
         x = jnp.append(belief, state, axis=1)
 
-        hidden = linear_layer_init(features=self.hidden_size)(x)
-        hidden = self.activation_fun(hidden)
-
-        hidden = linear_layer_init(features=self.hidden_size)(hidden)
-        hidden = self.activation_fun(hidden)
+        hidden = x
+        for _ in range(3):
+            hidden = linear_layer_init(features=self.hidden_size)(x)
+            hidden = self.activation_fun(hidden)
 
         output = linear_layer_init(features=2)(hidden)
         return output
