@@ -25,7 +25,6 @@ class PPOStrategy(StrategyInterface):
         else:
             self.state_shape = Shape()[0]
             model = Network(Shape()[0], (Shape()[1], 1))
-            # model = ActorCritic(Shape()[0], (Shape()[1], 1))
 
         self._actor_critic = ModelWrapper(model, "actor_critic")
 
@@ -135,15 +134,9 @@ class PPOStrategy(StrategyInterface):
 
     def select_action(self, states: jnp.ndarray, store_trajectories: bool) -> int:
         logits, value_estimate = self._actor_critic.forward(states)
-        policy = distrax.Categorical(logits.squeeze())
+        policy = distrax.Categorical(logits=logits.squeeze())
 
-        action = jnp.where(self._action_repetitions == Args().args.max_action_repetitions - 1,
-                           self.different_action(self._trajectory_storage.actions[self._iteration - 1]),
-                           policy.sample(seed=Key().key()).squeeze())
-        print(self._action_repetitions == Args().args.max_action_repetitions - 1, action)
-        self._action_repetitions = jnp.where(action == self._trajectory_storage.actions[self._iteration - 1],
-                                             self._action_repetitions + 1, 0)
-        print(action == self._trajectory_storage.actions[self._iteration - 1], self._action_repetitions)
+        action = policy.sample(seed=Key().key()).squeeze()
 
         if store_trajectories:
             self._trajectory_storage = store(self._trajectory_storage, self._iteration,
@@ -170,14 +163,3 @@ class PPOStrategy(StrategyInterface):
 
         _, advantages = jax.lax.scan(fold_left, jnp.zeros(td_errors.shape[1]), (td_errors, discounts), reverse=True)
         return advantages
-
-    def save(self):
-        pass
-
-    def load(self):
-        pass
-
-    def different_action(self, action):
-        new_action = jr.randint(Key().key(), shape=(action.shape[0], ), minval=0, maxval=Shape()[1] - 1)
-        return jnp.where(new_action >= action, new_action + 1, new_action)
-
