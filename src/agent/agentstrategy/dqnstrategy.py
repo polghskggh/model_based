@@ -59,6 +59,7 @@ class DQNStrategy(StrategyInterface):
                                   rewards=reward_res, next_observations=new_state_res)
             end_idx = self._storage_size
 
+        print(old_state.shape, selected_action.shape, reward.shape, new_state.shape, start_idx, end_idx)
         self._storage = store(self._storage, slice(start_idx, end_idx), observations=old_state,
                               actions=selected_action, rewards=reward, next_observations=new_state)
         self._data_pos += self._parallel_agents
