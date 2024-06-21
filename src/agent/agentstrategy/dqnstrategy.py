@@ -89,9 +89,10 @@ class DQNStrategy(StrategyInterface):
 
         num_epochs, batch_size = Args().args.num_epochs, Args().args.batch_size
         for _ in range(num_epochs):
-            states, actions, rewards, next_states = self.sample(batch_size)
+            states, actions, rewards, next_states, dones = self.sample(batch_size)
             next_actions = vmap(self._greedy_action)(next_states)
             next_values = self._target_q_network.forward(next_states, next_actions).reshape(-1)
+            next_values = jnp.where(dones, jnp.zeros_like(next_values), next_values)
             td_targets: jax.Array = rewards + self._discount_factor * next_values
             td_targets = jnp.expand_dims(td_targets, 1)
 
@@ -136,4 +137,5 @@ class DQNStrategy(StrategyInterface):
         filled_values = min(self._data_pos, Args().args.storage_size)
         idx = jr.choice(Key().key(1), filled_values, (n,), True)
         return (self._storage.observations[idx], self._storage.actions[idx],
-                self._storage.rewards[idx], self._storage.next_observations[idx])
+                self._storage.rewards[idx], self._storage.next_observations[idx],
+                self._storage.dones[idx])
