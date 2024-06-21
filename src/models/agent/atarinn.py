@@ -1,44 +1,24 @@
 import flax.linen as nn
 import jax.numpy as jnp
 from jax import Array
-from rlax import one_hot
 
-from src.models.agent.actoratari import CNNAtari
-from src.models.base.mlpatari import MLPAtari
+from src.models.helpers import convolution_layer_init, linear_layer_init
 
 
 class AtariNN(nn.Module):
     input_dimensions: tuple
-    second_input: int
-    output_dimensions: int
-    deterministic: bool = True
-
-    def setup(self):
-        bottleneck = 100
-        self.cnn = CNNAtari(bottleneck)
-        self.mlp = MLPAtari(bottleneck + self.second_input, self.output_dimensions)
+    output_dimensions: tuple
 
     @nn.compact
-    def __call__(self, image: Array, action: Array):
-        cnn = self.cnn(image)
-        action = one_hot(action, self.second_input)
-        x = jnp.append(cnn, action, axis=-1)
-        x = self.mlp(x)
+    def __call__(self, x: Array):
+        x = convolution_layer_init(32, 8, 4)(x)
+        x = nn.relu(x)
+        x = convolution_layer_init(64, 4, 2)(x)
+        x = nn.relu(x)
+        x = convolution_layer_init(64, 3, 1)(x)
+        x = nn.relu(x)
+        x = jnp.reshape(x, (x.shape[0], -1))
+        x = linear_layer_init(512)(x)
+        x = nn.relu(x)
+        x = linear_layer_init(1, std=1)(x)
         return x
-
-
-class StateValueAtariNN(nn.Module):
-    input_dimensions: tuple
-    output_dimensions: int
-    deterministic: bool = True
-
-    def setup(self):
-        bottleneck = 100
-        self.cnn = CNNAtari(bottleneck, self.deterministic)
-
-    @nn.compact
-    def __call__(self, image: Array):
-        cnn = self.cnn(image)
-        x = nn.Dense(self.output_dimensions)(cnn)
-        return x
-

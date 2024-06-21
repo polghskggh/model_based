@@ -30,19 +30,15 @@ from jax import value_and_grad
 class Network(nn.Module):
     @nn.compact
     def __call__(self, x: Array):
-        x = nn.Sequential([
-            convolution_layer_init(32, 8, 4),
-            nn.relu,
-            convolution_layer_init(64, 4, 2),
-            nn.relu,
-            convolution_layer_init(64, 3, 1),
-            nn.relu,
-        ])(x)
+        x = convolution_layer_init(32, 8, 4)(x)
+        x = nn.relu(x)
+        x = convolution_layer_init(64, 4, 2)(x)
+        x = nn.relu(x)
+        x = convolution_layer_init(64, 3, 1),
+        x = nn.relu(x)
         x = jnp.reshape(x, (x.shape[0], -1))
-        return nn.Sequential([
-            linear_layer_init(512),
-            nn.relu
-        ])(x)
+        x = linear_layer_init(512),
+        x = nn.relu(x)
 
 
 class Actor(nn.Module):

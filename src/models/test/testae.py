@@ -7,7 +7,7 @@ import numpy as np
 from src.models.helpers import convolution_layer_init, linear_layer_init
 
 
-class Network(nn.Module):
+class ActorCriticNetwork(nn.Module):
     input_dimensions: tuple
     output_dimensions: tuple
 

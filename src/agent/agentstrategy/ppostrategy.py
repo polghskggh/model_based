@@ -9,7 +9,7 @@ from src.agent.agentstrategy.strategyinterface import StrategyInterface
 from src.enviroment import Shape
 from src.models.agent.actorcritic import ActorCriticDreamer
 from src.models.modelwrapper import ModelWrapper
-from src.models.test.testae import Network
+from src.models.test.testae import ActorCriticNetwork
 from src.pod.storage import store, PPOStorage
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
@@ -24,7 +24,7 @@ class PPOStrategy(StrategyInterface):
             model = ActorCriticDreamer(self.state_shape, (Shape()[1], 1))
         else:
             self.state_shape = Shape()[0]
-            model = Network(Shape()[0], (Shape()[1], 1))
+            model = ActorCriticNetwork(Shape()[0], (Shape()[1], 1))
 
         self._actor_critic = ModelWrapper(model, "actor_critic")
 
