@@ -14,8 +14,8 @@ from src.singletons.rng import Key
 
 class DQNStrategy(StrategyInterface):
     def __init__(self):
-        self._q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, False), "dqncritic")
-        self._target_q_network: ModelWrapper = ModelWrapper(AtariNN(*Shape(), 1, True), "dqncritic")
+        self._q_network: ModelWrapper = ModelWrapper(AtariNN(Shape(), 1), "dqncritic")
+        self._target_q_network: ModelWrapper = ModelWrapper(AtariNN(Shape(), 1), "dqncritic")
         self._action_space = Shape()[1]
         self._discount_factor: float = Args().args.discount_factor
 
