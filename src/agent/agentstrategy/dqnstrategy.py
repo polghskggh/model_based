@@ -40,7 +40,8 @@ class DQNStrategy(StrategyInterface):
         action_shape = (size, )
         observation_shape = action_shape + Shape()[0]
         return TransitionStorage(observations=jnp.zeros((observation_shape)), actions=jnp.zeros((action_shape)),
-                                 rewards=jnp.zeros((action_shape)), next_observations=jnp.zeros((observation_shape)))
+                                 rewards=jnp.zeros((action_shape)), next_observations=jnp.zeros((observation_shape)),
+                                 dones=jnp.zeros((action_shape)))
 
     def store_flattened(self, old_state, selected_action, reward, new_state):
         start_idx = self._data_pos % self._storage_size
