@@ -21,7 +21,7 @@ class PPOStrategy(StrategyInterface):
     def __init__(self):
         if Args().args.algorithm == "dreamer":
             self.state_shape = (Args().args.state_size + Args().args.belief_size, )
-            model = ActorCriticDreamer((self.state_shape, (Shape()[1], 1)))
+            model = ActorCriticDreamer(self.state_shape, (Shape()[1], 1))
         else:
             self.state_shape = Shape()[0]
             model = Network(Shape()[0], (Shape()[1], 1))
