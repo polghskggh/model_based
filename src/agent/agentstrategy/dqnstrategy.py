@@ -32,6 +32,7 @@ class DQNStrategy(StrategyInterface):
         self._target_update_period = Args().args.target_update_period
         self._storage = self._init_storage()
 
+        self._action = 0
         self._update_counter = 0
 
     @staticmethod
@@ -43,7 +44,7 @@ class DQNStrategy(StrategyInterface):
                                  rewards=jnp.zeros((action_shape)), next_observations=jnp.zeros((observation_shape)),
                                  dones=jnp.zeros((action_shape)))
 
-    def store_flattened(self, old_state, selected_action, reward, new_state):
+    def store_flattened(self, old_state, selected_action, reward, new_state, dones):
         start_idx = self._data_pos % self._storage_size
         end_idx = (self._data_pos + self._parallel_agents) % self._storage_size
 
@@ -53,21 +54,26 @@ class DQNStrategy(StrategyInterface):
             selected_action, selected_action_res = jnp.split(selected_action, [mid_point])
             reward, reward_res = jnp.split(reward, [mid_point])
             new_state, new_state_res = jnp.split(new_state, [mid_point])
+            dones, dones_res = jnp.split(dones, [mid_point])
 
             self._storage = store(self._storage, slice(0, end_idx),
                                   observations=old_state_res, actions=selected_action_res,
-                                  rewards=reward_res, next_observations=new_state_res)
+                                  rewards=reward_res, next_observations=new_state_res, dones=dones_res)
             end_idx = self._storage_size
 
         print(old_state.shape, selected_action.shape, reward.shape, new_state.shape, start_idx, end_idx)
         print(self._storage.observations.shape, self._storage.actions.shape, self._storage.rewards.shape,
               self._storage.next_observations.shape, start_idx, end_idx)
         self._storage = store(self._storage, slice(start_idx, end_idx), observations=old_state,
-                              actions=selected_action, rewards=reward, next_observations=new_state)
+                              actions=selected_action, rewards=reward, next_observations=new_state, dones=dones)
         self._data_pos += self._parallel_agents
 
-    def timestep_callback(self, old_state: jnp.ndarray, selected_action: int, reward: float, new_state: jnp.ndarray, done: bool):
-        self.store_flattened(old_state, selected_action, reward, new_state)
+    def timestep_callback(self, old_state: jnp.ndarray, reward: float, new_state: jnp.ndarray, done: bool,
+                          store_trajectories: bool):
+        if not store_trajectories:
+            return
+
+        self.store_flattened(old_state, self._action, reward, new_state, done)
 
         # explore at start
         if self._start_steps != 0:
@@ -100,9 +106,10 @@ class DQNStrategy(StrategyInterface):
         batch_size = states.shape[0]
         key = Key().key()
         probs = jr.uniform(key, (batch_size, ))
-
         actions = jnp.where(probs > self._epsilon, vmap(self._greedy_action)(states), self._random_policy(batch_size))
-        return jnp.squeeze(actions)
+        actions = jnp.squeeze(actions)
+        self._action = actions
+        return actions
 
     def _greedy_action(self, state: jax.Array) -> jax.Array:
         actions = jnp.arange(self._action_space)
