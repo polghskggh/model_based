@@ -90,6 +90,9 @@ class DreamerTrainer(Trainer):
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
+        n_channels = Shape()[0][2] // Args().args.frame_stack
+        observations = jax.lax.slice_in_dim(observations, (Args().args.frame_stack - 1) * n_channels,
+                                             None, axis=-1)
         rewards = rewards.reshape(-1)
         dones = dones.reshape(-1)
 

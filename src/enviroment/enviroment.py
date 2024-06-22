@@ -36,7 +36,7 @@ def apply_common_wrappers(env: gym.Env):
     env = RecordEpisodeStatistics(env)
     env = ResizeObservation(env, (84, 84))
     env = optional_grayscale(env)
-    env = FrameStack(env, 1 if Args().args.algorithm == "dreamer" else 4)
+    env = FrameStack(env,   4)
     env = ReshapeObservation(env)
     Shape.initialize(env)
     return env
