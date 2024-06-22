@@ -19,7 +19,6 @@ class DreamerTrainer(Trainer):
 
     def apply_grads(self, grads):
         for key in grads.keys():
-            print(key, jnp.mean(jax.tree_flatten(grads[key])[0]))
             self.models[key].apply_grads(grads[key])
 
     def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
