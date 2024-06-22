@@ -122,14 +122,6 @@ class DQNStrategy(StrategyInterface):
         action = jr.randint(Key().key(), (size, ), 0, Shape()[1])[0]
         return action
 
-    def save(self):
-        self._q_network.save()
-        self._target_q_network.save()
-
-    def load(self):
-        self._q_network.load("dqnnetwork")
-        self._target_q_network.load("dqn_target_network")
-
     def sample(self, n: int) -> tuple:
         filled_values = min(self._data_pos, Args().args.storage_size)
         idx = jr.choice(Key().key(1), filled_values, (n,), True)

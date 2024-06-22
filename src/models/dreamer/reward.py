@@ -17,7 +17,7 @@ class PredictModel(nn.Module):
 
     @nn.compact
     def __call__(self, belief, state):
-        hidden = jnp.append(belief, state, axis=1)
+        hidden = jnp.append(belief, state, axis=-1)
 
         for _ in range(3):
             hidden = linear_layer_init(features=self.hidden_size)(hidden)
