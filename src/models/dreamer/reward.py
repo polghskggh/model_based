@@ -12,7 +12,7 @@ class PredictModel(nn.Module):
     activation_function: str = 'relu'
 
     def setup(self):
-        self.hidden_size = 500
+        self.hidden_size = 200
         self.activation_fun = activation_function_dict[self.activation_function]
 
     @nn.compact
