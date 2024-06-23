@@ -1,12 +1,11 @@
 from typing import Any, SupportsFloat
 
 import gymnasium as gym
-import numpy as np
+import jax.numpy as jnp
 from gymnasium import ObservationWrapper, Wrapper
-from gymnasium.core import WrapperObsType, WrapperActType, ActionWrapper
+from gymnasium.core import WrapperObsType, WrapperActType, ActionWrapper, RewardWrapper
 from gymnasium.spaces import Box
 from gymnasium.spaces.discrete import Discrete
-import jax.numpy as jnp
 
 
 class LimitActions(ActionWrapper):
@@ -76,3 +75,12 @@ class CompatibilityWrapper(Wrapper):
         self, action: WrapperActType
     ) -> tuple[WrapperObsType, SupportsFloat, bool, bool, dict[str, Any]]:
         return self.env.step(action.item())
+
+
+class CategoricalReward(RewardWrapper):
+    def reward(self, reward: float) -> float:
+        if reward > 0:
+            return 1.0
+        else:
+            return 0.0
+

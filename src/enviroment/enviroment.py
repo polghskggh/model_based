@@ -9,7 +9,7 @@ from gymnasium.wrappers import GrayScaleObservation
 from gymnasium.wrappers import TimeLimit
 from nes_py.wrappers import JoypadSpace
 
-from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, LimitActions
+from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, LimitActions, CategoricalReward
 from src.enviroment.shape import Shape
 from src.singletons.hyperparameters import Args
 
@@ -58,7 +58,9 @@ def make_mario() -> gym.Env:
     env = CompatibilityWrapper(env)
     env = LimitActions(env)
     env = FrameSkip(env, 4)
+    env = CategoricalReward(env)
     env = apply_common_wrappers(env)
+
     return env
 
 
