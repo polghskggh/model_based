@@ -78,6 +78,7 @@ class SimpleWorldModel(WorldModelInterface):
         self._frame_stack = FrameStack(storage.observations)
         update_fn = self._deterministic_update if self._deterministic else self._stochastic_update
         print("updating with reward", jnp.mean(storage.rewards))
+        print("updating with dones", jnp.mean(storage.dones))
         for _ in range(Args().args.num_epochs):
             update_fn(storage.observations, storage.actions, storage.rewards, storage.dones, storage.next_observations)
 
