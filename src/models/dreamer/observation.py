@@ -22,7 +22,7 @@ class ObservationModel(nn.Module):
 
     @nn.compact
     def __call__(self, belief, state):
-        hidden = jnp.append(belief, state, axis=1)
+        hidden = jnp.append(belief, state, axis=-1)
         hidden = linear_layer_init(features=self.embedding_size)(hidden)
         hidden = hidden.reshape(-1, 2, 2, self.embedding_size // 4)
 
