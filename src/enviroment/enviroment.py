@@ -58,8 +58,8 @@ def make_mario() -> gym.Env:
     env = CompatibilityWrapper(env)
     env = LimitActions(env)
     env = FrameSkip(env, 4)
-    env = CategoricalReward(env)
     env = apply_common_wrappers(env)
+    env = CategoricalReward(env)
     return env
 
 
