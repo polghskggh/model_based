@@ -9,6 +9,7 @@ from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.trainer import Trainer
+from src.utils.rl import zero_on_term
 
 
 class DreamerTrainer(Trainer):
@@ -74,15 +75,17 @@ class DreamerTrainer(Trainer):
         key = "representation"
         for idx in range(len(states)):
             output = models[key].apply(params[key], state, actions[idx], belief, encoded_observations[idx], rngs=rng)
-            beliefs = beliefs.at[idx].set(output[0])
-            states = states.at[idx].set(output[1])
+
+            belief = zero_on_term(dones[idx], output[0])
+            state = zero_on_term(dones[idx], output[1])
+
+            beliefs = beliefs.at[idx].set(belief)
+            states = states.at[idx].set(state)
+
             prior_means = prior_means.at[idx].set(output[2])
             prior_std_devs = prior_std_devs.at[idx].set(output[3])
             posterior_means = posterior_means.at[idx].set(output[4])
             posterior_std_devs = posterior_std_devs.at[idx].set(output[5])
-
-            belief = beliefs[idx]
-            state = states[idx]
 
         beliefs = beliefs.reshape(-1, Args().args.belief_size)
         prior_means = prior_means.reshape(-1)

@@ -19,7 +19,7 @@ from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.dreamertrainer import DreamerTrainer
-from src.utils.rl import process_output
+from src.utils.rl import process_output, zero_on_term
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
@@ -80,6 +80,9 @@ class Dreamer(WorldModelInterface):
         else:
             dones = jnp.zeros(imagined_reward.shape, dtype=bool)
 
+        self.prev_belief = zero_on_term(dones, self.prev_belief)
+        self.prev_state = zero_on_term(dones, self.prev_state)
+
         log({"Step time": (time.time() - start_time) / action.shape[0]})
         return (jnp.append(self.prev_belief, self.prev_state, -1), imagined_reward, dones,
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
@@ -137,8 +140,8 @@ class DreamerWrapper(gym.Wrapper):
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
                              dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
 
-        self.prev_belief = belief
-        self.prev_state = state
+        self.prev_belief = zero_on_term(term, belief)
+        self.prev_state = zero_on_term(term, state)
 
         self.timestep += 1
         self.timestep %= Args().args.trajectory_length

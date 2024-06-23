@@ -69,3 +69,8 @@ def process_output(output):
             return distribution.sample(seed=Key().key()).squeeze()
         else:
             return jnp.argmax(output, axis=-1).squeeze()
+
+
+def zero_on_term(dones, values):
+    dones = jnp.broadcast_to(jnp.expand_dims(dones, -1), values.shape)
+    return jnp.where(dones, jnp.zeros_like(values), values)
