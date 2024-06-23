@@ -26,11 +26,11 @@ class ValueModel(nn.Module):
         self.fc4 = nn.Dense(hidden_size, 1)
 
     def __call__(self, belief, state):
-        x = jnp.append(belief, state, axis=1)
+        x = jnp.append(belief, state, axis=-1)
         hidden = self.activation_fun(self.fc1(x))
         hidden = self.activation_fun(self.fc2(hidden))
         hidden = self.activation_fun(self.fc3(hidden))
-        reward = jnp.squeeze(self.fc4(hidden), axis=1)
+        reward = jnp.squeeze(self.fc4(hidden), axis=-1)
         return reward
 
 
@@ -89,11 +89,11 @@ class PCONTModel(nn.Module):
         self.fc4 = nn.Dense(hidden_size, 1)
 
     def __call__(self, belief, state):
-        x = jnp.append(belief, state, axis=1)
+        x = jnp.append(belief, state, axis=-1)
         hidden = self.activation_fun(self.fc1(x))
         hidden = self.activation_fun(self.fc2(hidden))
         hidden = self.activation_fun(self.fc3(hidden))
-        x = jnp.squeeze(self.fc4(hidden), axis=1)
+        x = jnp.squeeze(self.fc4(hidden), axis=-1)
         p = nn.sigmoid(x)
         return p
 

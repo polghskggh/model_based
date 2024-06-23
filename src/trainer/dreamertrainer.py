@@ -33,14 +33,15 @@ class DreamerTrainer(Trainer):
         models = {key: self.models[key].model for key in keys_to_select}
 
         batch_size = Args().args.batch_size
-        for start_idx in range(0, observations.shape[0], batch_size):
-            batch_slice = slice(start_idx, start_idx + batch_size)
-            data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], dones[batch_slice],
-                    last_state, last_belief)
-            (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
-            self.apply_grads(grads)
-            last_belief, last_state = aux["data"]
-            log(aux["info"])
+        for _ in range(Args().args.num_epochs):
+            for start_idx in range(0, observations.shape[0], batch_size):
+                batch_slice = slice(start_idx, start_idx + batch_size)
+                data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], dones[batch_slice],
+                        last_state, last_belief)
+                (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
+                self.apply_grads(grads)
+                last_belief, last_state = aux["data"]
+                log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params

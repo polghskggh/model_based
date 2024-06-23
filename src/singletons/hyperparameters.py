@@ -35,9 +35,8 @@ def parse_simple(parser):
 
 
 def parse_dreamer(parser):
-    parser.add_argument('--belief_size', type=int, default=200, help='Dreamer: size of the deterministic belief')
-    parser.add_argument('--state_size', type=int, default=200, help='Dreamer: size of the stochastic state')
-    parser.add_argument('--embedding_size', type=int, default=30, help='Dreamer: size of the encoder embedding')
+    parser.add_argument('--belief_size', type=int, default=500, help='Dreamer: size of the deterministic belief')
+    parser.add_argument('--state_size', type=int, default=500, help='Dreamer: size of the stochastic state')
     parser.add_argument('--hidden_size', type=int, default=200,
                         help='size of the hidden layers in reward and value networks')
     parser.add_argument('--min_std_dev', type=float, default=0.1,
