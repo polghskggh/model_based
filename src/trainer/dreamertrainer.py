@@ -5,6 +5,7 @@ from jax import value_and_grad, lax
 
 from src.enviroment import Shape
 from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss
+from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
@@ -23,7 +24,7 @@ class DreamerTrainer(Trainer):
             self.models[key].apply_grads(grads[key])
 
     def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
-        rng = {"normal": Key().key()}
+        rng = ModelWrapper.make_rng_keys()
         last_belief, last_state = initial_belief, initial_state
         keys_to_select = ['representation', 'observation', 'reward', 'encoder']
 
