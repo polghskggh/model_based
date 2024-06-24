@@ -26,6 +26,7 @@ class Encoder(nn.Module):
             x = nn.LayerNorm()(x)
             x = convolution_layer_init(features=features, kernel_size=self.kernel, strides=self.strides,
                                        padding="SAME")(x)
+            print(x.shape)
             x = nn.relu(x)
         return x, skip
 
