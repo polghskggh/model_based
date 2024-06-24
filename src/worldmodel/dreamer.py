@@ -51,7 +51,7 @@ class Dreamer(WorldModelInterface):
                                                           self.embedding_size, self.observation_size),
                                          "observation")
 
-        encoder_model = ModelWrapper(Encoder(Args().args.bottleneck_dims[2]), "encoder")
+        encoder_model = ModelWrapper(Encoder(Args().args.bottleneck_dims[2], deterministic=False), "encoder")
 
         reward_model = ModelWrapper(PredictModel(self.hidden_size, Args().args.rewards), "reward")
 

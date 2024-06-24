@@ -59,7 +59,8 @@ def make_mario() -> gym.Env:
     env = LimitActions(env)
     env = FrameSkip(env, 4)
     env = apply_common_wrappers(env)
-    env = CategoricalReward(env)
+    if Args().args.algorithm == "dreamer" or Args().args.algorithm == "simple":
+        env = CategoricalReward(env)
     return env
 
 

@@ -79,8 +79,8 @@ class DreamerTrainer(Trainer):
             belief = zero_on_term(dones[idx], output[0])
             state = zero_on_term(dones[idx], output[1])
 
-            beliefs = beliefs.at[idx].set(belief)
-            states = states.at[idx].set(state)
+            beliefs = beliefs.at[idx].set(output[0])
+            states = states.at[idx].set(output[1])
 
             prior_means = prior_means.at[idx].set(output[2])
             prior_std_devs = prior_std_devs.at[idx].set(output[3])
@@ -94,9 +94,6 @@ class DreamerTrainer(Trainer):
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
-        # n_channels = Shape()[0][2] // Args().args.frame_stack
-        # observations = jax.lax.slice_in_dim(observations, (Args().args.frame_stack - 1) * n_channels,
-        #                                      None, axis=-1)
         rewards = rewards.reshape(-1)
         dones = dones.reshape(-1)
 
