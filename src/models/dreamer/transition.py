@@ -22,8 +22,7 @@ class TransitionModel(nn.Module):
         super().__init__()
         self.activation_fun = activation_function_dict['relu']
         self.rnn = nn.GRUCell(features=self.belief_size)
-        self.variational_encoder = VariationalEncoder(2 * self.state_size)
-        self.embedding_size = 100
+        self.variational_encoder = VariationalEncoder(self.state_size)
         self.belief_dense = linear_layer_init(self.belief_size)
 
     def update_belief(self, belief, state, action):
