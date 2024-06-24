@@ -84,7 +84,7 @@ class Dreamer(WorldModelInterface):
         self.prev_state = zero_on_term(dones, self.prev_state)
 
         log({"Step time": (time.time() - start_time) / action.shape[0]})
-        return (jnp.append(self.prev_belief, self.prev_state, -1), imagined_reward, dones,
+        return (jnp.append(self.prev_belief, self.prev_state, axis=-1), imagined_reward, dones,
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
