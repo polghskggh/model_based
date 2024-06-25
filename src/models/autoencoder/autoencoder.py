@@ -25,7 +25,7 @@ class AutoEncoder(nn.Module):
         self.kernel = 4
         self.strides = 2
         self.layers = 6
-        self.pixel_embedding = nn.Dense(features=self.features // 4, name="embedding")
+        self.pixel_embedding = linear_layer_init(features=self.features // 4)
         self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
         self.decoder = Decoder(self.features, self.kernel, self.strides, self.layers, self.deterministic)
         self.action_injector = Injector(self.features)

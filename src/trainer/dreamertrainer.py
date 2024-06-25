@@ -49,7 +49,6 @@ class DreamerTrainer(Trainer):
         self.models["transition"].params = new_params
         return self.models
 
-    @jit
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, dones, state, belief = data
@@ -69,17 +68,18 @@ class DreamerTrainer(Trainer):
         key = "encoder"
         for start_idx in range(0, observations.shape[0], batch_size):
             batch_slice = slice(start_idx, start_idx + batch_size)
-            encoded_batch, _ = models[key].apply(params[key], observations[batch_slice], rngs=rng)
+            print("debugging", observations.shape[0])
+            encoded_batch = jit(models[key].apply)(params[key], observations[batch_slice], rngs=rng)
             encoded_observations = encoded_observations.at[batch_slice].set(encoded_batch)
 
         encoded_observations = encoded_observations.reshape(old_shape[:2] + Args().args.bottleneck_dims)
 
         key = "representation"
         for idx in range(len(states)):
-            output = models[key].apply(params[key], state, actions[idx], belief, encoded_observations[idx], rngs=rng)
-
-            belief = zero_on_term(dones[idx], output[0])
-            state = zero_on_term(dones[idx], output[1])
+            output = jit(models[key].apply)(params[key], state, actions[idx],
+                                            belief, encoded_observations[idx], rngs=rng)
+            belief = output[0]
+            state = output[1]
 
             beliefs = beliefs.at[idx].set(output[0])
             states = states.at[idx].set(output[1])
@@ -106,27 +106,26 @@ class DreamerTrainer(Trainer):
             num_batches += 1
             batch_slice = slice(start_idx, start_idx + batch_size)
             key = "observation"
-            pixels = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+            pixels = jit(models[key].apply)(params[key], beliefs[batch_slice], states[batch_slice])
 
             observation_loss += image_loss_fn(pixels, observations[batch_slice])
 
             key = "reward"
-            reward_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+            reward_logits = jit(models[key].apply)(params[key], beliefs[batch_slice], states[batch_slice])
             reward_loss += reward_loss_fn(reward_logits, rewards[batch_slice])
 
             if Args().args.predict_dones:
                 key = "dones"
-                dones_logits = models[key].apply(params[key], beliefs[batch_slice], states[batch_slice])
+                dones_logits = jit(models[key].apply)(params[key], beliefs[batch_slice], states[batch_slice])
                 dones_loss += jnp.mean(softmax_loss(dones_logits, dones[batch_slice]))
 
-        num_batches = jnp.minimum(num_batches, 1)
         observation_loss /= num_batches
         reward_loss /= num_batches
         dones_loss /= num_batches
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
-        kl_loss /= jnp.minimum(posterior_std_devs.shape[0], 1)
+        kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
         return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
