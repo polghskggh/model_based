@@ -48,6 +48,7 @@ class DreamerTrainer(Trainer):
         self.models["transition"].params = new_params
         return self.models
 
+    @jit
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, dones, state, belief = data
