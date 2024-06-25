@@ -1,7 +1,7 @@
 import distrax
 import jax
 import jax.numpy as jnp
-from jax import value_and_grad, lax
+from jax import value_and_grad, lax, jit
 
 from src.enviroment import Shape
 from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss
