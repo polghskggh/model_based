@@ -51,7 +51,7 @@ class Dreamer(WorldModelInterface):
                                                           self.embedding_size, self.observation_size),
                                          "observation")
 
-        encoder_model = ModelWrapper(Encoder(Args().args.bottleneck_dims[2]), "encoder")
+        encoder_model = ModelWrapper(Encoder(Args().args.bottleneck_dims[2], deterministic=False), "encoder")
 
         reward_model = ModelWrapper(PredictModel(self.hidden_size, Args().args.rewards), "reward")
 
@@ -84,7 +84,7 @@ class Dreamer(WorldModelInterface):
         self.prev_state = zero_on_term(dones, self.prev_state)
 
         log({"Step time": (time.time() - start_time) / action.shape[0]})
-        return (jnp.append(self.prev_belief, self.prev_state, -1), imagined_reward, dones,
+        return (jnp.append(self.prev_belief, self.prev_state, axis=-1), imagined_reward, dones,
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
@@ -145,5 +145,5 @@ class DreamerWrapper(gym.Wrapper):
 
         self.timestep += 1
         self.timestep %= Args().args.trajectory_length
-        return jnp.append(belief, state, axis=-1), reward, term, trunc, info
+        return jnp.append(self.prev_belief, self.prev_state, axis=-1), reward, term, trunc, info
 

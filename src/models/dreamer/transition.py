@@ -22,8 +22,7 @@ class TransitionModel(nn.Module):
         super().__init__()
         self.activation_fun = activation_function_dict['relu']
         self.rnn = nn.GRUCell(features=self.belief_size)
-        self.variational_encoder = VariationalEncoder(2 * self.state_size)
-        self.embedding_size = 100
+        self.variational_encoder = VariationalEncoder(self.state_size)
         self.belief_dense = linear_layer_init(self.belief_size)
 
     def update_belief(self, belief, state, action):
@@ -43,5 +42,5 @@ class TransitionModel(nn.Module):
     def __call__(self, prev_state: jax.Array, actions: jax.Array, prev_belief: jax.Array) -> List[jax.Array]:
         actions = onehot(actions, Shape()[1])
         beliefs = self.update_belief(prev_belief, prev_state, actions)
-        state, std_dev, mean = self.prior_update(beliefs)
-        return beliefs, state, std_dev, mean
+        state, mean, std_dev = self.prior_update(beliefs)
+        return beliefs, state, mean, std_dev
