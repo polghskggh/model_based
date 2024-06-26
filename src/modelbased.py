@@ -9,6 +9,7 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 def sample_env(agent, envs):
     agent.store_trajectories = False
+    print(f"sampling env for {Args().args.trajectory_length}")
     model_free_train_loop(agent, envs)
     agent.store_trajectories = True
     return envs.storage

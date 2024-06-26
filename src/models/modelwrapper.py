@@ -65,6 +65,7 @@ class ModelWrapper:
         :return: the output of the model
         """
         x = self.batch_input(*x)
+        print("forward pass")
         return self.state.apply_fn(self.state.params, *x, rngs=self._rngs)
 
     def apply_grads(self, grads: dict):

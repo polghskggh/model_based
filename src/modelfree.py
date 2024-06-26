@@ -20,7 +20,6 @@ def model_free_train_loop(agent: Agent, envs: gym.Env | WorldModelInterface, inc
                           steps=Args().args.trajectory_length):
     for step in range(steps):
         reward, done, infos = interact(agent, envs)
-
         if increment:
             StepTracker().increment(Args().args.num_envs)
         else:

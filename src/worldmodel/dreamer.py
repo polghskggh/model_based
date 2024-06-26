@@ -9,6 +9,7 @@ import jax.random as jr
 
 from src.enviroment import Shape
 from src.models.autoencoder.encoder import Encoder
+from src.models.dreamer.dreamer_encoder import DreamerEncoder
 from src.models.dreamer.observation import ObservationModel
 from src.models.dreamer.representation import RepresentationModel
 from src.models.dreamer.reward import PredictModel
@@ -51,7 +52,7 @@ class Dreamer(WorldModelInterface):
                                                           self.embedding_size, self.observation_size),
                                          "observation")
 
-        encoder_model = ModelWrapper(Encoder(Args().args.bottleneck_dims[2], deterministic=False), "encoder")
+        encoder_model = ModelWrapper(DreamerEncoder(Args().args.bottleneck_dims[2]), "encoder")
 
         reward_model = ModelWrapper(PredictModel(self.hidden_size, Args().args.rewards), "reward")
 
@@ -80,8 +81,8 @@ class Dreamer(WorldModelInterface):
         else:
             dones = jnp.zeros(imagined_reward.shape, dtype=bool)
 
-        self.prev_belief = zero_on_term(dones, self.prev_belief)
-        self.prev_state = zero_on_term(dones, self.prev_state)
+        # self.prev_belief = zero_on_term(dones, self.prev_belief)
+        # self.prev_state = zero_on_term(dones, self.prev_state)
 
         log({"Step time": (time.time() - start_time) / action.shape[0]})
         return (jnp.append(self.prev_belief, self.prev_state, axis=-1), imagined_reward, dones,
@@ -134,14 +135,13 @@ class DreamerWrapper(gym.Wrapper):
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
 
-        encoded_observation, _ = self.encoder_model.forward(observation)
+        encoded_observation = self.encoder_model.forward(observation)
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
                                                                       self.prev_belief, encoded_observation)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
                              dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
 
-        self.prev_belief = zero_on_term(term, belief)
-        self.prev_state = zero_on_term(term, state)
+        self.prev_belief, self.prev_state = belief, state
 
         self.timestep += 1
         self.timestep %= Args().args.trajectory_length
