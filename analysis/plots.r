@@ -9,7 +9,7 @@ read <- function(env_name, type, alg_name)
 
 smooth <- function(env, type, name)
 {
-    geom_smooth(read(env, type, name), mapping=aes(x=Step, y=Value, color=name), method='gam', se=FALSE)
+    geom_smooth(read(env, type, name), mapping=aes(x=Step, y=Value, color=name), method='gam')
 
 }
 
@@ -23,9 +23,10 @@ plotall <- function(env, type)
         scale_x_continuous(labels = scales::label_number(scale = 1e-6, suffix = "M")) +
         scale_color_manual(values = c("ppo" = "red", 
                                       "simple" = "blue",
-                                      "simple_dones" = "yellow", 
-                                      "simple_dones_hybrid" = "green"))
+                                      "simple_dones" = "purple", 
+                                      "simple_dones_hybrid" = "darkgreen"))
 }
+
 plotall('breakout', 'length')
 plotall('breakout', 'returns')
 
