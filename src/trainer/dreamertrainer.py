@@ -56,7 +56,6 @@ class DreamerTrainer(Trainer):
     @staticmethod
     def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, dones, state, belief = data
-        batch_size = Args().args.batch_size
 
         beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
         state_shape = (observations.shape[0], Args().args.state_size)
@@ -71,8 +70,10 @@ class DreamerTrainer(Trainer):
 
         key = "representation"
         for idx in range(len(states)):
-            output = jit(models[key].apply)(params[key], state, actions[idx],
-                                            belief, encoded_observations[idx], rngs=rng)
+            output = jit(models[key].apply)(params[key], jnp.expand_dims(state, 0),
+                                            jnp.expand_dims(actions[idx], 0),
+                                            jnp.expand_dims(belief, 0),
+                                            jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)
             belief = output[0]
             state = output[1]
 

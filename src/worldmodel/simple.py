@@ -3,7 +3,7 @@ import time
 import gym
 import jax
 import jax.numpy as jnp
-import numpy as np
+import jax.random as jr
 from jax import lax
 
 from src.enviroment import Shape
@@ -12,6 +12,7 @@ from src.models.inference.stochasticautoencoder import StochasticAutoencoder
 from src.models.modelwrapper import ModelWrapper
 from src.pod.storage import TransitionStorage, store
 from src.singletons.hyperparameters import Args
+from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.saetrainer import SAETrainer
 from src.utils.rl import process_output
@@ -62,8 +63,13 @@ class SimpleWorldModel(WorldModelInterface):
 
     def _deterministic_update(self, stack, actions, rewards, dones, next_frame):
         batch_size = Args().args.batch_size
-        for start_idx in range(0, stack.shape[0], batch_size):
-            batch_slice = slice(start_idx, start_idx + batch_size)
+        epoch_size = stack.shape[0]
+
+        epoch_indices = jr.permutation(Key().key(), epoch_size, independent=True)
+
+        for start_idx in range(0, epoch_size, batch_size):
+            end_idx = start_idx + batch_size
+            batch_slice = epoch_indices[start_idx:end_idx]
             target = (next_frame[batch_slice], rewards[batch_slice])
             if Args().args.predict_dones:
                 target += (dones[batch_slice], )
