@@ -91,7 +91,7 @@ class DreamerTrainer(Trainer):
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
         key = "observation"
-        pixels = jit(models[key].apply)(params[key], beliefs, states)
+        pixels = jit(models[key].apply)(params[key], beliefs, states, rngs=rng)
         observation_loss = image_loss_fn(pixels, observations)
 
         key = "reward"
