@@ -117,7 +117,6 @@ class SimpleWrapper(gym.Wrapper):
                                              None, axis=-1)
 
         store_slice = slice(self._timestep * Args().args.num_envs, (self._timestep + 1) * Args().args.num_envs)
-        print(reward)
         self._storage = store(self._storage, store_slice, observations=self.last_observation, actions=action,
                               rewards=reward, dones=term | trunc, next_observations=next_observations)
         self._timestep += 1

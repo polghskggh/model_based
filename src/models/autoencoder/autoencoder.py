@@ -50,8 +50,6 @@ class AutoEncoder(nn.Module):
         logits = self.logits(decoded)
 
         reward_logits = self.reward_predictor(hidden, logits)
-        if Args().args.rewards == 1:
-            reward_logits = nn.tanh(reward_logits)
 
         if not Args().args.categorical_image:
             pixels = linear_layer_init(1 if Args().args.grayscale else 3)(logits)
