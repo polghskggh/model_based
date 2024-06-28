@@ -27,7 +27,6 @@ class DreamerTrainer(Trainer):
 
     def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
         rng = ModelWrapper.make_rng_keys()
-        last_belief, last_state = initial_belief, initial_state
         keys_to_select = ['representation', 'observation', 'reward', 'encoder']
 
         if Args().args.predict_dones:
@@ -39,6 +38,7 @@ class DreamerTrainer(Trainer):
         batch_size = Args().args.batch_size
         for _ in range(Args().args.num_epochs):
             for env_idx in range(0, observations.shape[0]):
+                last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                 for start_idx in range(0, observations.shape[1], batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     data = (observations[env_idx][batch_slice], actions[env_idx][batch_slice],
@@ -46,7 +46,7 @@ class DreamerTrainer(Trainer):
                             last_state[env_idx], last_belief[env_idx])
                     (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
                     self.apply_grads(grads)
-                    last_belief[env_idx], last_state[env_idx] = aux["data"]
+                    last_belief, last_state = aux["data"]
                     log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
