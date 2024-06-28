@@ -70,8 +70,7 @@ class DreamerTrainer(Trainer):
 
         key = "representation"
         for idx in range(len(states)):
-            output = jit(models[key].apply)(params[key], jnp.expand_dims(state, 0),
-                                            jnp.expand_dims(actions[idx], 0),
+            output = jit(models[key].apply)(params[key], jnp.expand_dims(state, 0), actions[idx],
                                             jnp.expand_dims(belief, 0),
                                             jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)[0]
             belief = output[0]
