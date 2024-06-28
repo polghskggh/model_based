@@ -53,6 +53,7 @@ class FrameSkip(Wrapper):
             # Accumulate reward and repeat the same action
             observation, reward, terminated, truncated, info = self.env.step(action)
             total_reward += reward
+            print("reward", reward, "total_reward", total_reward)
             if terminated or truncated:
                 break
 
