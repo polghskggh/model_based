@@ -1,3 +1,5 @@
+import gc
+
 import distrax
 import jax
 import jax.numpy as jnp
@@ -44,6 +46,9 @@ class DreamerTrainer(Trainer):
                 self.apply_grads(grads)
                 last_belief, last_state = aux["data"]
                 log(aux["info"])
+                grads = None
+                gc.collect()
+                jax.clear_backends()
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
