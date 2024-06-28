@@ -43,7 +43,7 @@ class DreamerTrainer(Trainer):
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     data = (observations[env_idx][batch_slice], actions[env_idx][batch_slice],
                             rewards[env_idx][batch_slice], dones[env_idx][batch_slice],
-                            last_state[env_idx], last_belief[env_idx])
+                            last_state, last_belief)
                     (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
@@ -70,7 +70,8 @@ class DreamerTrainer(Trainer):
 
         key = "representation"
         for idx in range(len(states)):
-            output = jit(models[key].apply)(params[key], jnp.expand_dims(state, 0), actions[idx],
+            output = jit(models[key].apply)(params[key], jnp.expand_dims(state, 0),
+                                            jnp.expand_dims(actions[idx], 0),
                                             jnp.expand_dims(belief, 0),
                                             jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)[0]
             belief = output[0]
