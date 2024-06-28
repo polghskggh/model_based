@@ -38,17 +38,16 @@ class DreamerTrainer(Trainer):
 
         batch_size = Args().args.batch_size
         for _ in range(Args().args.num_epochs):
-            for start_idx in range(0, observations.shape[0], batch_size):
-                batch_slice = slice(start_idx, start_idx + batch_size)
-                data = (observations[batch_slice], actions[batch_slice], rewards[batch_slice], dones[batch_slice],
-                        last_state, last_belief)
-                (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
-                self.apply_grads(grads)
-                last_belief, last_state = aux["data"]
-                log(aux["info"])
-                grads = None
-                gc.collect()
-                jax.clear_backends()
+            for env_idx in range(0, observations.shape[0]):
+                for start_idx in range(0, observations.shape[1], batch_size):
+                    batch_slice = slice(start_idx, start_idx + batch_size)
+                    data = (observations[env_idx][batch_slice], actions[env_idx][batch_slice],
+                            rewards[env_idx][batch_slice], dones[env_idx][batch_slice],
+                            last_state[env_idx], last_belief[env_idx])
+                    (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
+                    self.apply_grads(grads)
+                    last_belief[env_idx], last_state[env_idx] = aux["data"]
+                    log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
@@ -59,25 +58,16 @@ class DreamerTrainer(Trainer):
         observations, actions, rewards, dones, state, belief = data
         batch_size = Args().args.batch_size
 
-        beliefs = jnp.zeros((observations.shape[0], Args().args.num_envs, Args().args.belief_size))
-        state_shape = (observations.shape[0], Args().args.num_envs, Args().args.state_size)
+        beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
+        state_shape = (observations.shape[0], Args().args.state_size)
         prior_means = jnp.zeros(state_shape)
         prior_std_devs = jnp.zeros(state_shape)
         states = jnp.zeros(state_shape)
         posterior_means = jnp.zeros(state_shape)
         posterior_std_devs = jnp.zeros(state_shape)
-        old_shape = observations.shape
 
-        observations = observations.reshape(-1, *observations.shape[2:])
-        encoded_observations = jnp.zeros((observations.shape[0], ) + Args().args.bottleneck_dims)
         key = "encoder"
-        for start_idx in range(0, observations.shape[0], batch_size):
-            batch_slice = slice(start_idx, start_idx + batch_size)
-            print("debugging", observations.shape[0])
-            encoded_batch = jit(models[key].apply)(params[key], observations[batch_slice], rngs=rng)
-            encoded_observations = encoded_observations.at[batch_slice].set(encoded_batch)
-
-        encoded_observations = encoded_observations.reshape(old_shape[:2] + Args().args.bottleneck_dims)
+        encoded_observations = jit(models[key].apply)(params[key], observations, rngs=rng)
 
         key = "representation"
         for idx in range(len(states)):
@@ -94,39 +84,24 @@ class DreamerTrainer(Trainer):
             posterior_means = posterior_means.at[idx].set(output[4])
             posterior_std_devs = posterior_std_devs.at[idx].set(output[5])
 
-        beliefs = beliefs.reshape(-1, Args().args.belief_size)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
-        states = states.reshape(-1, Args().args.state_size)
         posterior_means = posterior_means.reshape(-1)
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
-        rewards = rewards.reshape(-1)
-        dones = dones.reshape(-1)
+        key = "observation"
+        pixels = jit(models[key].apply)(params[key], beliefs, states)
+        observation_loss = image_loss_fn(pixels, observations)
 
-        observation_loss, reward_loss, dones_loss = 0, 0, 0
-        num_batches = 0
+        key = "reward"
+        reward_logits = jit(models[key].apply)(params[key], beliefs, states)
+        reward_loss = reward_loss_fn(reward_logits, rewards)
 
-        for start_idx in range(0, observations.shape[0], Args().args.batch_size):
-            num_batches += 1
-            batch_slice = slice(start_idx, start_idx + batch_size)
-            key = "observation"
-            pixels = jit(models[key].apply)(params[key], beliefs[batch_slice], states[batch_slice])
-
-            observation_loss += image_loss_fn(pixels, observations[batch_slice])
-
-            key = "reward"
-            reward_logits = jit(models[key].apply)(params[key], beliefs[batch_slice], states[batch_slice])
-            reward_loss += reward_loss_fn(reward_logits, rewards[batch_slice])
-
-            if Args().args.predict_dones:
-                key = "dones"
-                dones_logits = jit(models[key].apply)(params[key], beliefs[batch_slice], states[batch_slice])
-                dones_loss += jnp.mean(softmax_loss(dones_logits, dones[batch_slice]))
-
-        observation_loss /= num_batches
-        reward_loss /= num_batches
-        dones_loss /= num_batches
+        dones_loss = 0
+        if Args().args.predict_dones:
+            key = "dones"
+            dones_logits = jit(models[key].apply)(params[key], beliefs, states)
+            dones_loss = jnp.mean(softmax_loss(dones_logits, dones))
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
