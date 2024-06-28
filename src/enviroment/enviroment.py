@@ -55,7 +55,7 @@ def make_mario() -> gym.Env:
     env = JoypadSpace(env, RIGHT_ONLY)
     env = CompatibilityWrapper(env)
     env = LimitActions(env)
-    env = FrameSkip(env, 4)
+    env = FrameSkip(env, 1)
     env = apply_common_wrappers(env)
     return env
 

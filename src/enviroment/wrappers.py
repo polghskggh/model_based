@@ -56,6 +56,7 @@ class FrameSkip(Wrapper):
             total_reward += reward
             if terminated or truncated:
                 break
+
         total_reward = np.clip(total_reward, -6.0, 6.0)
         return observation, total_reward, terminated, truncated, info
 
