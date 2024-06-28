@@ -55,7 +55,7 @@ class FrameSkip(Wrapper):
             total_reward += reward
             if terminated or truncated:
                 break
-        total_reward = jnp.clip(total_reward, -15.0, 15.0)
+        total_reward = jnp.clip(total_reward, -6.0, 6.0)
         return observation, total_reward, terminated, truncated, info
 
 
