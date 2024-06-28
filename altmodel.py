@@ -234,7 +234,7 @@ def compute_gae(
         delta = storage.rewards[t] + args.gamma * nextvalues * nextnonterminal - storage.values[t]
         lastgaelam = delta + args.gamma * args.gae_lambda * nextnonterminal * lastgaelam
         storage = storage.replace(advantages=storage.advantages.at[t].set(lastgaelam))
-    # Save returns as advantages + values
+    # Save return as advantages + values
     storage = storage.replace(returns=storage.advantages + storage.values)
     return storage
 

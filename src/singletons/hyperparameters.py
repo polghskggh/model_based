@@ -66,7 +66,7 @@ class Args:
         parser.add_argument('--algorithm', type=str, default='ppo',
                             help='the algorithm to use [simple, dreamer, dqn, ppo]')
         parser.add_argument('--env', type=str, default='breakout', help='the environment to use [breakout, mario]')
-        parser.add_argument('--num-updates', type=int, default=8000, help='number of updates to train')
+        parser.add_argument('--num-updates', type=int, default=4000, help='number of updates to train')
         parser.add_argument('--batch_size', type=int, default=50, help='the batch size for training')
         parser.add_argument('--num_envs', type=int, default=8, help='the number of parallel environments')
         parser.add_argument('--num_agents', type=int, default=8,

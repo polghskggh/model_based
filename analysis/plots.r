@@ -15,16 +15,20 @@ smooth <- function(env, type, name)
 
 plotall <- function(env, type)
 {
-    title_string <- paste0(type, " of different algorithms in ",  env)
-    ggplot() + smooth(env, type, 'ppo') + smooth(env, type, 'simple') + 
-        smooth(env, type, 'simple_dones') + smooth(env, type, 'simple_dones_hybrid') +
+  axis <- type
+    if (type == 'length') {
+    axis <- "episode length"
+  }
+    title_string <- paste0(axis, " of different algorithms in ",  env)
+    ggplot() + smooth(env, type, 'ppo') + smooth(env, type, "simple_hybrid0") +
+        smooth(env, type, 'simple') + smooth(env, type, 'simple_hybrid1') +
         labs(color = "algorithm", x="frames", y=type, title = title_string) +
         theme(legend.position = c(0.8,0.2)) +
         scale_x_continuous(labels = scales::label_number(scale = 1e-6, suffix = "M")) +
-        scale_color_manual(values = c("ppo" = "red", 
-                                      "simple" = "blue",
-                                      "simple_dones" = "purple", 
-                                      "simple_dones_hybrid" = "darkgreen"))
+        scale_color_manual(values = c("ppo" = "red",
+                                      "simple" = "blue", 
+                                      "simple_hybrid0" = "purple",
+                                      "simple_hybrid1" = "darkgreen"))
 }
 
 plotall('breakout', 'length')

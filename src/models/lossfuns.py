@@ -30,7 +30,7 @@ def image_loss_fn(pixels, teacher_pixels):
 
 
 def mse_reward(reward, teacher_reward):
-    jax.debug.print("mse reward {rew} teacher: {teacher_reward}", reward=reward, teacher_reward=teacher_reward)
+    jax.debug.print("mse reward {rew} teacher: {teacher_reward}", rew=reward, teacher_reward=teacher_reward)
     return optax.squared_error(reward.squeeze(), teacher_reward.squeeze())
 
 
