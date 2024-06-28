@@ -49,6 +49,7 @@ def cross_entropy_with_dones(output, target):
     image_reward_loss, aux = cross_entropy_with_reward((pixels, rewards), (teach_pixels, teach_reward))
     dones_loss = jnp.mean(softmax_loss(dones, teach_dones))
     aux['dones_loss'] = dones_loss
+    jax.debug.print("dones loss: {dones_loss}", dones_loss=dones_loss)
     return image_reward_loss + dones_loss, aux
 
 
@@ -58,6 +59,7 @@ def cross_entropy_with_reward(output, target):
     alpha = Args().args.pixel_reward
     image_loss = image_loss_fn(pixels, teach_pixels)
     reward_loss = reward_loss_fn(rewards, teach_reward)
+    jax.debug.print("image loss: {image_loss} reward loss: {reward_loss}",image_loss=image_loss, reward_loss=reward_loss)
     return alpha * image_loss + (1 - alpha) * reward_loss, {"image_loss": image_loss, "reward_loss": reward_loss}
 
 

@@ -3,13 +3,11 @@ from gym_super_mario_bros.actions import RIGHT_ONLY
 
 import gymnasium as gym
 
-from gymnasium.wrappers import FrameStack, ResizeObservation, RecordEpisodeStatistics, AtariPreprocessing, \
-    TransformObservation
+from gymnasium.wrappers import FrameStack, ResizeObservation, RecordEpisodeStatistics
 from gymnasium.wrappers import GrayScaleObservation
-from gymnasium.wrappers import TimeLimit
 from nes_py.wrappers import JoypadSpace
 
-from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, LimitActions, CategoricalReward
+from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, LimitActions
 from src.enviroment.shape import Shape
 from src.singletons.hyperparameters import Args
 
