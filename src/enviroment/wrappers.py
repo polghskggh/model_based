@@ -2,6 +2,7 @@ from typing import Any, SupportsFloat
 
 import gymnasium as gym
 import jax.numpy as jnp
+import numpy as np
 from gymnasium import ObservationWrapper, Wrapper
 from gymnasium.core import WrapperObsType, WrapperActType, ActionWrapper, RewardWrapper
 from gymnasium.spaces import Box
@@ -55,7 +56,7 @@ class FrameSkip(Wrapper):
             total_reward += reward
             if terminated or truncated:
                 break
-        total_reward = jnp.clip(total_reward, -6.0, 6.0)
+        total_reward = np.clip(total_reward, -6.0, 6.0)
         return observation, total_reward, terminated, truncated, info
 
 
