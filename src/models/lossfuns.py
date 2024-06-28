@@ -13,7 +13,6 @@ def mean_squared_error(state, params, teacher_outputs, *inputs, **kwargs):
 
 def softmax_loss(output, target):
     target = jnp.squeeze(jnp.astype(target, jnp.int32))
-    target -= Args().args.min_reward  # Transform reward to range [0, reward_values]
     return jnp.maximum(softmax_cross_entropy_with_integer_labels(output, target),
                        Args().args.softmax_loss_const)
 
@@ -39,6 +38,7 @@ def reward_loss_fn(reward, teacher_reward):
     if Args().args.rewards == 1:
         loss = mse_reward(reward, teacher_reward)
     else:
+        teacher_reward -= Args().args.min_reward  # Transform reward to range [0, reward_values]
         loss = softmax_loss(reward, teacher_reward)
     return jnp.mean(loss)
 
