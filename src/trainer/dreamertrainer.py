@@ -73,7 +73,7 @@ class DreamerTrainer(Trainer):
             output = jit(models[key].apply)(params[key], jnp.expand_dims(state, 0),
                                             jnp.expand_dims(actions[idx], 0),
                                             jnp.expand_dims(belief, 0),
-                                            jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)
+                                            jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)[0]
             belief = output[0]
             state = output[1]
 
