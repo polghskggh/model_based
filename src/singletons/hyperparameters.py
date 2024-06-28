@@ -99,7 +99,8 @@ class Args:
         parse_dreamer(parser)
         args = parser.parse_args()
         args.num_minibatches = args.num_agents * args.trajectory_length // args.batch_size
-
+        args.min_reward = 0 if args.env == 'breakout' else -15
+        args.rewards = 2 if args.env == 'breakout' else 31
         return args
 
     @args.setter

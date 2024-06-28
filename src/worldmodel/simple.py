@@ -50,6 +50,7 @@ class SimpleWorldModel(WorldModelInterface):
             next_frames = jnp.argmax(next_frames, axis=-1, keepdims=True)
 
         rewards = process_output(rewards_logits)
+        rewards += Args().args.min_reward
         dones = process_output(dones) if dones is not None else jnp.zeros_like(rewards, dtype=bool)
 
         self._frame_stack.add_frame(next_frames)

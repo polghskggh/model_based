@@ -74,6 +74,7 @@ class Dreamer(WorldModelInterface):
                                                                                     self.prev_belief)
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = process_output(imagined_reward_logits)
+        imagined_reward += Args().args.min_reward
 
         if Args().args.predict_dones:
             dones = self.models["dones"].forward(self.prev_belief, self.prev_state)
