@@ -33,7 +33,7 @@ class DreamerTrainer(Trainer):
             keys_to_select.append('dones')
 
         params = {key: self.models[key].params for key in keys_to_select}
-        models = {key: self.models[key].model for key in keys_to_select}
+        apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
         for _ in range(Args().args.num_epochs):
@@ -44,7 +44,7 @@ class DreamerTrainer(Trainer):
                     data = (observations[env_idx][batch_slice], actions[env_idx][batch_slice],
                             rewards[env_idx][batch_slice], dones[env_idx][batch_slice],
                             last_state, last_belief)
-                    (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(models, params, data, rng)
+                    (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params, data, rng)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
@@ -57,7 +57,7 @@ class DreamerTrainer(Trainer):
         return self.models
 
     @staticmethod
-    def loss_fun(models: dict, params: dict, data: tuple, rng: dict):
+    def loss_fun(apply_funs: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, dones, state, belief = data
 
         beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
@@ -69,14 +69,14 @@ class DreamerTrainer(Trainer):
         posterior_std_devs = jnp.zeros(state_shape)
 
         key = "encoder"
-        encoded_observations = jit(models[key].apply)(params[key], observations, rngs=rng)
+        encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
 
         key = "representation"
         for idx in range(len(states)):
-            output = jit(models[key].apply)(params[key], jnp.expand_dims(state, 0),
-                                            jnp.expand_dims(actions[idx], 0),
-                                            jnp.expand_dims(belief, 0),
-                                            jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)[0]
+            output = apply_funs[key](params[key], jnp.expand_dims(state, 0),
+                                     jnp.expand_dims(actions[idx], 0),
+                                     jnp.expand_dims(belief, 0),
+                                     jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)[0]
             belief = output[0]
             state = output[1]
 
@@ -94,17 +94,17 @@ class DreamerTrainer(Trainer):
         posterior_std_devs = posterior_std_devs.reshape(-1)
 
         key = "observation"
-        pixels = jit(models[key].apply)(params[key], beliefs, states, rngs=rng)
+        pixels = apply_funs[key](params[key], beliefs, states, rngs=rng)
         observation_loss = image_loss_fn(pixels, observations)
 
         key = "reward"
-        reward_logits = jit(models[key].apply)(params[key], beliefs, states)
+        reward_logits = apply_funs[key](params[key], beliefs, states)
         reward_loss = reward_loss_fn(reward_logits, rewards)
 
         dones_loss = 0
         if Args().args.predict_dones:
             key = "dones"
-            dones_logits = jit(models[key].apply)(params[key], beliefs, states)
+            dones_logits = apply_funs[key](params[key], beliefs, states)
             dones_loss = jnp.mean(softmax_loss(dones_logits, dones))
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
