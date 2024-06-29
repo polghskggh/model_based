@@ -15,7 +15,8 @@ class Predictor(nn.Module):
     @nn.compact
     def __call__(self, middle: Array, final: Array) -> Array:
         middle = jnp.reshape(middle, (middle.shape[0], -1))
-        final = jax.lax.reduce(final, 0.0, lambda x, y: x + y, (1, 2))
+        final = linear_layer_init(1)(final)
+        final = jnp.reshape(final, (final.shape[0], -1))
         pred = jnp.concat((middle, final), axis=-1)
         pred = linear_layer_init(128)(pred)
         pred = nn.relu(pred)
