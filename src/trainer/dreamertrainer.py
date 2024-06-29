@@ -48,6 +48,9 @@ class DreamerTrainer(Trainer):
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
+                    print("backwards pass completed")
+                    jax.clear_backends()
+                    gc.collect()
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
