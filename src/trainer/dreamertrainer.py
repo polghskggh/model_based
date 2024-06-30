@@ -38,15 +38,15 @@ class DreamerTrainer(Trainer):
         batch_size = Args().args.batch_size
         print("HUGEEE", observations.shape)
         for _ in range(Args().args.num_epochs):
-            for env_idx in range(0, observations.shape[0]):
+            for env_idx in range(0, observations.shape[1]):
                 last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
-                for start_idx in range(0, observations.shape[1], batch_size):
+                for start_idx in range(0, observations.shape[0], batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params,
-                                                                                jnp.expand_dims(observations[env_idx][batch_slice], 1),
-                                                                                jnp.expand_dims(actions[env_idx][batch_slice], 1),
-                                                                                jnp.expand_dims(rewards[env_idx][batch_slice], 1),
-                                                                                jnp.expand_dims(dones[env_idx][batch_slice], 1),
+                                                                                jnp.expand_dims(observations[batch_slice][env_idx], 1),
+                                                                                jnp.expand_dims(actions[batch_slice][env_idx], 1),
+                                                                                jnp.expand_dims(rewards[batch_slice][env_idx], 1),
+                                                                                jnp.expand_dims(dones[batch_slice][env_idx], 1),
                                                                                 jnp.expand_dims(last_state, 0), 
                                                                                 jnp.expand_dims(last_belief, 0), rng=rng)
                     self.apply_grads(grads)
@@ -78,7 +78,6 @@ class DreamerTrainer(Trainer):
             return (step_output[0], step_output[1]), step_output
             
         _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations)) 
-        print("output_shape:", type(output), output.shape)
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
