@@ -36,16 +36,17 @@ class DreamerTrainer(Trainer):
         apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
+        print("HUGEEE", observations.shape)
         for _ in range(Args().args.num_epochs):
             for env_idx in range(0, observations.shape[0]):
                 last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                 for start_idx in range(0, observations.shape[1], batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params,
-                                                                                jnp.expand_dims(observations[env_idx][batch_slice], 0),
-                                                                                jnp.expand_dims(actions[env_idx][batch_slice], 0),
-                                                                                jnp.expand_dims(rewards[env_idx][batch_slice], 0),
-                                                                                jnp.expand_dims(dones[env_idx][batch_slice], 0),
+                                                                                jnp.expand_dims(observations[env_idx][batch_slice], 1),
+                                                                                jnp.expand_dims(actions[env_idx][batch_slice], 1),
+                                                                                jnp.expand_dims(rewards[env_idx][batch_slice], 1),
+                                                                                jnp.expand_dims(dones[env_idx][batch_slice], 1),
                                                                                 jnp.expand_dims(last_state, 0), 
                                                                                 jnp.expand_dims(last_belief, 0), rng=rng)
                     self.apply_grads(grads)
