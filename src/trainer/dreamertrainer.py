@@ -77,7 +77,7 @@ class DreamerTrainer(Trainer):
             return (step_output[0], step_output[1]), jnp.array(step_output)
 
         _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations))
-
+        print(output.shape)
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
