@@ -77,7 +77,7 @@ class DreamerTrainer(Trainer):
                                           jnp.expand_dims(belief_carry, 0),
                                           encoded_observation, rngs=rng)[0]
 
-            return (step_output[0], step_output[1]), jnp.array(step_output)
+            return (step_output[0], step_output[1]), (step_output[0], step_output[1])
 
         _, output = jax.lax.scan(scan_fn, (belief, state), (jnp.expand_dims(actions, 1), jnp.expand_dims(encoded_observations, 1)))
         print("output_shape:", output.shape)
