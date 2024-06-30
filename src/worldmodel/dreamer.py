@@ -26,7 +26,7 @@ from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 class Dreamer(WorldModelInterface):
     def __init__(self):
-        Args().args.bottleneck_dims = (2, 2, 64)
+        Args().args.bottleneck_dims = (2, 2, 32)
         self.num_agents = Args().args.num_agents
         self.belief_size = Args().args.belief_size
         self.state_size = Args().args.state_size
