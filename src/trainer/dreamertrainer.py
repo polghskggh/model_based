@@ -51,8 +51,6 @@ class DreamerTrainer(Trainer):
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
                     print("backwards pass completed")
-                    jax.clear_backends()
-                    gc.collect()
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
@@ -74,9 +72,8 @@ class DreamerTrainer(Trainer):
             step_output = apply_funs[key](params[key], jnp.expand_dims(state_carry, 0),
                                           jnp.expand_dims(action, 0),
                                           jnp.expand_dims(belief_carry, 0),
-                                          jnp.expand_dims(encoded_observation, 0), rngs=rng)[0]
+                                          jnp.expand_dims(encoded_observation, 0), rngs=rng)
             print(step_output[2].shape)
-            print(step_output.shape)
 
             return (step_output[0], step_output[1]), step_output
             
