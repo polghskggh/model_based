@@ -71,7 +71,7 @@ class DreamerTrainer(Trainer):
 
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
-
+        encoded_observations.block_until_ready()
         key = "representation"
         for idx in range(len(states)):
             output = apply_funs[key](params[key], jnp.expand_dims(state, 0),
