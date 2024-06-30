@@ -33,13 +33,13 @@ class DreamerTrainer(Trainer):
             keys_to_select.append('dones')
 
         params = {key: self.models[key].params for key in keys_to_select}
+        apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
         for _ in range(Args().args.num_epochs):
             for env_idx in range(0, observations.shape[0]):
                 last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                 for start_idx in range(0, observations.shape[1], batch_size):
-                    apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params,
                                                                                 observations[env_idx][batch_slice],
@@ -77,8 +77,8 @@ class DreamerTrainer(Trainer):
 
             return (step_output[0], step_output[1]), jnp.array(step_output)
 
-        _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations))
-        print(output.shape)
+        _, output = jax.lax.scan(scan_fn, (belief, state), zip(actions, encoded_observations))
+        print("output_shape:", output.shape)
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
