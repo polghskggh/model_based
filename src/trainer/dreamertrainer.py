@@ -59,36 +59,27 @@ class DreamerTrainer(Trainer):
     @staticmethod
     def loss_fun(apply_funs: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, dones, state, belief = data
-
         print("shapes", observations.shape, actions.shape, rewards.shape, dones.shape, state.shape, belief.shape)
-        beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
-        state_shape = (observations.shape[0], Args().args.state_size)
-        prior_means = jnp.zeros(state_shape)
-        prior_std_devs = jnp.zeros(state_shape)
-        states = jnp.zeros(state_shape)
-        posterior_means = jnp.zeros(state_shape)
-        posterior_std_devs = jnp.zeros(state_shape)
-
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
         encoded_observations.block_until_ready()
-        key = "representation"
-        for idx in range(len(states)):
-            output = apply_funs[key](params[key], jnp.expand_dims(state, 0),
-                                     jnp.expand_dims(actions[idx], 0),
-                                     jnp.expand_dims(belief, 0),
-                                     jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)[0]
-            belief = output[0]
-            state = output[1]
-            belief.block_until_ready()
-            state.block_until_ready()
-            beliefs = beliefs.at[idx].set(output[0])
-            states = states.at[idx].set(output[1])
 
-            prior_means = prior_means.at[idx].set(output[2])
-            prior_std_devs = prior_std_devs.at[idx].set(output[3])
-            posterior_means = posterior_means.at[idx].set(output[4])
-            posterior_std_devs = posterior_std_devs.at[idx].set(output[5])
+        key = "representation"
+
+        def scan_fn(carry, inputs):
+            action, encoded_observation = inputs
+            belief_carry, state_carry = carry
+
+            step_output = apply_funs[key](params[key], jnp.expand_dims(state_carry, 0),
+                                          jnp.expand_dims(action, 0),
+                                          jnp.expand_dims(belief_carry, 0),
+                                          jnp.expand_dims(encoded_observation, 0), rngs=rng)[0]
+
+            return (step_output[0], step_output[1]), step_output
+
+        _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations))
+
+        beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = output
 
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
