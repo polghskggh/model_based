@@ -80,7 +80,8 @@ class DreamerTrainer(Trainer):
                                      jnp.expand_dims(encoded_observations[idx], 0), rngs=rng)[0]
             belief = output[0]
             state = output[1]
-
+            belief.block_until_ready()
+            state.block_until_ready()
             beliefs = beliefs.at[idx].set(output[0])
             states = states.at[idx].set(output[1])
 
