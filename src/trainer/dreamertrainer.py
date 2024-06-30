@@ -41,10 +41,12 @@ class DreamerTrainer(Trainer):
                 for start_idx in range(0, observations.shape[1], batch_size):
                     apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
                     batch_slice = slice(start_idx, start_idx + batch_size)
-                    data = (observations[env_idx][batch_slice], actions[env_idx][batch_slice],
-                            rewards[env_idx][batch_slice], dones[env_idx][batch_slice],
-                            last_state, last_belief)
-                    (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params, data, rng)
+                    (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params,
+                                                                                observations[env_idx][batch_slice],
+                                                                                actions[env_idx][batch_slice],
+                                                                                rewards[env_idx][batch_slice],
+                                                                                dones[env_idx][batch_slice],
+                                                                                last_state, last_belief, rng=rng)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
@@ -57,8 +59,7 @@ class DreamerTrainer(Trainer):
         return self.models
 
     @staticmethod
-    def loss_fun(apply_funs: dict, params: dict, data: tuple, rng: dict):
-        observations, actions, rewards, dones, state, belief = data
+    def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
         print("shapes", observations.shape, actions.shape, rewards.shape, dones.shape, state.shape, belief.shape)
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
