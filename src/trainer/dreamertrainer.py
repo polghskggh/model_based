@@ -64,6 +64,7 @@ class DreamerTrainer(Trainer):
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
 
+        print("encoded_shape", encoded_observations.shape)
         key = "representation"
 
         def scan_fn(carry, inputs):
