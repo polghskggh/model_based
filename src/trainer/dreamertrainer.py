@@ -77,7 +77,7 @@ class DreamerTrainer(Trainer):
 
         _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations))
 
-        beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = output
+        beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = zip(*output)
 
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
