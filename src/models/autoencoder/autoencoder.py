@@ -44,6 +44,7 @@ class AutoEncoder(nn.Module):
 
         if latent is not None:
             injected = self.latent_injector(injected, latent)
+            
         hidden = self.middle_network(injected)
 
         decoded = self.decoder(hidden, skip)

@@ -33,13 +33,13 @@ class DreamerTrainer(Trainer):
             keys_to_select.append('dones')
 
         params = {key: self.models[key].params for key in keys_to_select}
-        apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
         for _ in range(Args().args.num_epochs):
             for env_idx in range(0, observations.shape[0]):
                 last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                 for start_idx in range(0, observations.shape[1], batch_size):
+                    apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     data = (observations[env_idx][batch_slice], actions[env_idx][batch_slice],
                             rewards[env_idx][batch_slice], dones[env_idx][batch_slice],
@@ -60,6 +60,7 @@ class DreamerTrainer(Trainer):
     def loss_fun(apply_funs: dict, params: dict, data: tuple, rng: dict):
         observations, actions, rewards, dones, state, belief = data
 
+        print("shapes", observations.shape, actions.shape, rewards.shape, dones.shape, state.shape, belief.shape)
         beliefs = jnp.zeros((observations.shape[0], Args().args.belief_size))
         state_shape = (observations.shape[0], Args().args.state_size)
         prior_means = jnp.zeros(state_shape)
