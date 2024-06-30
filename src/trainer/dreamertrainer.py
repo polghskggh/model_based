@@ -83,7 +83,7 @@ class DreamerTrainer(Trainer):
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
-
+        print(beliefs.shape, states.shape, prior_means.shape, prior_std_devs.shape, posterior_means.shape, posterior_std_devs.shape)
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
         posterior_means = posterior_means.reshape(-1)
