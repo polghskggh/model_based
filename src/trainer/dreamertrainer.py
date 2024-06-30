@@ -64,6 +64,7 @@ class DreamerTrainer(Trainer):
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
 
         key = "representation"
+
         def scan_fn(carry, inputs):
             action, encoded_observation = inputs
             belief_carry, state_carry = carry
@@ -73,11 +74,13 @@ class DreamerTrainer(Trainer):
                                           jnp.expand_dims(belief_carry, 0),
                                           jnp.expand_dims(encoded_observation, 0), rngs=rng)[0]
 
-            return (step_output[0], step_output[1]), step_output
+            return (step_output[0], step_output[1]), jnp.array(step_output)
 
         _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations))
 
-        beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = zip(*output)
+        beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
+                                                                                             output[2], output[3],
+                                                                                             output[4], output[5])
 
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
