@@ -69,6 +69,7 @@ class DreamerTrainer(Trainer):
         def scan_fn(carry, inputs):
             action, encoded_observation = inputs
             belief_carry, state_carry = carry
+            print("debug ", action.shape, encoded_observation.shape)
 
             step_output = apply_funs[key](params[key], jnp.expand_dims(state_carry, 0),
                                           jnp.expand_dims(action, 0),
