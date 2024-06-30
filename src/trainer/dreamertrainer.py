@@ -62,10 +62,8 @@ class DreamerTrainer(Trainer):
         print("shapes", observations.shape, actions.shape, rewards.shape, dones.shape, state.shape, belief.shape)
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
-        encoded_observations.block_until_ready()
 
         key = "representation"
-
         def scan_fn(carry, inputs):
             action, encoded_observation = inputs
             belief_carry, state_carry = carry
