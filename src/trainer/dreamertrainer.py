@@ -75,6 +75,8 @@ class DreamerTrainer(Trainer):
                                           jnp.expand_dims(action, 0),
                                           jnp.expand_dims(belief_carry, 0),
                                           jnp.expand_dims(encoded_observation, 0), rngs=rng)[0]
+            print(step_output[2].shape)
+            print(step_output.shape)
 
             return (step_output[0], step_output[1]), step_output
             
