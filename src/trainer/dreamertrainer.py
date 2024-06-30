@@ -42,11 +42,12 @@ class DreamerTrainer(Trainer):
                 for start_idx in range(0, observations.shape[1], batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params,
-                                                                                observations[env_idx][batch_slice],
-                                                                                actions[env_idx][batch_slice],
-                                                                                rewards[env_idx][batch_slice],
-                                                                                dones[env_idx][batch_slice],
-                                                                                last_state, last_belief, rng=rng)
+                                                                                jnp.expand_dims(observations[env_idx][batch_slice], 0),
+                                                                                jnp.expand_dims(actions[env_idx][batch_slice], 0),
+                                                                                jnp.expand_dims(rewards[env_idx][batch_slice], 0),
+                                                                                jnp.expand_dims(dones[env_idx][batch_slice], 0),
+                                                                                jnp.expand_dims(last_state, 0), 
+                                                                                jnp.expand_dims(last_belief, 0), rng=rng)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
@@ -69,10 +70,8 @@ class DreamerTrainer(Trainer):
             action, encoded_observation = inputs
             belief_carry, state_carry = carry
 
-            step_output = apply_funs[key](params[key], jnp.expand_dims(state_carry, 0),
-                                          jnp.expand_dims(action, 0),
-                                          jnp.expand_dims(belief_carry, 0),
-                                          jnp.expand_dims(encoded_observation, 0), rngs=rng)
+            step_output = apply_funs[key](params[key], state_carry,
+                                          action, belief_carry, encoded_observation, rngs=rng)
             print(step_output[2].shape)
 
             return (step_output[0], step_output[1]), step_output
