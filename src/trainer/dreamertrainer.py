@@ -43,10 +43,10 @@ class DreamerTrainer(Trainer):
                 for start_idx in range(0, observations.shape[0], batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     (loss, aux), grads = value_and_grad(self.loss_fun, 1, True)(apply_funs, params,
-                                                                                jnp.expand_dims(observations[batch_slice][env_idx], 1),
-                                                                                jnp.expand_dims(actions[batch_slice][env_idx], 1),
-                                                                                jnp.expand_dims(rewards[batch_slice][env_idx], 1),
-                                                                                jnp.expand_dims(dones[batch_slice][env_idx], 1),
+                                                                                jnp.expand_dims(observations[batch_slice, env_idx], 1),
+                                                                                jnp.expand_dims(actions[batch_slice, env_idx], 1),
+                                                                                jnp.expand_dims(rewards[batch_slice, env_idx], 1),
+                                                                                jnp.expand_dims(dones[batch_slice, env_idx], 1),
                                                                                 jnp.expand_dims(last_state, 0), 
                                                                                 jnp.expand_dims(last_belief, 0), rng=rng)
                     self.apply_grads(grads)
@@ -66,7 +66,6 @@ class DreamerTrainer(Trainer):
 
         print("encoded_shape", encoded_observations.shape)
         key = "representation"
-
         def scan_fn(carry, inputs):
             action, encoded_observation = inputs
             belief_carry, state_carry = carry
