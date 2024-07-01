@@ -95,14 +95,13 @@ class DreamerTrainer(Trainer):
 
         key = "reward"
         reward_logits = apply_funs[key](params[key], beliefs, states)
-        print("reward_logits", reward_logits.shape, rewards.shape)
-        reward_loss = reward_loss_fn(reward_logits, rewards)
+        reward_loss = reward_loss_fn(reward_logits.squeeze(), rewards)
 
         dones_loss = 0
         if Args().args.predict_dones:
             key = "dones"
             dones_logits = apply_funs[key](params[key], beliefs, states)
-            dones_loss = jnp.mean(softmax_loss(dones_logits, dones))
+            dones_loss = jnp.mean(softmax_loss(dones_logits.squeeze(), dones))
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
