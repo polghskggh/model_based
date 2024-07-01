@@ -83,7 +83,8 @@ class DreamerTrainer(Trainer):
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
-        print(beliefs.shape, states.shape, prior_means.shape, prior_std_devs.shape, posterior_means.shape, posterior_std_devs.shape)
+        beliefs = beliefs.reshape(-1, beliefs.shape[-1])
+        states = states.reshape(-1, states.shape[-1])
         prior_means = prior_means.reshape(-1)
         prior_std_devs = prior_std_devs.reshape(-1)
         posterior_means = posterior_means.reshape(-1)
@@ -95,13 +96,13 @@ class DreamerTrainer(Trainer):
 
         key = "reward"
         reward_logits = apply_funs[key](params[key], beliefs, states)
-        reward_loss = reward_loss_fn(reward_logits.squeeze(), rewards)
+        reward_loss = reward_loss_fn(reward_logits, rewards)
 
         dones_loss = 0
         if Args().args.predict_dones:
             key = "dones"
             dones_logits = apply_funs[key](params[key], beliefs, states)
-            dones_loss = jnp.mean(softmax_loss(dones_logits.squeeze(), dones))
+            dones_loss = jnp.mean(softmax_loss(dones_logits, dones))
 
         distribution = distrax.MultivariateNormalDiag(prior_means, prior_std_devs)
         kl_loss = distribution.kl_divergence(distrax.MultivariateNormalDiag(posterior_means, posterior_std_devs))
