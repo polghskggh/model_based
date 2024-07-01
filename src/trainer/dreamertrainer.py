@@ -36,7 +36,6 @@ class DreamerTrainer(Trainer):
         apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
-        print("HUGEEE", observations.shape)
         grad_fn = value_and_grad(self.loss_fun, 1, True)
         for _ in range(Args().args.num_epochs):
             for env_idx in range(0, observations.shape[1]):
@@ -61,21 +60,17 @@ class DreamerTrainer(Trainer):
 
     @staticmethod
     def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
-        print("shapes", observations.shape, actions.shape, rewards.shape, dones.shape, state.shape, belief.shape)
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
 
-        print("encoded_shape", encoded_observations.shape)
 
         key = "representation"
-
         def scan_fn(carry, inputs):
             action, encoded_observation = inputs
             belief_carry, state_carry = carry
 
             step_output = apply_funs[key](params[key], state_carry,
                                           action, belief_carry, encoded_observation, rngs=rng)
-            print(step_output[2].shape)
 
             return (step_output[0], step_output[1]), step_output
             
