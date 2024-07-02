@@ -36,10 +36,13 @@ class DreamerTrainer(Trainer):
 
         batch_size = Args().args.batch_size
         grad_fn = value_and_grad(self.loss_fun, 1, True)
-        for _ in range(Args().args.num_epochs):
-            for env_idx in range(0, observations.shape[1]):
+        #for _ in range(Args().args.num_epochs):
+        for _ in range(2):
+            # for env_idx in range(0, observations.shape[1]):
+            for env_idx in range(2):
                 last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
-                for start_idx in range(0, observations.shape[0], batch_size):
+                #for start_idx in range(0, observations.shape[0], batch_size):
+                for start_idx in range(0, 100, batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
                     (loss, aux), grads = grad_fn(apply_funs, params,
                                                  jnp.expand_dims(observations[batch_slice, env_idx], 1),
