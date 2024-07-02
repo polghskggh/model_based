@@ -48,13 +48,15 @@ class DreamerTrainer(Trainer):
 
                 for start_idx in range(0, 100, batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
-                    (loss, aux), grads = grad_fn(apply_funs, params,
+                    optimized_grad_fn = jit(lambda prms, obs, act, rew, don, state, belief: grad_fn(apply_funs, prms, obs, act, rew, don, state, belief, rng))
+
+                    (loss, aux), grads = optimized_grad_fn(params,
                                                  jnp.expand_dims(env_observations[batch_slice], 1),
                                                  jnp.expand_dims(env_actions[batch_slice], 1),
                                                  jnp.expand_dims(env_rewards[batch_slice], 1),
                                                  jnp.expand_dims(env_dones[batch_slice], 1),
                                                  jnp.expand_dims(last_state, 0),
-                                                 jnp.expand_dims(last_belief, 0), rng=rng)
+                                                 jnp.expand_dims(last_belief, 0))
                     self.apply_grads(grads)
                     del grads
                     gc.collect()
@@ -82,10 +84,7 @@ class DreamerTrainer(Trainer):
 
             return (step_output[0], step_output[1]), step_output
 
-        fun = scan_fn
-        _, output = jax.lax.scan(fun, (belief, state), (actions, encoded_observations))
-        del fun
-        del _
+        _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations))
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
@@ -115,8 +114,6 @@ class DreamerTrainer(Trainer):
         kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
-
-        del output
         return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
