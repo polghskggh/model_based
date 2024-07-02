@@ -39,11 +39,11 @@ class DreamerTrainer(Trainer):
         for _ in range(1):
             # for env_idx in range(0, observations.shape[1]):
             for env_idx in range(2):
-                last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                 #for start_idx in range(0, observations.shape[0], batch_size):
 
                 @profile
                 def inner_loop():
+                    last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                     for start_idx in range(0, 100, batch_size):
                         batch_slice = slice(start_idx, start_idx + batch_size)
                         batch_observations = observations[batch_slice, env_idx]
