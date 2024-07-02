@@ -32,7 +32,7 @@ class DreamerTrainer(Trainer):
             keys_to_select.append('dones')
 
         params = {key: self.models[key].params for key in keys_to_select}
-        apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
+        apply_funs = {key: self.models[key].model.apply for key in keys_to_select}
 
         batch_size = Args().args.batch_size
         grad_fn = value_and_grad(self.loss_fun, 1, True)
