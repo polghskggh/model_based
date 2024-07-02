@@ -71,6 +71,7 @@ class DreamerTrainer(Trainer):
         return self.models
 
     @staticmethod
+    @profile
     def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
