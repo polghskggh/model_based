@@ -53,6 +53,7 @@ class DreamerTrainer(Trainer):
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
                     print("backwards pass completed")
+                    gc.collect()
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
@@ -63,8 +64,8 @@ class DreamerTrainer(Trainer):
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
 
-
         key = "representation"
+
         def scan_fn(carry, inputs):
             action, encoded_observation = inputs
             belief_carry, state_carry = carry
