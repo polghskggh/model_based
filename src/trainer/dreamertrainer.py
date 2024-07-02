@@ -35,31 +35,28 @@ class DreamerTrainer(Trainer):
 
         batch_size = Args().args.batch_size
         grad_fn = value_and_grad(self.loss_fun, 1, True)
-        #for _ in range(Args().args.num_epochs):
-        for _ in range(1):
-            # for env_idx in range(0, observations.shape[1]):
-            for env_idx in range(2):
-                #for start_idx in range(0, observations.shape[0], batch_size):
+        optimized_grad_fn = jit(
+            lambda prms, obs, act, rew, don, state, belief: grad_fn(apply_funs,
+                                                                    prms, obs, act, rew, don, state, belief,
+                                                                    rng))
+        for _ in range(Args().args.num_epochs):
+            for env_idx in range(0, observations.shape[1]):
                 env_observations = observations[:, env_idx]
                 env_actions = actions[:, env_idx]
                 env_rewards = rewards[:, env_idx]
                 env_dones = dones[:, env_idx]
                 last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
-
-                for start_idx in range(0, 100, batch_size):
+                for start_idx in range(0, observations.shape[0], batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
-                    optimized_grad_fn = jit(lambda prms, obs, act, rew, don, state, belief: grad_fn(apply_funs, prms, obs, act, rew, don, state, belief, rng))
 
                     (loss, aux), grads = optimized_grad_fn(params,
-                                                 jnp.expand_dims(env_observations[batch_slice], 1),
-                                                 jnp.expand_dims(env_actions[batch_slice], 1),
-                                                 jnp.expand_dims(env_rewards[batch_slice], 1),
-                                                 jnp.expand_dims(env_dones[batch_slice], 1),
-                                                 jnp.expand_dims(last_state, 0),
-                                                 jnp.expand_dims(last_belief, 0))
+                                                           jnp.expand_dims(env_observations[batch_slice], 1),
+                                                           jnp.expand_dims(env_actions[batch_slice], 1),
+                                                           jnp.expand_dims(env_rewards[batch_slice], 1),
+                                                           jnp.expand_dims(env_dones[batch_slice], 1),
+                                                           jnp.expand_dims(last_state, 0),
+                                                           jnp.expand_dims(last_belief, 0))
                     self.apply_grads(grads)
-                    del grads
-                    gc.collect()
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
 
