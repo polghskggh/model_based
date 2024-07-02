@@ -84,6 +84,8 @@ class DreamerTrainer(Trainer):
         fun = scan_fn
         _, output = jax.lax.scan(fun, (belief, state), (actions, encoded_observations))
         del fun
+        del _
+        del output
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
