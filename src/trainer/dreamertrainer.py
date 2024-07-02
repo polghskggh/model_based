@@ -86,7 +86,6 @@ class DreamerTrainer(Trainer):
         _, output = jax.lax.scan(fun, (belief, state), (actions, encoded_observations))
         del fun
         del _
-        del output
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
@@ -116,6 +115,8 @@ class DreamerTrainer(Trainer):
         kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
+
+        del output
         return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
