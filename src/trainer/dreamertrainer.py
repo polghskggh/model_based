@@ -49,17 +49,14 @@ class DreamerTrainer(Trainer):
 
                 for start_idx in range(0, 100, batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
-                    batch_observations = env_observations[batch_slice]
-                    batch_actions = env_actions[batch_slice]
-                    batch_rewards = env_rewards[batch_slice]
-                    batch_dones = env_dones[batch_slice]
-                    (loss, aux), grads = grad_fn(apply_funs, params,
-                                                 jnp.expand_dims(batch_observations, 1),
-                                                 jnp.expand_dims(batch_actions, 1),
-                                                 jnp.expand_dims(batch_rewards, 1),
-                                                 jnp.expand_dims(batch_dones, 1),
-                                                 jnp.expand_dims(last_state, 0),
-                                                 jnp.expand_dims(last_belief, 0), rng=rng)
+                    batch_observations = jnp.expand_dims(env_observations[batch_slice], 1)
+                    batch_actions = jnp.expand_dims(env_actions[batch_slice], 1)
+                    batch_rewards = jnp.expand_dims(env_rewards[batch_slice], 1)
+                    batch_dones = jnp.expand_dims(env_dones[batch_slice], 1)
+                    last_state = jnp.expand_dims(last_state, 0)
+                    last_belief = jnp.expand_dims(last_belief, 0)
+                    (loss, aux), grads = grad_fn(apply_funs, params, batch_observations, batch_actions, batch_rewards,
+                                                 batch_dones, last_state, last_belief, rng)
                     self.apply_grads(grads)
                     del grads
                     gc.collect()
