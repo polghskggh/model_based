@@ -23,6 +23,7 @@ class DreamerTrainer(Trainer):
         for key in grads.keys():
             self.models[key].apply_grads(grads[key])
 
+    @profile
     def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
         rng = ModelWrapper.make_rng_keys()
         keys_to_select = ['representation', 'observation', 'reward', 'encoder']
@@ -65,7 +66,6 @@ class DreamerTrainer(Trainer):
         return self.models
 
     @staticmethod
-    @profile
     def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
