@@ -23,6 +23,7 @@ class DreamerTrainer(Trainer):
         for key in grads.keys():
             self.models[key].apply_grads(grads[key])
 
+    @profile
     def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
         rng = ModelWrapper.make_rng_keys()
         keys_to_select = ['representation', 'observation', 'reward', 'encoder']
@@ -44,30 +45,24 @@ class DreamerTrainer(Trainer):
                 env_actions = actions[:, env_idx]
                 env_rewards = rewards[:, env_idx]
                 env_dones = dones[:, env_idx]
+                last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
 
-                @profile
-                def inner_loop():
-                    last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
-                    for start_idx in range(0, 100, batch_size):
-                        batch_slice = slice(start_idx, start_idx + batch_size)
-                        batch_observations = env_observations[batch_slice]
-                        batch_actions = env_actions[batch_slice]
-                        batch_rewards = env_rewards[batch_slice]
-                        batch_dones = env_dones[batch_slice]
-                        (loss, aux), grads = grad_fn(apply_funs, params,
-                                                     jnp.expand_dims(batch_observations, 1),
-                                                     jnp.expand_dims(batch_actions, 1),
-                                                     jnp.expand_dims(batch_rewards, 1),
-                                                     jnp.expand_dims(batch_dones, 1),
-                                                     jnp.expand_dims(last_state, 0),
-                                                     jnp.expand_dims(last_belief, 0), rng=rng)
-                        self.apply_grads(grads)
-                        last_belief, last_state = aux["data"]
-                        log(aux["info"])
-                        jax.clear_backends()
-                        jax.clear_caches()
-                        gc.collect()
-                inner_loop()
+                for start_idx in range(0, 100, batch_size):
+                    batch_slice = slice(start_idx, start_idx + batch_size)
+                    batch_observations = env_observations[batch_slice]
+                    batch_actions = env_actions[batch_slice]
+                    batch_rewards = env_rewards[batch_slice]
+                    batch_dones = env_dones[batch_slice]
+                    (loss, aux), grads = grad_fn(apply_funs, params,
+                                                 jnp.expand_dims(batch_observations, 1),
+                                                 jnp.expand_dims(batch_actions, 1),
+                                                 jnp.expand_dims(batch_rewards, 1),
+                                                 jnp.expand_dims(batch_dones, 1),
+                                                 jnp.expand_dims(last_state, 0),
+                                                 jnp.expand_dims(last_belief, 0), rng=rng)
+                    self.apply_grads(grads)
+                    last_belief, last_state = aux["data"]
+                    log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
