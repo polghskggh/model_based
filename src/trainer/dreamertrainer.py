@@ -40,16 +40,20 @@ class DreamerTrainer(Trainer):
             # for env_idx in range(0, observations.shape[1]):
             for env_idx in range(2):
                 #for start_idx in range(0, observations.shape[0], batch_size):
+                env_observations = observations[:, env_idx]
+                env_actions = actions[:, env_idx]
+                env_rewards = rewards[:, env_idx]
+                env_dones = dones[:, env_idx]
 
                 @profile
                 def inner_loop():
                     last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                     for start_idx in range(0, 100, batch_size):
                         batch_slice = slice(start_idx, start_idx + batch_size)
-                        batch_observations = observations[batch_slice, env_idx]
-                        batch_actions = actions[batch_slice, env_idx]
-                        batch_rewards = rewards[batch_slice, env_idx]
-                        batch_dones = dones[batch_slice, env_idx]
+                        batch_observations = env_observations[batch_slice]
+                        batch_actions = env_actions[batch_slice]
+                        batch_rewards = env_rewards[batch_slice]
+                        batch_dones = env_dones[batch_slice]
                         (loss, aux), grads = grad_fn(apply_funs, params,
                                                      jnp.expand_dims(batch_observations, 1),
                                                      jnp.expand_dims(batch_actions, 1),
