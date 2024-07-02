@@ -61,6 +61,7 @@ class DreamerTrainer(Trainer):
                                                  jnp.expand_dims(last_state, 0),
                                                  jnp.expand_dims(last_belief, 0), rng=rng)
                     self.apply_grads(grads)
+                    del grads
                     last_belief, last_state = aux["data"]
                     log(aux["info"])
 
