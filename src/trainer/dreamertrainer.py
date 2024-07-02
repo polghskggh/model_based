@@ -33,7 +33,7 @@ class DreamerTrainer(Trainer):
 
         params = {key: self.models[key].params for key in keys_to_select}
         def model_apply(models, key):
-            return models[key].apply
+            return models[key].model.apply
         apply_funs = {key: model_apply(self.models, key) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
