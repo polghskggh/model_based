@@ -3,16 +3,14 @@ import gc
 import distrax
 import jax
 import jax.numpy as jnp
-from jax import value_and_grad, lax, jit
+from jax import value_and_grad, jit
 
-from src.enviroment import Shape
 from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
-from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.trainer import Trainer
-from src.utils.rl import zero_on_term
+from memory_profiler import profile
 
 
 class DreamerTrainer(Trainer):
@@ -25,6 +23,7 @@ class DreamerTrainer(Trainer):
         for key in grads.keys():
             self.models[key].apply_grads(grads[key])
 
+    @profile
     def train_step(self, initial_belief, initial_state, observations, actions, rewards, dones):
         rng = ModelWrapper.make_rng_keys()
         keys_to_select = ['representation', 'observation', 'reward', 'encoder']
@@ -33,8 +32,7 @@ class DreamerTrainer(Trainer):
             keys_to_select.append('dones')
 
         params = {key: self.models[key].params for key in keys_to_select}
-        apply_funs = {key: jit(self.models[key].model.apply) if key != 'representation' else
-                      self.models[key].model.apply for key in keys_to_select}
+        apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
         grad_fn = value_and_grad(self.loss_fun, 1, True)
