@@ -49,14 +49,13 @@ class DreamerTrainer(Trainer):
 
                 for start_idx in range(0, 100, batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
-                    batch_observations = jnp.expand_dims(env_observations[batch_slice], 1)
-                    batch_actions = jnp.expand_dims(env_actions[batch_slice], 1)
-                    batch_rewards = jnp.expand_dims(env_rewards[batch_slice], 1)
-                    batch_dones = jnp.expand_dims(env_dones[batch_slice], 1)
-                    last_state = jnp.expand_dims(last_state, 0)
-                    last_belief = jnp.expand_dims(last_belief, 0)
-                    (loss, aux), grads = grad_fn(apply_funs, params, batch_observations, batch_actions, batch_rewards,
-                                                 batch_dones, last_state, last_belief, rng)
+                    (loss, aux), grads = grad_fn(apply_funs, params,
+                                                 jnp.expand_dims(env_observations[batch_slice], 1),
+                                                 jnp.expand_dims(env_actions[batch_slice], 1),
+                                                 jnp.expand_dims(env_rewards[batch_slice], 1),
+                                                 jnp.expand_dims(env_dones[batch_slice], 1),
+                                                 jnp.expand_dims(last_state, 0),
+                                                 jnp.expand_dims(last_belief, 0), rng=rng)
                     self.apply_grads(grads)
                     del grads
                     gc.collect()
@@ -68,7 +67,6 @@ class DreamerTrainer(Trainer):
         return self.models
 
     @staticmethod
-    @profile
     def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
         key = "encoder"
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
@@ -83,8 +81,10 @@ class DreamerTrainer(Trainer):
                                           action, belief_carry, encoded_observation, rngs=rng)
 
             return (step_output[0], step_output[1]), step_output
-            
-        _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations)) 
+
+        fun = scan_fn
+        _, output = jax.lax.scan(fun, (belief, state), (actions, encoded_observations))
+        del fun
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])
