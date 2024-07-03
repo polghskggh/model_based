@@ -82,9 +82,6 @@ class Dreamer(WorldModelInterface):
         else:
             dones = jnp.zeros(imagined_reward.shape, dtype=bool)
 
-        # self.prev_belief = zero_on_term(dones, self.prev_belief)
-        # self.prev_state = zero_on_term(dones, self.prev_state)
-
         log({"Step time": (time.time() - start_time) / action.shape[0]})
         return (jnp.append(self.prev_belief, self.prev_state, axis=-1), imagined_reward, dones,
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
