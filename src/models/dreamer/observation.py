@@ -24,9 +24,9 @@ class ObservationModel(nn.Module):
     def __call__(self, belief, state):
         hidden = jnp.append(belief, state, axis=-1)
         hidden = linear_layer_init(features=self.embedding_size)(hidden)
-        jax.debug.print("hidden shape: {hidden.shape}", hidden=hidden.shape)
+        jax.debug.print("hidden shape: {hidden}", hidden=hidden.shape)
         hidden = hidden.reshape(-1, *Args().args.bottleneck_dims)
-        jax.debug.print("hidden shape: {hidden.shape}", hidden=hidden.shape)
+        jax.debug.print("hidden shape: {hidden}", hidden=hidden.shape)
 
         reconstructed = self.decoder(hidden, None)
         reconstructed = LogitsLayer()(reconstructed)
