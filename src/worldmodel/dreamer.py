@@ -71,6 +71,8 @@ class Dreamer(WorldModelInterface):
         start_time = time.time()
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
+        params = jax.tree_util.tree_leaves(self.models["transition"].params)
+        print("PARAMS: ", jnp.mean(params[0]))
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = process_output(imagined_reward_logits)
         imagined_reward += Args().args.min_reward
@@ -131,8 +133,6 @@ class DreamerWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
-        leaves = jax.tree_util.tree_leaves(self.representation_model.params)
-        print("params:", jnp.mean(leaves[0]))
 
         encoded_observation = self.encoder_model.forward(observation)
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
