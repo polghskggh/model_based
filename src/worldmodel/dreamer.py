@@ -71,8 +71,6 @@ class Dreamer(WorldModelInterface):
         start_time = time.time()
         self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
                                                                                     self.prev_belief)
-        params = jax.tree_util.tree_leaves(self.models["transition"].params)
-        print("PARAMS: ", jnp.mean(params[0]))
         imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
         imagined_reward = process_output(imagined_reward_logits)
         imagined_reward += Args().args.min_reward
