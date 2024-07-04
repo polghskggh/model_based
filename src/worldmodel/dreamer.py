@@ -6,6 +6,7 @@ import gymnasium as gym
 import jax
 import jax.numpy as jnp
 import jax.random as jr
+import numpy as np
 
 from src.enviroment import Shape
 from src.models.dreamer.dreamer_encoder import DreamerEncoder
@@ -139,7 +140,6 @@ class DreamerWrapper(gym.Wrapper):
                              dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
 
         self.prev_belief, self.prev_state = belief, state
-
         self.timestep += 1
         self.timestep %= Args().args.trajectory_length
         return jnp.append(self.prev_belief, self.prev_state, axis=-1), reward, term, trunc, info

@@ -3,6 +3,7 @@ import gc
 import distrax
 import jax
 import jax.numpy as jnp
+import numpy as np
 from jax import value_and_grad, jit
 
 from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss
@@ -59,6 +60,8 @@ class DreamerTrainer(Trainer):
                                                            jnp.expand_dims(last_belief, 0))
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
+                    for idx in range(aux["debug"].shape[0]):
+                        np.save(f"debug_{idx}.npy", aux["debug"][idx])
                     log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
@@ -115,5 +118,6 @@ class DreamerTrainer(Trainer):
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
                              "dones_loss": dones_loss},
-                    "data": (beliefs[-1], states[-1])
+                    "data": (beliefs[-1], states[-1]),
+                    "debug": jnp.argmax(pixels, axis=-1)
                 })
