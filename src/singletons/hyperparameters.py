@@ -35,8 +35,8 @@ def parse_simple(parser):
 
 
 def parse_dreamer(parser):
-    parser.add_argument('--belief_size', type=int, default=300, help='Dreamer: size of the deterministic belief')
-    parser.add_argument('--state_size', type=int, default=300, help='Dreamer: size of the stochastic state')
+    parser.add_argument('--belief_size', type=int, default=400, help='Dreamer: size of the deterministic belief')
+    parser.add_argument('--state_size', type=int, default=400, help='Dreamer: size of the stochastic state')
     parser.add_argument('--hidden_size', type=int, default=200,
                         help='size of the hidden layers in reward and dones networks')
     parser.add_argument('--min_std_dev', type=float, default=0.1,

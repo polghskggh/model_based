@@ -8,7 +8,6 @@ import jax.numpy as jnp
 import jax.random as jr
 
 from src.enviroment import Shape
-from src.models.autoencoder.encoder import Encoder
 from src.models.dreamer.dreamer_encoder import DreamerEncoder
 from src.models.dreamer.observation import ObservationModel
 from src.models.dreamer.representation import RepresentationModel
@@ -20,7 +19,7 @@ from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.dreamertrainer import DreamerTrainer
-from src.utils.rl import process_output, zero_on_term
+from src.utils.rl import process_output
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
