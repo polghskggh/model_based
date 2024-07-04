@@ -23,7 +23,6 @@ class ObservationModel(nn.Module):
     @nn.compact
     def __call__(self, belief, state):
         hidden = jnp.append(belief, state, axis=-1)
-        jax.debug.print("hidden state {hidden}", hidden=jnp.mean(hidden))
         hidden = linear_layer_init(features=self.embedding_size)(hidden)
         hidden = hidden.reshape(-1, *Args().args.bottleneck_dims)
         reconstructed = self.decoder(hidden, None)
