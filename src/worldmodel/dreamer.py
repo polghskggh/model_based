@@ -94,7 +94,7 @@ class Dreamer(WorldModelInterface):
 
     def update(self, data):
         observations, actions, rewards, dones = data.observations, data.actions, data.rewards, data.dones
-
+        print("UPDATE: ", "rewards:", jnp.mean(rewards), "dones:", jnp.mean(dones))
         self.models = self.trainer.train_step(data.beliefs[0], data.states[0], observations, actions, rewards, dones)
 
         self.initial_beliefs = data.beliefs.reshape(-1, self.belief_size)
@@ -131,6 +131,8 @@ class DreamerWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
+        leaves, _ = jax.tree_util.tree_leaves(self.representation_model.params)
+        print("params:", jnp.mean(leaves))
 
         encoded_observation = self.encoder_model.forward(observation)
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
