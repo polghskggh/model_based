@@ -97,7 +97,7 @@ class DreamerTrainer(Trainer):
 
         key = "observation"
         pixels = apply_funs[key](params[key], beliefs, states, rngs=rng)
-        observation_loss = image_loss_fn(pixels, jnp.zeros_like(observations))
+        observation_loss = image_loss_fn(pixels, observations)
 
         key = "reward"
         reward_logits = apply_funs[key](params[key], beliefs, states)

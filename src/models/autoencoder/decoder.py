@@ -13,6 +13,7 @@ class Decoder(nn.Module):
     layers: int = 6
     deterministic: bool = True
     dropout: float = 0.15
+    normalization: bool = True
 
     def setup(self):
         self.shape_list = [(3, 3), (6, 6), (11, 11), (21, 21), (42, 42), (84, 84)]
@@ -26,7 +27,8 @@ class Decoder(nn.Module):
             features = self.scaled_features(layer_id) # first 2 layers more features
 
             x = nn.Dropout(rate=self.dropout, deterministic=self.deterministic)(x)
-            x = nn.LayerNorm()(x)
+            if self.normalization:
+                x = nn.LayerNorm()(x)
             x = transpose_convolution_layer_init(features=features, kernel_size=self.kernel, strides=self.strides,
                                                  padding="SAME")(x)
             x = nn.relu(x)
