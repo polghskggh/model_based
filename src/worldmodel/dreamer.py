@@ -131,8 +131,8 @@ class DreamerWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
-        leaves, _ = jax.tree_util.tree_leaves(self.representation_model.params)
-        print("params:", jnp.mean(leaves))
+        leaves = jax.tree_util.tree_leaves(self.representation_model.params)
+        print("params:", jnp.mean(leaves[0]))
 
         encoded_observation = self.encoder_model.forward(observation)
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
