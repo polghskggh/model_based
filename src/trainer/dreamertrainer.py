@@ -59,8 +59,9 @@ class DreamerTrainer(Trainer):
                                                            jnp.expand_dims(last_belief, 0))
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
-                    for idx in range(aux["debug"].shape[0]):
-                        np.save(f"debug_{idx}.npy", aux["debug"][idx])
+                    for idx in range(10):
+                        np.save(f"debug_{idx}.npy", aux["debug"][0][idx])
+                        np.save(f"target_{idx}.npy", aux["debug"][1][idx])
                     log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
