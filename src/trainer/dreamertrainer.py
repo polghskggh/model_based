@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import value_and_grad, jit
 
-from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss
+from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss, mse_image_loss
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
 from src.singletons.writer import log
@@ -97,7 +97,7 @@ class DreamerTrainer(Trainer):
 
         key = "observation"
         pixels = apply_funs[key](params[key], beliefs, states, rngs=rng)
-        observation_loss = image_loss_fn(pixels, observations)
+        observation_loss = jnp.mean(mse_image_loss(pixels, observations))
 
         key = "reward"
         reward_logits = apply_funs[key](params[key], beliefs, states)
