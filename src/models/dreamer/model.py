@@ -1,11 +1,7 @@
-from typing import Optional, List
-
 import flax.linen as nn
-import jax
 import jax.numpy as jnp
 
 from src.utils.activationfuns import activation_function_dict
-from src.utils.modelhelperfuns import sample_normal
 
 
 def bottle(f, x_tuple):
