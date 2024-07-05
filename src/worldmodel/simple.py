@@ -4,6 +4,7 @@ import gym
 import jax
 import jax.numpy as jnp
 import jax.random as jr
+import numpy as np
 from jax import lax
 
 from src.enviroment import Shape
@@ -36,6 +37,7 @@ class SimpleWorldModel(WorldModelInterface):
 
         self._frame_stack = None
         self.predict_dones = Args().args.predict_dones
+        self.timestep = 0
 
     def step(self, actions: jax.Array) -> (jax.Array, float, bool, bool, dict):
         start_time = time.time()
@@ -55,6 +57,8 @@ class SimpleWorldModel(WorldModelInterface):
 
         self._frame_stack.add_frame(next_frames)
 
+        np.save(f"debug_simple_{self.timestep % Args().args.sim_trajectory_length}", next_frames[0])
+        self.timestep += 1
         log({"Step time": (time.time() - start_time) / actions.shape[0]})
         return self._frame_stack.frames, rewards, dones, jnp.zeros_like(rewards, dtype=bool), {}
 
