@@ -36,6 +36,7 @@ class ModelWrapper:
         self._name = strategy
         self._model_writer = Writer().writer
         self._train_model = train_model if (train_model is not None and Args().args.dropout) else self._model
+        self._train_fn = jit(self._train_model.apply)
 
     # forward pass + backwards pass
     def train_step(self, y: jax.Array | tuple, *x: jax.Array) -> dict:
@@ -52,7 +53,7 @@ class ModelWrapper:
 
         grad_fun = value_and_grad(self._loss_fun, 1, has_aux=True)
 
-        (loss, aux), grads = grad_fun(jit(self._train_model.apply), self.state.params, y, *x, rngs=self._rngs)
+        (loss, aux), grads = grad_fun(self._train_fn, self.state.params, y, *x, rngs=self._rngs)
         log(aux)
         return grads
 
