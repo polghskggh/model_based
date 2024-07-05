@@ -86,7 +86,7 @@ class Storage:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--total-timesteps', type=int, default=10000000, help='total timesteps of the experiment')
+    parser.add_argument('--total-timesteps', type=int, default=10, help='total timesteps of the experiment')
     parser.add_argument('--learning-rate', type=float, default=2.5e-4, help='the learning rate of the optimizer')
     parser.add_argument('--num-envs', type=int, default=8, help='the number of parallel environments')
     parser.add_argument('--num-steps', type=int, default=128,
