@@ -27,7 +27,6 @@ def parse_simple(parser):
                         help='Model_based: length of simulated trajectory')
     parser.add_argument('--pixel_reward', type=int, default=0.5, help='pixel loss weight')
     parser.add_argument('--kl_loss', type=int, default=0.8, help='KL divergence weight')
-    parser.add_argument('--rewards', type=int, default=2, help='Simple: number of possible reward values')
     parser.add_argument('--softmax_loss_const', type=int, default=0.03, help='minimum softmax loss')
     parser.add_argument('--categorical_image', type=bool, default=True, help='Whether to use categorical distribution '
                                                                              'for images or mse')
@@ -101,7 +100,3 @@ class Args:
         args.min_reward = 0 if args.env == 'breakout' else -6
         args.rewards = 2 if args.env == 'breakout' else 13
         return args
-
-    @args.setter
-    def args(self, value):
-        self._args = value
