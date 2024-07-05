@@ -52,7 +52,7 @@ class ModelWrapper:
 
         grad_fun = value_and_grad(self._loss_fun, 1, has_aux=True)
 
-        (loss, aux), grads = grad_fun(self.state, self.state.params, y, *x, rngs=self._rngs)
+        (loss, aux), grads = grad_fun(jit(self._train_model.apply), self.state.params, y, *x, rngs=self._rngs)
         log(aux)
         return grads
 

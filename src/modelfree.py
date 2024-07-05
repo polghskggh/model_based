@@ -18,7 +18,7 @@ def write_returns(infos):
 
 def model_free_train_loop(agent: Agent, envs: gym.Env | WorldModelInterface, increment: bool = True,
                           steps=Args().args.trajectory_length):
-    for step in range(steps):
+    for _ in range(steps):
         reward, done, infos = interact(agent, envs)
         if increment:
             StepTracker().increment(Args().args.num_envs)
