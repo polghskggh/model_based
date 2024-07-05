@@ -6,6 +6,10 @@ from optax import softmax_cross_entropy_with_integer_labels
 from src.singletons.hyperparameters import Args
 
 
+def squared_error(output, target):
+    return
+
+
 def mean_squared_error(state, params, teacher_outputs, *inputs, **kwargs):
     outputs = state.apply_fn(params, *inputs, **kwargs)
     return jnp.mean(optax.squared_error(outputs, teacher_outputs)), {}  # output is not batch format
@@ -21,7 +25,7 @@ def mse_image_loss(pixels, teacher_pixels):
     jax.debug.print("mse pixels {pix}, {pixstd} teacher: {teacher_pixels} {tpixstd}",
                     pix=jnp.mean(pixels), pixstd=jnp.std(pixels),
                     teacher_pixels=jnp.mean(teacher_pixels), tpixstd=jnp.std(teacher_pixels))
-    return optax.squared_error(pixels, teacher_pixels)
+    return jnp.maximum(optax.squared_error(pixels, teacher_pixels), 0.05)
 
 
 def image_loss_fn(pixels, teacher_pixels):
@@ -34,7 +38,7 @@ def image_loss_fn(pixels, teacher_pixels):
 
 def mse_reward(reward, teacher_reward):
     jax.debug.print("mse reward {rew} teacher: {teacher_reward}", rew=reward, teacher_reward=teacher_reward)
-    return optax.squared_error(reward.squeeze(), teacher_reward.squeeze())
+    return squared_error(reward.squeeze(), teacher_reward.squeeze())
 
 
 def reward_loss_fn(reward, teacher_reward):
