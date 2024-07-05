@@ -59,7 +59,7 @@ class DreamerTrainer(Trainer):
                                                            jnp.expand_dims(last_belief, 0))
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
-                    for idx in range(10):
+                    for idx in range(2):
                         np.save(f"debug_{idx}.npy", aux["debug"][0][idx])
                         np.save(f"target_{idx}.npy", aux["debug"][1][idx])
                     log(aux["info"])
