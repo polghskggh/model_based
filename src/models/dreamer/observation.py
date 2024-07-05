@@ -27,4 +27,5 @@ class ObservationModel(nn.Module):
         hidden = hidden.reshape(-1, *Args().args.bottleneck_dims)
         reconstructed = self.decoder(hidden, None)
         reconstructed = linear_layer_init(1)(reconstructed)
+        reconstructed = nn.log_sigmoid(reconstructed)
         return reconstructed
