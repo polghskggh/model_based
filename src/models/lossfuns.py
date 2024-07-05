@@ -62,8 +62,8 @@ def cross_entropy_with_reward(output, target):
     return alpha * image_loss + (1 - alpha) * reward_loss, {"image_loss": image_loss, "reward_loss": reward_loss}
 
 
-def cross_entropy_loss(state, params, teacher_outputs, *inputs, **kwargs):
-    output = state.apply_fn(params, *inputs, **kwargs)
+def cross_entropy_loss(apply_fn, params, teacher_outputs, *inputs, **kwargs):
+    output = apply_fn(params, *inputs, **kwargs)
     if Args().args.predict_dones:
         loss, aux = cross_entropy_with_dones(output, teacher_outputs)
     else:
