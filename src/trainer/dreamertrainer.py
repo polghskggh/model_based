@@ -28,7 +28,6 @@ class DreamerTrainer(Trainer):
         if Args().args.predict_dones:
             keys_to_select.append('dones')
 
-        params = {key: self.models[key].params for key in keys_to_select}
         apply_funs = {key: jit(self.models[key].model.apply) for key in keys_to_select}
 
         batch_size = Args().args.batch_size
@@ -45,6 +44,8 @@ class DreamerTrainer(Trainer):
                 last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
                 for start_idx in range(0, observations.shape[0], batch_size):
                     batch_slice = slice(start_idx, start_idx + batch_size)
+
+                    params = {key: self.models[key].params for key in keys_to_select}
 
                     (loss, aux), grads = optimized_grad_fn(params,
                                                            env_observations[batch_slice],
