@@ -25,7 +25,7 @@ def mse_image_loss(pixels, teacher_pixels):
     jax.debug.print("mse pixels {pix}, {pixstd} teacher: {teacher_pixels} {tpixstd}",
                     pix=jnp.mean(pixels), pixstd=jnp.std(pixels),
                     teacher_pixels=jnp.mean(teacher_pixels), tpixstd=jnp.std(teacher_pixels))
-    return jnp.maximum(optax.squared_error(pixels, teacher_pixels), 0.05)
+    return optax.squared_error(pixels, teacher_pixels)
 
 
 def image_loss_fn(pixels, teacher_pixels):

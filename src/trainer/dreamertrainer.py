@@ -34,9 +34,8 @@ class DreamerTrainer(Trainer):
         batch_size = Args().args.batch_size
         grad_fn = value_and_grad(self.loss_fun, 1, True)
         optimized_grad_fn = jit(
-            lambda prms, obs, act, rew, don, state, belief: grad_fn(apply_funs,
-                                                                    prms, obs, act, rew, don, state, belief,
-                                                                    rng))
+            lambda prms, obs, act, rew, don, state, belief, rngs: grad_fn(apply_funs, prms, obs, act, rew,
+                                                                          don, state, belief, rngs))
         for _ in range(Args().args.num_epochs):
             for env_idx in range(0, observations.shape[1]):
                 env_observations = observations[:, env_idx]
@@ -52,7 +51,7 @@ class DreamerTrainer(Trainer):
                                                            env_actions[batch_slice],
                                                            env_rewards[batch_slice],
                                                            env_dones[batch_slice],
-                                                           last_state, last_belief)
+                                                           last_state, last_belief, rng)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
                     for idx in range(10):
@@ -95,7 +94,7 @@ class DreamerTrainer(Trainer):
 
         key = "observation"
         pixels = apply_funs[key](params[key], beliefs, states, rngs=rng)
-        observation_loss = jnp.mean(mse_image_loss(pixels, observations / 255.0))
+        observation_loss = jnp.mean(mse_image_loss(pixels, observations))
 
         key = "reward"
         reward_logits = apply_funs[key](params[key], beliefs, states)
@@ -118,5 +117,5 @@ class DreamerTrainer(Trainer):
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
                              "dones_loss": dones_loss},
                     "data": (beliefs[-1], states[-1]),
-                    "debug": (pixels * 255, observations)
+                    "debug": (pixels, observations)
                 })
