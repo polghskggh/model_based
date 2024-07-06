@@ -3,6 +3,8 @@ import flax.linen as nn
 from src.models.autoencoder.encoder import Encoder
 from src.models.helpers import linear_layer_init
 
+import jax.numpy as jnp
+
 
 class DreamerEncoder(nn.Module):
     features: int
@@ -17,4 +19,5 @@ class DreamerEncoder(nn.Module):
     def __call__(self, image):
         embedded_image = self.pixel_embedding(image)
         encoded_image, _ = self.encoder(embedded_image)
+        encoded_image = jnp.reshape(encoded_image, (encoded_image.shape[0], -1))
         return encoded_image

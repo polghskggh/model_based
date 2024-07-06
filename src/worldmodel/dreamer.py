@@ -134,7 +134,6 @@ class DreamerWrapper(gym.Wrapper):
         observation, reward, term, trunc, info = self.env.step(action)
 
         encoded_observations = self.encoder_model.forward(observation)
-        encoded_observations = jnp.reshape(encoded_observations, (encoded_observations.shape[0], -1))
 
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
                                                                       self.prev_belief, encoded_observations)
