@@ -63,6 +63,7 @@ class DreamerTrainer(Trainer):
         return self.models
 
     @staticmethod
+    @profile
     def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
         key = "encoder"
         print("observation_shape:", observations.shape)
