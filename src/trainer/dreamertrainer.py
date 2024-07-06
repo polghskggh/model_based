@@ -70,7 +70,7 @@ class DreamerTrainer(Trainer):
         key = "encoder"
         print("observation_shape:", observations.shape)
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
-        encoded_observations = jnp.reshape(encoded_observations, -1)
+        encoded_observations = jnp.reshape(encoded_observations, (encoded_observations.shape[0], -1))
 
         key = "representation"
 
