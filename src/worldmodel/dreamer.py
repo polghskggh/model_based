@@ -133,9 +133,11 @@ class DreamerWrapper(gym.Wrapper):
     def step(self, action):
         observation, reward, term, trunc, info = self.env.step(action)
 
-        encoded_observation = self.encoder_model.forward(observation)
+        encoded_observations = self.encoder_model.forward(observation)
+        encoded_observations = jnp.reshape(encoded_observations, (encoded_observations.shape[0], -1))
+
         belief, state, _, _, _, _ = self.representation_model.forward(self.prev_state, action,
-                                                                      self.prev_belief, encoded_observation)
+                                                                      self.prev_belief, encoded_observations)
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
                              dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
 

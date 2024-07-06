@@ -29,7 +29,6 @@ class RepresentationModel(nn.Module):
 
     def posterior_update(self, belief, encoded_observation):
         # Compute state posterior by applying transition dynamics and using current observation
-        encoded_observation = encoded_observation.reshape(encoded_observation.shape[0], -1)
         x = jnp.append(belief, encoded_observation, axis=-1)
         hidden = self.posterior_dense(x)
         hidden = self.activation_fun(hidden)
