@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import numpy as np
 from jax import value_and_grad, jit
 
-from src.models.lossfuns import reward_loss_fn, softmax_loss, mse_image_loss
+from src.models.lossfuns import reward_loss_fn, softmax_loss, mse_image_loss, image_loss_fn
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
 from src.singletons.writer import log
@@ -63,7 +63,6 @@ class DreamerTrainer(Trainer):
         return self.models
 
     @staticmethod
-    @profile
     def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
         key = "encoder"
         print("observation_shape:", observations.shape)
@@ -93,7 +92,7 @@ class DreamerTrainer(Trainer):
 
         key = "observation"
         pixels = apply_funs[key](params[key], beliefs, states, rngs=rng)
-        observation_loss = jnp.mean(mse_image_loss(pixels, observations))
+        observation_loss = image_loss_fn(pixels, observations)
 
         key = "reward"
         reward_logits = apply_funs[key](params[key], beliefs, states)
@@ -110,7 +109,6 @@ class DreamerTrainer(Trainer):
         kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
-        print(beliefs.shape, states.shape, pixels.shape, observations.shape)
         return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,

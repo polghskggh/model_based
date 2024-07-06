@@ -26,6 +26,5 @@ class ObservationModel(nn.Module):
         hidden = linear_layer_init(features=self.embedding_size)(hidden)
         hidden = hidden.reshape(-1, 2, 2, self.embedding_size // 4)
         reconstructed = self.decoder(hidden, None)
-        reconstructed = linear_layer_init(1)(reconstructed)
-        reconstructed = nn.sigmoid(reconstructed)
+        reconstructed = LogitsLayer()(reconstructed)
         return reconstructed
