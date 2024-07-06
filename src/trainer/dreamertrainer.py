@@ -1,17 +1,14 @@
-import gc
-
 import distrax
 import jax
 import jax.numpy as jnp
 import numpy as np
 from jax import value_and_grad, jit
 
-from src.models.lossfuns import reward_loss_fn, image_loss_fn, softmax_loss, mse_image_loss
+from src.models.lossfuns import reward_loss_fn, softmax_loss, mse_image_loss
 from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
 from src.singletons.writer import log
 from src.trainer.trainer import Trainer
-from memory_profiler import profile
 
 
 class DreamerTrainer(Trainer):
@@ -60,7 +57,7 @@ class DreamerTrainer(Trainer):
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
                     for idx in range(10):
-                        np.save(f"debug_{idx}.npy", aux["debug"][0][idx])
+                        np.save(f"debug_obsonly_{idx}.npy", aux["debug"][0][idx])
                         np.save(f"target_{idx}.npy", aux["debug"][1][idx])
                         np.save(f"target2_{idx}.npy", env_observations[batch_slice][idx])
                     log(aux["info"])
@@ -115,7 +112,7 @@ class DreamerTrainer(Trainer):
         kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
-        return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
+        return (alpha * observation_loss + 0 * (beta * reward_loss + beta * dones_loss + gamma * kl_loss),
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
                              "dones_loss": dones_loss},
