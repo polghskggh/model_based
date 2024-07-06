@@ -55,10 +55,7 @@ class DreamerTrainer(Trainer):
                                                            last_state, last_belief, rng)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
-                    for idx in range(10):
-                        np.save(f"debug_obsonly_{idx}.npy", aux["debug"][0][idx])
-                        np.save(f"target_{idx}.npy", aux["debug"][1][idx])
-                        np.save(f"target2_{idx}.npy", env_observations[batch_slice][idx])
+
                     log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
@@ -113,7 +110,7 @@ class DreamerTrainer(Trainer):
 
         alpha, beta, gamma = Args().args.loss_weights
         print(beliefs.shape, states.shape, pixels.shape, observations.shape)
-        return (alpha * observation_loss + 0 * (beta * reward_loss + beta * dones_loss + gamma * kl_loss),
+        return (alpha * observation_loss + beta * reward_loss + beta * dones_loss + gamma * kl_loss,
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
                              "dones_loss": dones_loss},

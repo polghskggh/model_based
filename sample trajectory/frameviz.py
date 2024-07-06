@@ -11,6 +11,6 @@ if __name__ == '__main__':
     for i in range(10):
         show(f'target_{i}')
         show(f'target2_{i}')
-        show(f'debug_{i}')
+        show(f'debug_obsonly_{i}')
         show(f'debug_simple_{i}')
 
