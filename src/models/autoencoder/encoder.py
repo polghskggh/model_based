@@ -17,8 +17,8 @@ class Encoder(nn.Module):
 
     @nn.compact
     def __call__(self, x: Array) -> tuple:
-        x = jnp.astype(x, jnp.float32) / 255
         skip = []
+
         for layer_id in range(self.layers):
             skip.append(x)
             features = self.scaled_features(layer_id)
