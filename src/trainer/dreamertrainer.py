@@ -48,12 +48,11 @@ class DreamerTrainer(Trainer):
                     batch_slice = slice(start_idx, start_idx + batch_size)
 
                     (loss, aux), grads = optimized_grad_fn(params,
-                                                           jnp.expand_dims(env_observations[batch_slice], 1),
-                                                           jnp.expand_dims(env_actions[batch_slice], 1),
-                                                           jnp.expand_dims(env_rewards[batch_slice], 1),
-                                                           jnp.expand_dims(env_dones[batch_slice], 1),
-                                                           jnp.expand_dims(last_state, 0),
-                                                           jnp.expand_dims(last_belief, 0))
+                                                           env_observations[batch_slice],
+                                                           env_actions[batch_slice],
+                                                           env_rewards[batch_slice],
+                                                           env_dones[batch_slice],
+                                                           last_state, last_belief)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
                     for idx in range(10):
@@ -69,6 +68,7 @@ class DreamerTrainer(Trainer):
     @staticmethod
     def loss_fun(apply_funs: dict, params: dict, observations, actions, rewards, dones, state, belief, rng: dict):
         key = "encoder"
+        print("observation_shape:", observations.shape)
         encoded_observations = apply_funs[key](params[key], observations, rngs=rng)
 
         key = "representation"
