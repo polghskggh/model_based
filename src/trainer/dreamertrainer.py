@@ -112,6 +112,7 @@ class DreamerTrainer(Trainer):
         kl_loss /= posterior_std_devs.shape[0]
 
         alpha, beta, gamma = Args().args.loss_weights
+        print(beliefs.shape, states.shape, pixels.shape, observations.shape)
         return (alpha * observation_loss + 0 * (beta * reward_loss + beta * dones_loss + gamma * kl_loss),
                 {
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
