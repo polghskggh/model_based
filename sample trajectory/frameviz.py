@@ -12,4 +12,5 @@ if __name__ == '__main__':
         show(f'target_{i}')
         show(f'target2_{i}')
         show(f'debug_{i}')
+        show(f'debug_simple_{i}')
 

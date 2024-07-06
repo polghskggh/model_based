@@ -66,7 +66,7 @@ class ModelWrapper:
         :return: the output of the model
         """
         x = self.batch_input(*x)
-        return self.state.apply_fn(self.state.params, *x, rngs=self._rngs)
+        return self.state.apply_fn(self.state.params, *x, rngs=self.make_rng_keys())
 
     def apply_grads(self, grads: dict):
         """
