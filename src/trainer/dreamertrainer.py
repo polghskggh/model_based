@@ -114,5 +114,4 @@ class DreamerTrainer(Trainer):
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
                              "dones_loss": dones_loss},
                     "data": (beliefs[-1], states[-1]),
-                    "debug": (pixels, observations)
                 })
