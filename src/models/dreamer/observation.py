@@ -18,15 +18,15 @@ class ObservationModel(nn.Module):
 
     def setup(self):
         self.activation_fun = activation_function_dict[self.activation_function]
-        self.embedding_size = Args().args.bottleneck_dims[-1]
+        self.embedding_size2 = Args().args.bottleneck_dims[-1]
         self.decoder = Decoder(4, normalization=False)
 
     @nn.compact
     def __call__(self, belief, state):
         hidden = jnp.append(belief, state, axis=-1)
-        hidden = linear_layer_init(features=self.embedding_size)(hidden)
-        hidden = hidden.reshape(-1, 1, 1, self.embedding_size)
-        hidden = transpose_convolution_layer_init(features=self.embedding_size, kernel_size=4, strides=2, padding="SAME")(hidden)
+        hidden = linear_layer_init(features=self.embedding_size2)(hidden)
+        hidden = hidden.reshape(-1, 1, 1, self.embedding_size2)
+        hidden = transpose_convolution_layer_init(features=self.embedding_size2, kernel_size=4, strides=2, padding="SAME")(hidden)
         hidden = self.activation_fun(hidden)
         reconstructed = self.decoder(hidden, None)
         return reconstructed
