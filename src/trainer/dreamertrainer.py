@@ -55,7 +55,8 @@ class DreamerTrainer(Trainer):
                                                            last_state, last_belief, rng)
                     self.apply_grads(grads)
                     last_belief, last_state = aux["data"]
-
+                    for i in range(10):
+                        np.save(f"debug_dreamer_{i}", aux["debug"][i])
                     log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
@@ -92,7 +93,7 @@ class DreamerTrainer(Trainer):
 
         key = "observation"
         pixels = apply_funs[key](params[key], beliefs, states, rngs=rng)
-        observation_loss = image_loss_fn(pixels, observations)
+        observation_loss = jnp.mean(mse_image_loss(pixels, observations))
 
         key = "reward"
         reward_logits = apply_funs[key](params[key], beliefs, states)
@@ -114,4 +115,5 @@ class DreamerTrainer(Trainer):
                     "info": {"observation_loss": observation_loss, "reward_loss": reward_loss, "kl_loss": kl_loss,
                              "dones_loss": dones_loss},
                     "data": (beliefs[-1], states[-1]),
+                    "debug": pixels
                 })
