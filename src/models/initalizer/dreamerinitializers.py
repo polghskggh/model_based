@@ -26,7 +26,7 @@ class RepresentationInitializer(ModelStrategy):
                 jnp.reshape(jnp.ones(Args().args.bottleneck_dims), -1))
 
     def batch_dims(self) -> tuple:
-        return (2, 1, 2, 4), None
+        return (2, 1, 2, 2), None
 
 
 class ObservationInitializer(ModelStrategy):
