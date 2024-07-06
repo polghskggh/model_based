@@ -10,3 +10,6 @@ if __name__ == '__main__':
         data = np.load(f'debug_{i}.npy')
         plt.imshow(data.squeeze(), cmap='gray')
         plt.savefig(f'debug_{i}.png')
+        data = np.load(f'debug_simple_{i}.npy')
+        plt.imshow(data.squeeze(), cmap='gray')
+        plt.savefig(f'debug_simple_{i}.png')

@@ -4,7 +4,7 @@ import jax.numpy as jnp
 
 from src.models.autoencoder.decoder import Decoder
 from src.models.autoencoder.logitslayer import LogitsLayer
-from src.models.helpers import linear_layer_init
+from src.models.helpers import linear_layer_init, transpose_convolution_layer_init
 from src.singletons.hyperparameters import Args
 from src.utils.activationfuns import activation_function_dict
 
@@ -18,7 +18,6 @@ class ObservationModel(nn.Module):
 
     def setup(self):
         self.activation_fun = activation_function_dict[self.activation_function]
-        self.decoder = Decoder(Args().args.bottleneck_dims[-1], deterministic=True, normalization=False)
 
     @nn.compact
     def __call__(self, belief, state):
@@ -27,5 +26,12 @@ class ObservationModel(nn.Module):
         hidden = hidden.reshape(-1, *Args().args.bottleneck_dims)
         reconstructed = self.decoder(hidden, None)
         reconstructed = linear_layer_init(1)(reconstructed)
-        reconstructed = nn.sigmoid(reconstructed)
+
+        hidden = linear_layer_init(32)(hidden)
+        hidden = hidden.reshape(-1, 1, 1, 32)
+        hidden = transpose_convolution_layer_init(4, 2, 2)(hidden)
+        hidden = transpose_convolution_layer_init(2, 2, 2)(hidden)
+        hidden = transpose_convolution_layer_init(1, 3, 2)(hidden)
+        hidden = transpose_convolution_layer_init(1, 3, 2)(hidden)
+        print(hidden.shape)
         return reconstructed
