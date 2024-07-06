@@ -70,10 +70,11 @@ class SimpleWorldModel(WorldModelInterface):
         batch_size = Args().args.batch_size
         epoch_size = stack.shape[0]
 
-        epoch_indices = jr.permutation(Key().key(), epoch_size)
+        # epoch_indices = jr.permutation(Key().key(), epoch_size)
         for start_idx in range(0, epoch_size, batch_size):
             end_idx = start_idx + batch_size
-            batch_slice = epoch_indices[start_idx:end_idx]
+            # batch_slice = epoch_indices[start_idx:end_idx]
+            batch_slice = slice(start_idx, end_idx)
             target = (next_frame[batch_slice], rewards[batch_slice])
             if Args().args.predict_dones:
                 target += (dones[batch_slice], )
