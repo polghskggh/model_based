@@ -18,14 +18,14 @@ class ObservationModel(nn.Module):
 
     def setup(self):
         self.activation_fun = activation_function_dict[self.activation_function]
-        self.decoder = Decoder(Args().args.bottleneck_dims[-1], deterministic=True, normalization=True)
+        self.decoder = Decoder(Args().args.bottleneck_dims[-1], deterministic=False)
 
     @nn.compact
     def __call__(self, belief, state):
         hidden = jnp.append(belief, state, axis=-1)
         hidden = linear_layer_init(features=self.embedding_size)(hidden)
-        hidden = hidden.reshape(-1, 2, 2, self.embedding_size // 4)
+        hidden = hidden.reshape(-1, *Args().args.bottleneck_dims)
+
         reconstructed = self.decoder(hidden, None)
-        reconstructed = linear_layer_init(1)(reconstructed)
-        reconstructed = nn.sigmoid(reconstructed)
+        reconstructed = LogitsLayer()(reconstructed)
         return reconstructed
