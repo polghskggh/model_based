@@ -9,6 +9,7 @@ from src.models.modelwrapper import ModelWrapper
 from src.singletons.hyperparameters import Args
 from src.singletons.writer import log
 from src.trainer.trainer import Trainer
+from src.utils.rl import zero_on_term
 
 
 class DreamerTrainer(Trainer):
@@ -72,15 +73,15 @@ class DreamerTrainer(Trainer):
         key = "representation"
 
         def scan_fn(carry, inputs):
-            action, encoded_observation = inputs
+            action, encoded_observation, done = inputs
             belief_carry, state_carry = carry
 
             step_output = apply_funs[key](params[key], state_carry,
                                           action, belief_carry, encoded_observation, rngs=rng)
+            step_belief, step_state = zero_on_term(done, step_output[0]), zero_on_term(done, step_output[1])
+            return (step_belief, step_state), step_output
 
-            return (step_output[0], step_output[1]), step_output
-
-        _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations))
+        _, output = jax.lax.scan(scan_fn, (belief, state), (actions, encoded_observations, dones))
         beliefs, states, prior_means, prior_std_devs, posterior_means, posterior_std_devs = (output[0], output[1],
                                                                                              output[2], output[3],
                                                                                              output[4], output[5])

@@ -20,7 +20,7 @@ from src.singletons.hyperparameters import Args
 from src.singletons.rng import Key
 from src.singletons.writer import log
 from src.trainer.dreamertrainer import DreamerTrainer
-from src.utils.rl import process_output
+from src.utils.rl import process_output, zero_on_term
 from src.worldmodel.worldmodelinterface import WorldModelInterface
 
 
@@ -70,20 +70,20 @@ class Dreamer(WorldModelInterface):
 
     def step(self, action) -> (jax.Array, float, bool, bool, dict):
         start_time = time.time()
-        self.prev_belief, self.prev_state, _, _ = self.models["transition"].forward(self.prev_state, action,
-                                                                                    self.prev_belief)
-        imagined_reward_logits = self.models["reward"].forward(self.prev_belief, self.prev_state)
+        belief, state, _, _ = self.models["transition"].forward(self.prev_state, action, self.prev_belief)
+        imagined_reward_logits = self.models["reward"].forward(belief, state)
         imagined_reward = process_output(imagined_reward_logits)
         imagined_reward += Args().args.min_reward
 
         if Args().args.predict_dones:
-            dones = self.models["dones"].forward(self.prev_belief, self.prev_state)
+            dones = self.models["dones"].forward(belief, state)
             dones = process_output(dones)
         else:
             dones = jnp.zeros(imagined_reward.shape, dtype=bool)
 
         log({"Step time": (time.time() - start_time) / action.shape[0]})
-        return (jnp.append(self.prev_belief, self.prev_state, axis=-1), imagined_reward, dones,
+        self.prev_belief, self.prev_state = zero_on_term(dones, belief), zero_on_term(dones, state)
+        return (jnp.append(belief, state, axis=-1), imagined_reward, dones,
                 jnp.zeros(imagined_reward.shape, dtype=bool), {})
 
     def reset(self) -> (jax.Array, float, bool, bool, dict):
@@ -140,8 +140,10 @@ class DreamerWrapper(gym.Wrapper):
         self.storage = store(self.storage, self.timestep, observations=observation, actions=action, rewards=reward,
                              dones=term | trunc, beliefs=self.prev_belief, states=self.prev_state)
 
-        self.prev_belief, self.prev_state = belief, state
         self.timestep += 1
         self.timestep %= Args().args.trajectory_length
-        return jnp.append(self.prev_belief, self.prev_state, axis=-1), reward, term, trunc, info
+
+        dones = term | trunc
+        self.prev_belief, self.prev_state = zero_on_term(dones, belief), zero_on_term(dones, state)
+        return jnp.append(belief, state, axis=-1), reward, term, trunc, info
 
