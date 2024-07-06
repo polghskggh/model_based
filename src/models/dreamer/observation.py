@@ -26,7 +26,8 @@ class ObservationModel(nn.Module):
         hidden = jnp.append(belief, state, axis=-1)
         hidden = linear_layer_init(features=self.embedding_size2)(hidden)
         hidden = hidden.reshape(-1, 1, 1, self.embedding_size2)
-        hidden = transpose_convolution_layer_init(features=self.embedding_size2, kernel_size=4, strides=2, padding="SAME")(hidden)
+        hidden = transpose_convolution_layer_init(features=self.embedding_size2, kernel_size=4, strides=2,
+                                                  padding="SAME")(hidden)
         hidden = self.activation_fun(hidden)
         reconstructed = self.decoder(hidden, None)
         return reconstructed
