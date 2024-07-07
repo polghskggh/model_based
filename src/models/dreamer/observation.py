@@ -18,7 +18,8 @@ class ObservationModel(nn.Module):
 
     def setup(self):
         self.activation_fun = activation_function_dict[self.activation_function]
-        self.decoder = Decoder(Args().args.bottleneck_dims[-1], deterministic=True, normalization=True)
+        self.decoder = Decoder(Args().args.bottleneck_dims[-1],
+                               deterministic=not Args().args.dropout, normalization=True)
 
     @nn.compact
     def __call__(self, belief, state):

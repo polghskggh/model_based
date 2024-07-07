@@ -5,6 +5,8 @@ from src.models.helpers import linear_layer_init
 
 import jax.numpy as jnp
 
+from src.singletons.hyperparameters import Args
+
 
 class DreamerEncoder(nn.Module):
     features: int
@@ -14,7 +16,8 @@ class DreamerEncoder(nn.Module):
         self.strides = 2
         self.layers = 6
         self.pixel_embedding = linear_layer_init(features=self.features // 4)
-        self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers, True)
+        self.encoder = Encoder(self.features, self.kernel, self.strides, self.layers,
+                               deterministic=not Args().args.dropout)
 
     def __call__(self, image):
         embedded_image = self.pixel_embedding(image)
