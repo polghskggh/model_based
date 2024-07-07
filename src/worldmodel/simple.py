@@ -30,7 +30,7 @@ class SimpleWorldModel(WorldModelInterface):
 
         if self._deterministic:
             self._model: ModelWrapper = ModelWrapper(AutoEncoder(*Shape(), deterministic=True), "autoencoder",
-                                                     AutoEncoder(*Shape(), deterministic=False))
+                                                     AutoEncoder(*Shape(), deterministic=True))
         else:
             self._model: ModelWrapper = ModelWrapper(StochasticAutoencoder(*Shape()), "autoencoder")
             self._trainer = SAETrainer(self._model)
