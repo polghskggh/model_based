@@ -32,9 +32,6 @@ def world_model_factory(envs):
 
 
 def main():
-    # first test: no normalization
-    # second test: mse, no normalization
-    # third test: mse, normalization
     check_gpu()
     envs = make_envs()
     agent = Agent(Args().args.algorithm)

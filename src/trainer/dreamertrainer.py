@@ -36,28 +36,30 @@ class DreamerTrainer(Trainer):
         optimized_grad_fn = jit(
             lambda prms, obs, act, rew, don, state, belief, rngs: grad_fn(apply_funs, prms, obs, act, rew,
                                                                           don, state, belief, rngs))
-        for env_idx in range(0, observations.shape[1]):
-            env_observations = observations[:, env_idx]
-            env_actions = actions[:, env_idx]
-            env_rewards = rewards[:, env_idx]
-            env_dones = dones[:, env_idx]
-            last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
-            for start_idx in range(0, observations.shape[0], batch_size):
-                batch_slice = slice(start_idx, start_idx + batch_size)
 
-                params = {key: self.models[key].params for key in keys_to_select}
+        for _ in range(Args().args.num_epochs):
+            for env_idx in range(0, observations.shape[1]):
+                env_observations = observations[:, env_idx]
+                env_actions = actions[:, env_idx]
+                env_rewards = rewards[:, env_idx]
+                env_dones = dones[:, env_idx]
+                last_belief, last_state = initial_belief[env_idx], initial_state[env_idx]
+                for start_idx in range(0, observations.shape[0], batch_size):
+                    batch_slice = slice(start_idx, start_idx + batch_size)
 
-                (loss, aux), grads = optimized_grad_fn(params,
-                                                       env_observations[batch_slice],
-                                                       env_actions[batch_slice],
-                                                       env_rewards[batch_slice],
-                                                       env_dones[batch_slice],
-                                                       last_state, last_belief, rng)
-                self.apply_grads(grads)
-                last_belief, last_state = aux["data"]
-                for i in range(10):
-                    np.save(f"debug_dreamer_{i}", aux["debug"][i])
-                log(aux["info"])
+                    params = {key: self.models[key].params for key in keys_to_select}
+
+                    (loss, aux), grads = optimized_grad_fn(params,
+                                                           env_observations[batch_slice],
+                                                           env_actions[batch_slice],
+                                                           env_rewards[batch_slice],
+                                                           env_dones[batch_slice],
+                                                           last_state, last_belief, rng)
+                    self.apply_grads(grads)
+                    last_belief, last_state = aux["data"]
+                    for i in range(10):
+                        np.save(f"debug_dreamer_{i}", aux["debug"][i])
+                    log(aux["info"])
 
         new_params = {"params": self.models["representation"].params["params"]["transition_model"]}
         self.models["transition"].params = new_params
