@@ -35,7 +35,7 @@ class ReshapeObservation(ObservationWrapper):
                                 to (Height, Width, Channel * Stack)
 
         :param observation: observation from the environment
-        :return: reshaped observation
+        :returns: reshaped observation
         """
         serve = jnp.array(observation).transpose(*self.transpose).reshape(self.new_shape)
         return serve

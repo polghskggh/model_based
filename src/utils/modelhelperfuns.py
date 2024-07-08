@@ -12,7 +12,7 @@ def transform_to_batch(data, batch_dim=None):
     :param data: network input
     :param batch_dim: batch dimension
 
-    :return: data with batch dimension
+    :returns: data with batch dimension
     """
 
     if batch_dim is None:

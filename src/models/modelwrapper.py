@@ -45,7 +45,7 @@ class ModelWrapper:
 
         :param y: the target output
         :param x: the model input
-        :return: the gradients of the model parameters
+        :returns: the gradients of the model parameters
         """
         in_dim, out_dim = self._initializer.batch_dims()
         x = self.batch(x, in_dim)
@@ -63,7 +63,7 @@ class ModelWrapper:
         Forward pass through the model
 
         :param x: the input to the model
-        :return: the output of the model
+        :returns: the output of the model
         """
         x = self.batch_input(*x)
         return self.state.apply_fn(self.state.params, *x, rngs=self.make_rng_keys())
@@ -84,7 +84,7 @@ class ModelWrapper:
         """
         Get the model
 
-        :return: the model
+        :returns: the model
         """
         return self._model
 
@@ -93,7 +93,7 @@ class ModelWrapper:
         """
         Get the parameters of the model
 
-        :return: the parameters of the model
+        :returns: the parameters of the model
         """
         return self.state.params
 
@@ -111,7 +111,7 @@ class ModelWrapper:
         batches the input of the model
 
         :param data: the input to the model
-        :return: batched input
+        :returns: batched input
         """
         in_dim, _ = self._initializer.batch_dims()
         return self.batch(data, in_dim)
@@ -123,7 +123,7 @@ class ModelWrapper:
 
         :param data: the data to batch
         :param dims: the batch dimensions of the data
-        :return: batched data
+        :returns: batched data
         """
         if dims is None:
             return data
@@ -159,7 +159,7 @@ class ModelWrapper:
         """
         String representation of the model
 
-        :return: the string representation of the model architecture
+        :returns: the string representation of the model architecture
         """
         return self._model.tabulate(random.PRNGKey(0), *self.batch_input(*self._initializer.init_params(self._model)),
                                     console_kwargs={"width": 120})

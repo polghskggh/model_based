@@ -74,6 +74,7 @@ class DreamerTrainer(Trainer):
             action, encoded_observation, done = inputs
             belief_carry, state_carry = carry
 
+            jax.debug.print("encoded", jnp.mean(encoded_observation), jnp.std(encoded_observation))
             step_output = apply_funs[key](params[key], state_carry,
                                           action, belief_carry, encoded_observation, rngs=rng)
             step_belief, step_state = zero_on_term(done, step_output[0]), zero_on_term(done, step_output[1])

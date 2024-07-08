@@ -21,7 +21,7 @@ def make_envs():
 def make_env(env_name: str = "breakout") -> gym.Env:
     """
     Create the Breakout environment with the necessary wrappers
-    :return: Breakout environment
+    :returns: Breakout environment
     """
     if env_name == "mario":
         env = make_mario()

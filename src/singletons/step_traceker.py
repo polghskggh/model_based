@@ -11,6 +11,7 @@ class StepTracker:
     def __int__(self):
         return self.value
 
+
 @singleton
 class ModelEnvTracker:
     value: int = 0

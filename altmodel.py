@@ -234,7 +234,7 @@ def compute_gae(
         delta = storage.rewards[t] + args.gamma * nextvalues * nextnonterminal - storage.values[t]
         lastgaelam = delta + args.gamma * args.gae_lambda * nextnonterminal * lastgaelam
         storage = storage.replace(advantages=storage.advantages.at[t].set(lastgaelam))
-    # Save return as advantages + values
+    # Save returns as advantages + values
     storage = storage.replace(returns=storage.advantages + storage.values)
     return storage
 
@@ -297,7 +297,7 @@ def update_ppo(
     b_returns = storage.returns.reshape(-1)
     b_values = storage.values.reshape(-1)
 
-    # Create function that will return gradient of the specified function
+    # Create function that will returns gradient of the specified function
     ppo_loss_grad_fn = jit(value_and_grad(ppo_loss, argnums=1, has_aux=True))
 
     for epoch in range(args.update_epochs):
@@ -319,7 +319,7 @@ def update_ppo(
             # Update an agent
             agent_state = agent_state.apply_gradients(grads=grads)
 
-    # Calculate how good an approximation of the return is the value function
+    # Calculate how good an approximation of the returns is the value function
     y_pred, y_true = b_values, b_returns
     var_y = jnp.var(y_true)
     explained_var = np.nan if var_y == 0 else 1 - np.var(y_true - y_pred) / var_y

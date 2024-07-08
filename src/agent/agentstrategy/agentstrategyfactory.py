@@ -14,7 +14,7 @@ def agent_strategy_factory(strategy_name: str) -> StrategyInterface:
     Factory method for creating agent strategies
 
     :param strategy_name: name of the initalizer
-    :return: a new instance of the initalizer
+    :returns: a new instance of the initalizer
     """
     match strategy_name:
         case "dqn":
