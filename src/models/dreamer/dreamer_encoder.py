@@ -22,7 +22,8 @@ class DreamerEncoder(nn.Module):
     def __call__(self, image):
         embedded_image = self.pixel_embedding(image)
         encoded_image, _ = self.encoder(embedded_image)
-        encoded_image = nn.avg_pool(encoded_image, (encoded_image.shape[1], encoded_image.shape[2]),
-                                    padding='VALID') * (encoded_image.shape[1] * encoded_image.shape[2])
+        if Args().args.simplified_obs:
+            encoded_image = nn.avg_pool(encoded_image, (encoded_image.shape[1], encoded_image.shape[2]),
+                                        padding='VALID') * (encoded_image.shape[1] * encoded_image.shape[2])
         encoded_image = jnp.reshape(encoded_image, (encoded_image.shape[0], -1))
         return encoded_image

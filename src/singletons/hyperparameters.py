@@ -42,7 +42,9 @@ def parse_dreamer(parser):
                         help='Dreamer: minimum standard deviation of the policy')
     parser.add_argument('--loss_weights', type=float, nargs=3, default=[0.25, 0.5, 0.25], help='Dreamer: loss weights')
     parser.add_argument('--predict_dones', type=bool, default=False, help='whether to predict dones or just default '
-                                                                           'to false')
+                                                                          'to false')
+
+    parser.add_argument('--simplified_obs', type=bool, default=False, help='whether to further encode observations')
     return parser
 
 
