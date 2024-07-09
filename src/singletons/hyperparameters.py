@@ -91,10 +91,10 @@ class Args:
                                                                              'before starting to train the model')
         parser.add_argument('--sample_output', type=bool, default=False,
                             help='whether to sample the output of the model')
-        parse_dqn(parser)
-        parse_ppo(parser)
-        parse_simple(parser)
-        parse_dreamer(parser)
+        parser = parse_dqn(parser)
+        parser = parse_ppo(parser)
+        parser = parse_simple(parser)
+        parser = parse_dreamer(parser)
         args = parser.parse_args()
         args.num_minibatches = args.num_agents * args.trajectory_length // args.batch_size
         args.min_reward = 0 if args.env == 'breakout' else -6
