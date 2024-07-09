@@ -41,10 +41,13 @@ def parse_dreamer(parser):
     parser.add_argument('--min_std_dev', type=float, default=0.1,
                         help='Dreamer: minimum standard deviation of the policy')
     parser.add_argument('--loss_weights', type=float, nargs=3, default=[0.25, 0.5, 0.25], help='Dreamer: loss weights')
-    parser.add_argument('--predict_dones', type=bool, default=False, help='whether to predict dones or just default '
-                                                                          'to false')
-
-    parser.add_argument('--simplified_obs', type=bool, default=False, help='whether to further encode observations')
+    parser.add_argument('--dones', dest='predict_dones', action='store_true', help='predict dones with transition model')
+    parser.add_argument('--no_dones', dest='predict_dones', action='store_false', help='do not predict dones with '
+                                                                                      'transition model')
+    parser.add_argument('--simple_obs', dest='simplified_obs', action='store_true',
+                        help='simplify encoded observation with avg pool')
+    parser.add_argument('--no_simple_obs', dest='simplified_obs', action='store_false',
+                        help='do not simplify encoded observation with avg pool')
     return parser
 
 
@@ -79,7 +82,9 @@ class Args:
                             help='the maximum norm for the gradient clipping')
 
         parser.add_argument('--seed', type=int, default=1, help='seed for reproducible benchmarks')
-        parser.add_argument('--dropout', type=bool, default=False, help='whether to use dropout')
+        parser.add_argument('--dropout', dest='dropout', action='store_true',
+                            help='use dropout layers in the encoder and decoder')
+
         parser.add_argument('--frame_stack', type=int, default=4, help='number of frames to stack')
         parser.add_argument('--frame_skip', type=int, default=4, help='number of frames to skip')
         parser.add_argument('--grayscale', type=bool, default=True, help='whether to use grayscale')
@@ -87,8 +92,9 @@ class Args:
                             help='number of epochs to train during each update')
         parser.add_argument('--model_updates', type=int, default=4,
                             help='number of updates of agent on the model in model-based RL')
-        parser.add_argument('--hybrid_learning', type=bool, default=False, help='whether to train both with '
-                                                                                'the model and with the environment')
+        parser.add_argument('--hybrid', dest='hybrid_learning', action='store_true',
+                            help='use hybrid learning with model-based RL')
+
         parser.add_argument('--initial_updates', type=int, default=100, help='number of updates of the model '
                                                                              'before starting to train the model')
         parser.add_argument('--sample_output', type=bool, default=False,
@@ -98,6 +104,8 @@ class Args:
         parser = parse_simple(parser)
         parser = parse_dreamer(parser)
         args = parser.parse_args()
+
+        parser.set_defaults(dropout=False, hybrid_learning=False, predict_dones=True, simplified_obs=False)
         args.num_minibatches = args.num_agents * args.trajectory_length // args.batch_size
         args.min_reward = 0 if args.env == 'breakout' else -6
         args.rewards = 2 if args.env == 'breakout' else 13
