@@ -23,7 +23,7 @@ class PPOStrategy(StrategyInterface):
         if Args().args.algorithm == "dreamer":
             self.state_shape = (Args().args.state_size + Args().args.belief_size, )
             model = ActorCriticDreamer(self.state_shape, (Shape()[1], 1))
-            #self.batch_size *= 10
+            self.batch_size *= 10
         else:
             self.state_shape = Shape()[0]
             model = ActorCriticNetwork(Shape()[0], (Shape()[1], 1))
