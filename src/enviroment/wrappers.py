@@ -1,3 +1,4 @@
+import time
 from typing import Any, SupportsFloat
 
 import gymnasium as gym
@@ -7,6 +8,8 @@ from gymnasium import ObservationWrapper, Wrapper
 from gymnasium.core import WrapperObsType, WrapperActType, ActionWrapper, RewardWrapper
 from gymnasium.spaces import Box
 from gymnasium.spaces.discrete import Discrete
+
+from src.singletons.writer import Writer, log
 
 
 class LimitActions(ActionWrapper):
@@ -85,4 +88,14 @@ class CategoricalReward(RewardWrapper):
             return 1.0
         else:
             return 0.0
+
+
+class TimeInteraction(Wrapper):
+    def step(
+        self, action: WrapperActType
+    ) -> tuple[WrapperObsType, SupportsFloat, bool, bool, dict[str, Any]]:
+        start = time.time()
+        observation, reward, terminated, truncated, info = self.env.step(action)
+        log({"real_env_time": time.time() - start})
+        return observation, reward, terminated, truncated, info
 

@@ -19,9 +19,11 @@ import jax.random as jr
 
 class PPOStrategy(StrategyInterface):
     def __init__(self):
+        self.batch_size = Args().args.batch_size
         if Args().args.algorithm == "dreamer":
             self.state_shape = (Args().args.state_size + Args().args.belief_size, )
             model = ActorCriticDreamer(self.state_shape, (Shape()[1], 1))
+            self.batch_size *= 10
         else:
             self.state_shape = Shape()[0]
             model = ActorCriticNetwork(Shape()[0], (Shape()[1], 1))
@@ -90,14 +92,13 @@ class PPOStrategy(StrategyInterface):
         batch_advantages = advantages.reshape(-1)
         batch_values = storage.values.reshape(-1)
         batch_returns = batch_advantages + batch_values
-        batch_size = Args().args.batch_size
         epoch_size = batch_observations.shape[0]
 
         grad_fn = jit(value_and_grad(PPOStrategy.ppo_loss, 1, has_aux=True))
         for _ in range(Args().args.num_epochs):
             epoch_indices = jr.permutation(Key().key(), epoch_size, independent=True)
-            for start_idx in range(0, epoch_size, batch_size):
-                end_idx = start_idx + batch_size
+            for start_idx in range(0, epoch_size, self.batch_size):
+                end_idx = start_idx + self.batch_size
                 batch_indices = epoch_indices[start_idx:end_idx]
                 (loss, aux), grads = grad_fn(self._actor_critic.state,
                                              self._actor_critic.params,

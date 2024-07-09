@@ -7,7 +7,7 @@ from gymnasium.wrappers import FrameStack, ResizeObservation, RecordEpisodeStati
 from gymnasium.wrappers import GrayScaleObservation
 from nes_py.wrappers import JoypadSpace
 
-from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, LimitActions
+from src.enviroment.wrappers import ReshapeObservation, FrameSkip, CompatibilityWrapper, LimitActions, TimeInteraction
 from src.enviroment.shape import Shape
 from src.singletons.hyperparameters import Args
 
@@ -37,6 +37,7 @@ def apply_common_wrappers(env: gym.Env):
     if Args().args.algorithm != "dreamer":
         env = FrameStack(env, Args().args.frame_stack)
         env = ReshapeObservation(env)
+    env = TimeInteraction(env)
     Shape.initialize(env)
     return env
 
